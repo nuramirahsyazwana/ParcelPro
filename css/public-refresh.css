@@ -326,175 +326,182 @@ body.pp-public{background:#fff;color:#14243a;font-family:'DM Sans',sans-serif}
   }
 }
 
+
 /* =========================================
-   PARCELPRO - MOBILE HEADER ONLY
-   Arrange Logo, Menu, User, Admin & Dark Mode
-   Desktop layout remains unchanged
+   PARCELPRO MOBILE HEADER FIX
+   MOBILE ONLY - DESKTOP UNCHANGED
 ========================================= */
 
-@media (max-width: 760px) {
+@media screen and (max-width: 760px) {
 
-  /* Header layout */
-  .pp-header {
+  body.pp-public #publicLanding .pp-header {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 46px;
+    grid-template-columns: minmax(0, 1fr) 48px !important;
     grid-template-areas:
       "brand menu"
-      "actions actions";
-    align-items: center;
-    column-gap: 12px;
-    row-gap: 12px;
+      "actions actions" !important;
 
-    width: 100%;
+    align-items: center !important;
+    gap: 12px !important;
+
+    width: 100% !important;
     height: auto !important;
-    min-height: 0;
+    min-height: unset !important;
+
     padding: 12px 16px !important;
-    flex-wrap: initial !important;
-    overflow: visible;
-    box-sizing: border-box;
+    margin: 0 !important;
+
+    position: sticky !important;
+    top: 0;
+    box-sizing: border-box !important;
+    overflow: visible !important;
   }
 
-  /* ParcelPro logo */
-  .pp-header > .pp-brand {
-    grid-area: brand;
-    min-width: 0;
-    width: fit-content;
-    margin: 0;
-  }
-
-  /* Hamburger button */
-  .pp-header > .pp-menu-btn {
-    grid-area: menu;
+  /* LOGO */
+  body.pp-public #publicLanding .pp-header > .pp-brand {
+    grid-area: brand !important;
     display: flex !important;
-    align-items: center;
-    justify-content: center;
-
-    width: 46px;
-    height: 44px;
-    padding: 0;
-    margin: 0;
-
-    font-size: 24px;
-    border: 1px solid #e0e6ee;
-    border-radius: 10px;
-    background: #f2f5f9;
-    color: #082b55;
-
-    cursor: pointer;
+    align-items: center !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    font-size: 22px !important;
   }
 
-  /* User, Admin and Dark Mode row */
-  .pp-header > .pp-head-actions {
-    grid-area: actions;
+  /* HAMBURGER */
+  body.pp-public #publicLanding .pp-header > .pp-menu-btn {
+    grid-area: menu !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    width: 48px !important;
+    height: 46px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    font-size: 25px !important;
+    border-radius: 10px !important;
+    background: #f2f5f9 !important;
+    color: #082b55 !important;
+    border: 1px solid #dce5ef !important;
+  }
+
+  /* USER, ADMIN AND DARK MODE */
+  body.pp-public #publicLanding .pp-header > .pp-head-actions {
+    grid-area: actions !important;
 
     display: flex !important;
-    align-items: stretch;
-    justify-content: space-between;
-    gap: 8px;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
 
-    width: 100%;
-    min-width: 0;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 8px !important;
     margin: 0 !important;
   }
 
-  /* User and Admin buttons */
-  .pp-header .pp-login,
-  .pp-header .pp-admin {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1 1 0;
+  /* USER LOGIN */
+  body.pp-public #publicLanding .pp-header .pp-login {
+    display: flex !important;
+    flex: 1 1 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
 
-    min-width: 0;
-    min-height: 42px;
-    padding: 9px 6px !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding: 8px 5px !important;
 
-    font-size: 11px;
-    text-align: center;
-    white-space: nowrap;
-    border-radius: 9px;
-    box-sizing: border-box;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
   }
 
-  /* Dark Mode button */
-  .pp-header .pp-theme-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1.2 1 0;
+  /* ADMIN */
+  body.pp-public #publicLanding .pp-header .pp-admin {
+    display: flex !important;
+    flex: 1 1 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
 
-    min-width: 0;
-    min-height: 42px;
-    padding: 8px 6px !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding: 8px 5px !important;
 
-    gap: 5px;
-    font-size: 11px;
-    white-space: nowrap;
-    border-radius: 9px;
-    box-sizing: border-box;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
   }
 
-  .pp-header .pp-theme-toggle i {
-    font-size: 14px;
+  /* DARK MODE */
+  body.pp-public #publicLanding .pp-header .pp-theme-toggle {
+    display: flex !important;
+    flex: 1.2 1 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding: 8px 5px !important;
+    gap: 5px !important;
+
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
   }
 
-  /* Hide language picker in mobile header if present */
-  .pp-header .language-picker {
+  body.pp-public #publicLanding .pp-header .pp-theme-toggle i {
+    font-size: 14px !important;
+  }
+
+  /* MOBILE NAVIGATION */
+  body.pp-public #publicLanding .pp-header > .pp-nav {
     display: none !important;
+
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 10px 18px !important;
+
+    background: #ffffff !important;
+    box-shadow: 0 10px 18px rgba(0, 19, 41, 0.12) !important;
+    z-index: 999 !important;
+    box-sizing: border-box !important;
   }
 
-  /* Mobile navigation dropdown */
-  .pp-header > .pp-nav {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-
-    width: 100%;
-    margin: 0;
-    padding: 10px 18px;
-
-    background: #ffffff;
-    border-top: 1px solid #e8edf3;
-    box-shadow: 0 10px 18px rgba(0, 19, 41, 0.12);
-
-    z-index: 100;
-    box-sizing: border-box;
-  }
-
-  .pp-header > .pp-nav.open {
+  body.pp-public #publicLanding .pp-header > .pp-nav.open {
     display: grid !important;
-    gap: 0;
+    gap: 0 !important;
   }
 
-  .pp-header > .pp-nav a {
-    display: block;
-    width: 100%;
-    padding: 13px 4px;
-
-    font-size: 12px;
-    border-bottom: 1px solid #edf1f5;
-    box-sizing: border-box;
+  body.pp-public #publicLanding .pp-header > .pp-nav a {
+    display: block !important;
+    width: 100% !important;
+    padding: 13px 4px !important;
+    font-size: 12px !important;
+    box-sizing: border-box !important;
   }
-
 }
 
-/* Smaller mobile screens */
-@media (max-width: 360px) {
+/* EXTRA SMALL PHONES */
+@media screen and (max-width: 360px) {
 
-  .pp-header {
-    padding-left: 11px !important;
-    padding-right: 11px !important;
-    column-gap: 8px;
+  body.pp-public #publicLanding .pp-header {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
 
-  .pp-header .pp-login,
-  .pp-header .pp-admin,
-  .pp-header .pp-theme-toggle {
-    font-size: 10px;
-    padding-left: 4px !important;
-    padding-right: 4px !important;
+  body.pp-public #publicLanding .pp-header .pp-login,
+  body.pp-public #publicLanding .pp-header .pp-admin,
+  body.pp-public #publicLanding .pp-header .pp-theme-toggle {
+    font-size: 9px !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
   }
-
 }
+
