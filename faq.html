@@ -1,0 +1,566 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ParcelPro | FAQ & Rider Registration</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="assets/favicon.svg">
+
+    <!-- Bootstrap Icons -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Manrope:wght@700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/public-refresh.css">
+
+    <!-- HEADER CUSTOM DESIGN -->
+    <style>
+
+        /* ================= HEADER ================= */
+
+        .pp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 25px;
+            padding: 16px 5%;
+            background: #ffffff;
+            border-bottom: 1px solid #edf0f4;
+            box-shadow: 0 4px 18px rgba(20, 45, 82, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        /* BRAND */
+
+        .pp-header .pp-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #142d52;
+            text-decoration: none;
+            font-family: 'Manrope', sans-serif;
+            font-size: 23px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .pp-header .pp-brand > span:last-child {
+            color: #f29a38;
+        }
+
+        .pp-brand-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 43px;
+        height: 43px;
+        border-radius: 13px;
+        background: #f29a38;
+        color: #ffffff;
+        font-size: 21px;
+        box-shadow: 0 5px 12px rgba(20, 45, 82, 0.16);
+    }
+
+        /* NAVIGATION */
+
+        .pp-header .pp-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .pp-header .pp-nav a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 11px 15px;
+            border-radius: 10px;
+            color: #526078;
+            text-decoration: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: all 0.25s ease;
+        }
+
+        .pp-header .pp-nav a i {
+            font-size: 15px;
+        }
+
+        .pp-header .pp-nav a:hover {
+            background: #fff3e7;
+            color: #e98232;
+            transform: translateY(-2px);
+        }
+
+        /* ACTIVE FAQ BUTTON */
+
+        .pp-header .pp-nav a.active {
+            background: #142d52;
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(20, 45, 82, 0.15);
+        }
+
+        .pp-header .pp-nav a.active:hover {
+            background: #f29a38;
+            color: #ffffff;
+        }
+
+        /* HEADER RESPONSIVE */
+
+        @media (max-width: 768px) {
+
+            .pp-header {
+                flex-direction: column;
+                gap: 13px;
+                padding: 15px 16px;
+            }
+
+            .pp-header .pp-nav {
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 7px;
+            }
+
+            .pp-header .pp-nav a {
+                padding: 9px 12px;
+                font-size: 12px;
+            }
+
+        }
+
+        @media (max-width: 400px) {
+
+            .pp-header .pp-brand {
+                font-size: 21px;
+            }
+
+            .pp-header .pp-nav {
+                gap: 5px;
+            }
+
+            .pp-header .pp-nav a {
+                padding: 8px 9px;
+                font-size: 11px;
+            }
+
+            .pp-header .pp-nav a i {
+                font-size: 13px;
+            }
+
+        }
+
+        /* SMOOTH SCROLL */
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+    </style>
+
+</head>
+
+<body class="pp-public">
+
+    <!-- ================= HEADER ================= -->
+    <header class="pp-header">
+
+        <a class="pp-brand" href="index.html">
+
+            <span class="pp-brand-icon">
+                <i class="bi bi-box-seam-fill"></i>
+            </span>
+
+            Parcel<span>Pro</span>
+
+        </a>
+
+        <nav class="pp-nav">
+
+            <a href="index.html">
+                <i class="bi bi-house-door-fill"></i>
+                Home
+            </a>
+
+            <a href="user.html">
+                <i class="bi bi-person-circle"></i>
+                User Login
+            </a>
+
+            <a href="international.html">
+                <i class="bi bi-globe-asia-australia"></i>
+                International
+            </a>
+
+            <a href="faq.html" class="active" aria-current="page">
+                <i class="bi bi-question-circle-fill"></i>
+                FAQ
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="pp-page">
+
+        <div class="pp-page-wrap">
+
+            <!-- FAQ SECTION -->
+            <section class="faq-section">
+
+                <span class="pp-kicker">HELP CENTRE</span>
+
+                <h1>Frequently Asked Questions</h1>
+
+                <p>
+                    Find answers to common questions about ParcelPro
+                    delivery services.
+                </p>
+
+
+                <!-- Question 1 -->
+                <div class="faq-item">
+
+                    <h2>How do I track my parcel?</h2>
+
+                    <p>
+                        Enter your ParcelPro tracking number in the
+                        tracking field on the homepage. You may enter
+                        up to five numbers separated by commas or spaces.
+                    </p>
+
+                </div>
+
+
+                <!-- Question 2 -->
+                <div class="faq-item">
+
+                    <h2>Do I need an account to track a parcel?</h2>
+
+                    <p>
+                        No. Parcel tracking is available from the
+                        homepage without signing in.
+                    </p>
+
+                </div>
+
+
+                <!-- Question 3 -->
+                <div class="faq-item">
+
+                    <h2>How do I send a parcel?</h2>
+
+                    <p>
+                        Create a user account or sign in. Use the
+                        shipping estimate as a guide, then contact
+                        ParcelPro to confirm the booking and final charges.
+                    </p>
+
+                </div>
+
+
+                <!-- Question 4 -->
+                <div class="faq-item">
+
+                    <h2>
+                        Which countries are supported for
+                        international shipping?
+                    </h2>
+
+                    <p>
+                        This prototype lists Indonesia, Brunei,
+                        Singapore and Thailand. Please confirm service
+                        availability before sending.
+                    </p>
+
+                </div>
+
+
+                <!-- Question 5 -->
+                <div class="faq-item">
+
+                    <h2>How do I contact ParcelPro?</h2>
+
+                    <p>
+                        Email us at
+                        <a href="mailto:hello@parcelpro.example">
+                            hello@parcelpro.example
+                        </a>
+                        for assistance.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- ================= RIDER REGISTRATION ================= -->
+            <section
+                id="rider-registration"
+                class="rider-section"
+            >
+
+                <span class="pp-kicker">
+                    JOIN OUR DELIVERY TEAM
+                </span>
+
+                <h2 class="rider-title">
+                    ParcelPro Rider Registration
+                </h2>
+
+                <p>
+                    Interested in becoming a delivery rider?
+                    Complete the form below to express your interest
+                    in joining the ParcelPro delivery team.
+                </p>
+
+                <p class="rider-note">
+                    This is a demo registration form. Information
+                    submitted will not be sent to a live recruitment system.
+                </p>
+
+
+                <!-- Registration Form -->
+                <form id="riderForm" class="pp-form-grid">
+
+                    <!-- Full Name -->
+                    <div class="pp-field">
+
+                        <label for="riderName">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="riderName"
+                            name="fullName"
+                            placeholder="Enter your full name"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- Email -->
+                    <div class="pp-field">
+
+                        <label for="riderEmail">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="riderEmail"
+                            name="email"
+                            placeholder="Enter your email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- Phone -->
+                    <div class="pp-field">
+
+                        <label for="riderPhone">
+                            Phone Number
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="riderPhone"
+                            name="phone"
+                            placeholder="Enter your phone number"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- Work Area -->
+                    <div class="pp-field">
+
+                        <label for="workArea">
+                            Preferred Work Area
+                        </label>
+
+                        <input
+                            type="text"
+                            id="workArea"
+                            name="workArea"
+                            placeholder="e.g. Shah Alam"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- Vehicle Type -->
+                    <div class="pp-field">
+
+                        <label for="vehicleType">
+                            Vehicle Type
+                        </label>
+
+                        <select
+                            id="vehicleType"
+                            name="vehicleType"
+                            required
+                        >
+
+                            <option value="">
+                                Choose Vehicle
+                            </option>
+
+                            <option value="Motorcycle">
+                                Motorcycle
+                            </option>
+
+                            <option value="Car">
+                                Car
+                            </option>
+
+                            <option value="Van">
+                                Van
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Driving Licence -->
+                    <div class="pp-field">
+
+                        <label for="licenceClass">
+                            Driving Licence Class
+                        </label>
+
+                        <input
+                            type="text"
+                            id="licenceClass"
+                            name="licenceClass"
+                            placeholder="e.g. B2 / D"
+                        >
+
+                    </div>
+
+
+                    <!-- Submit Button -->
+                    <div class="pp-field full">
+
+                        <button
+                            type="submit"
+                            class="pp-submit"
+                        >
+                            <i class="bi bi-send-fill"></i>
+                            Send Registration Interest
+                        </button>
+
+                    </div>
+
+                </form>
+
+
+                <!-- Success Message -->
+                <div
+                    class="pp-alert"
+                    id="riderMessage"
+                    role="status"
+                    aria-live="polite"
+                    style="display: none;"
+                >
+                    <i class="bi bi-check-circle-fill"></i>
+
+                    Thank you! Your demo registration details
+                    have been received on this page. Please email
+                    ParcelPro to continue.
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="pp-footer">
+
+        <div class="pp-footer-bottom">
+
+            <span>
+                &copy; 2026 ParcelPro
+            </span>
+
+            <a href="terms.html">
+                Terms
+            </a>
+
+            <a href="privacy.html">
+                Privacy
+            </a>
+
+            <a href="mailto:hello@parcelpro.example">
+                Contact
+            </a>
+
+        </div>
+
+    </footer>
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script>
+
+        "use strict";
+
+        const riderForm = document.getElementById("riderForm");
+
+        const riderMessage = document.getElementById("riderMessage");
+
+
+        // Handle Rider Registration Form
+        riderForm.addEventListener("submit", function (event) {
+
+            event.preventDefault();
+
+            // Display success message
+            riderMessage.style.display = "block";
+
+            // Reset form fields
+            riderForm.reset();
+
+            // Scroll to success message
+            riderMessage.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="description" content="ParcelPro - simple local and international parcel delivery and tracking.">
+
+  <title>ParcelPro | Delivering Smarter</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+
+  <!-- Bootstrap 5 -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet">
+
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/public-refresh.css">
+
+  <!-- Homepage Additional Styling -->
+  <style>
+
+    /* ================= WHATSAPP QR ================= */
+
+    .pp-whatsapp-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      padding: 45px;
+      margin: 40px 0;
+      background: #f7f8fa;
+      border-radius: 20px;
+    }
+
+    .pp-whatsapp-content {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .pp-qr-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 22px;
+      min-width: 230px;
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+      text-align: center;
+    }
+
+    .pp-qr-card img {
+      display: block;
+      width: 180px;
+      height: 180px;
+      object-fit: contain;
+      background: #ffffff;
+    }
+
+    .pp-qr-card strong {
+      color: #172b4d;
+    }
+
+    .pp-qr-card small {
+      color: #777777;
+    }
+
+    .pp-qr-download {
+      color: #e98232;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .pp-qr-download:hover {
+      text-decoration: underline;
+    }
+
+
+    /* ================= VIDEO ================= */
+
+    .parcel-video-container {
+      position: relative;
+      width: 100%;
+      max-width: 850px;
+      aspect-ratio: 16 / 9;
+      margin: 25px auto;
+      overflow: hidden;
+      border-radius: 18px;
+      background: #111111;
+    }
+
+    .parcel-video-container iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .pp-youtube-link {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      color: #ffffff;
+      text-decoration: none;
+      text-align: center;
+      padding: 25px;
+    }
+
+    .pp-youtube-link i {
+      font-size: 65px;
+      color: #ff3333;
+      transition: transform 0.2s ease;
+    }
+
+    .pp-youtube-link strong {
+      font-size: 20px;
+      color: #ffffff;
+    }
+
+    .pp-youtube-link small {
+      color: #cccccc;
+      font-size: 13px;
+    }
+
+    .pp-youtube-link:hover {
+      color: #ffffff;
+    }
+
+    .pp-youtube-link:hover i {
+      transform: scale(1.12);
+    }
+
+    .pp-video-fallback {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+
+    /* ================= FEEDBACK ================= */
+
+    .pp-feedback {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 35px;
+      flex-wrap: wrap;
+      padding: 40px;
+      margin: 40px 0;
+      background: #fff8f1;
+      border-radius: 20px;
+    }
+
+    .pp-feedback > div {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .pp-feedback-form {
+      flex: 1;
+      min-width: 260px;
+      max-width: 470px;
+    }
+
+    .pp-feedback-form label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 600;
+    }
+
+    .pp-feedback-form input,
+    .pp-feedback-form select,
+    .pp-feedback-form textarea {
+      display: block;
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid #d9dce2;
+      border-radius: 9px;
+      background: #ffffff;
+      font: inherit;
+    }
+
+    .pp-feedback-form textarea {
+      resize: vertical;
+    }
+
+    .pp-feedback-success {
+      margin-top: 12px;
+      color: #16834c;
+      font-weight: 600;
+    }
+
+
+    /* VIEW CUSTOMER FEEDBACK LINK */
+
+    .pp-view-feedback {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 12px;
+      padding: 11px 17px;
+      border: 1px solid #f28c28;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #173f69;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    .pp-view-feedback i:first-child {
+      color: #f28c28;
+      font-size: 16px;
+    }
+
+    .pp-view-feedback:hover {
+      background: #f28c28;
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .pp-view-feedback:hover i {
+      color: #ffffff;
+    }
+
+
+    /* ================= MARQUEE ================= */
+
+    .pp-marquee {
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      min-height: 58px;
+      padding: 0;
+      background: #172b4d;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .pp-marquee-track {
+      display: flex;
+      align-items: center;
+      width: max-content;
+      min-height: 58px;
+      animation: pp-marquee-scroll 30s linear infinite;
+      will-change: transform;
+    }
+
+    .pp-marquee-track span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 58px;
+      padding: 0 30px;
+      line-height: 1.4;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .pp-marquee-track i {
+      margin-right: 9px;
+      font-size: 17px;
+    }
+
+    @keyframes pp-marquee-scroll {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    .pp-marquee:hover .pp-marquee-track {
+      animation-play-state: paused;
+    }
+
+
+    /* ================= DARK / LIGHT MODE BUTTON ================= */
+
+    .pp-theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border: 1px solid #d9dce2;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #172b4d;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+
+    .pp-theme-toggle:hover {
+      background: #fff1e6;
+      border-color: #e98232;
+      color: #e98232;
+    }
+
+    .pp-theme-toggle i {
+      font-size: 16px;
+    }
+
+
+    /* ================= DARK MODE ================= */
+
+    body.pp-public[data-theme="dark"] {
+      background: #111827 !important;
+      color: #e5e7eb !important;
+      color-scheme: dark;
+    }
+
+    body.pp-public[data-theme="dark"] #publicLanding {
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    /* Header */
+
+    body.pp-public[data-theme="dark"] .pp-header {
+      background: #1f2937 !important;
+      border-color: #374151 !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-brand,
+    body.pp-public[data-theme="dark"] .pp-nav a,
+    body.pp-public[data-theme="dark"] .pp-login {
+      color: #f9fafb !important;
+    }
+
+    body.pp-public[data-theme="dark"] .language-picker {
+      color: #ffffff;
+    }
+
+    body.pp-public[data-theme="dark"] .language-picker select {
+      background: #374151;
+      color: #ffffff;
+      border-color: #4b5563;
+    }
+
+    /* Main */
+
+    body.pp-public[data-theme="dark"] main {
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-hero,
+    body.pp-public[data-theme="dark"] .pp-track-wrap,
+    body.pp-public[data-theme="dark"] .pp-services,
+    body.pp-public[data-theme="dark"] .pp-video-section {
+      background: #111827 !important;
+      color: #e5e7eb !important;
+    }
+
+    /* Text */
+
+    body.pp-public[data-theme="dark"] h1,
+    body.pp-public[data-theme="dark"] h2,
+    body.pp-public[data-theme="dark"] h3,
+    body.pp-public[data-theme="dark"] p,
+    body.pp-public[data-theme="dark"] .pp-hero-copy,
+    body.pp-public[data-theme="dark"] .pp-track-title,
+    body.pp-public[data-theme="dark"] .pp-track-explainer {
+      color: #e5e7eb;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-kicker {
+      color: #f5a15c;
+    }
+
+    /* Cards */
+
+    body.pp-public[data-theme="dark"] .pp-track-card,
+    body.pp-public[data-theme="dark"] .pp-service-card,
+    body.pp-public[data-theme="dark"] .pp-track-explainer > div {
+      background: #1f2937 !important;
+      color: #e5e7eb !important;
+      border-color: #374151 !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-service-card h3,
+    body.pp-public[data-theme="dark"] .pp-service-card p,
+    body.pp-public[data-theme="dark"] .pp-service-card b {
+      color: #e5e7eb !important;
+    }
+
+    /* WhatsApp */
+
+    body.pp-public[data-theme="dark"] .pp-whatsapp-section {
+      background: #1f2937 !important;
+      color: #e5e7eb !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-qr-card {
+      background: #273449 !important;
+      color: #e5e7eb !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-qr-card strong {
+      color: #ffffff !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-qr-card small {
+      color: #cbd5e1 !important;
+    }
+
+    /* Feedback */
+
+    body.pp-public[data-theme="dark"] .pp-feedback {
+      background: #1f2937 !important;
+      color: #e5e7eb !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-feedback h2,
+    body.pp-public[data-theme="dark"] .pp-feedback p {
+      color: #e5e7eb !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-feedback-form label {
+      color: #e5e7eb;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-feedback-form input,
+    body.pp-public[data-theme="dark"] .pp-feedback-form select,
+    body.pp-public[data-theme="dark"] .pp-feedback-form textarea {
+      background: #111827 !important;
+      color: #ffffff !important;
+      border-color: #4b5563 !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-feedback-form input::placeholder,
+    body.pp-public[data-theme="dark"] .pp-feedback-form textarea::placeholder {
+      color: #9ca3af;
+    }
+
+    /* Tracking form */
+
+    body.pp-public[data-theme="dark"] .pp-track-form input {
+      background: #111827 !important;
+      color: #ffffff !important;
+      border-color: #4b5563 !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-track-form input::placeholder {
+      color: #9ca3af;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-track-hint {
+      color: #cbd5e1;
+    }
+
+    /* First contact */
+
+    body.pp-public[data-theme="dark"] .pp-first-contact {
+      background: #1f2937 !important;
+      color: #e5e7eb !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-first-contact h2,
+    body.pp-public[data-theme="dark"] .pp-first-contact p {
+      color: #e5e7eb !important;
+    }
+
+    /* Theme button */
+
+    body.pp-public[data-theme="dark"] .pp-theme-toggle {
+      background: #374151;
+      color: #fbbf24;
+      border-color: #4b5563;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-theme-toggle:hover {
+      background: #4b5563;
+      color: #ffffff;
+    }
+
+    /* Footer */
+
+    body.pp-public[data-theme="dark"] .pp-footer {
+      background: #0b1220 !important;
+      color: #e5e7eb !important;
+    }
+
+    body.pp-public[data-theme="dark"] .pp-footer h3,
+    body.pp-public[data-theme="dark"] .pp-footer p,
+    body.pp-public[data-theme="dark"] .pp-footer a,
+    body.pp-public[data-theme="dark"] .pp-footer span {
+      color: #e5e7eb;
+    }
+
+    /* Tracking results */
+
+    body.pp-public[data-theme="dark"] .public-tracking-result {
+      color: #e5e7eb;
+    }
+
+    /* Smooth theme transition */
+
+    body.pp-public,
+    body.pp-public #publicLanding,
+    body.pp-public .pp-header,
+    body.pp-public main,
+    body.pp-public .pp-track-card,
+    body.pp-public .pp-service-card,
+    body.pp-public .pp-whatsapp-section,
+    body.pp-public .pp-feedback,
+    body.pp-public .pp-footer {
+      transition:
+        background-color 0.25s ease,
+        color 0.25s ease,
+        border-color 0.25s ease;
+    }
+
+
+    /* ================= MOBILE ================= */
+
+    @media (max-width: 600px) {
+
+      .pp-whatsapp-section,
+      .pp-feedback {
+        padding: 25px;
+      }
+
+      .pp-qr-card img {
+        width: 160px;
+        height: 160px;
+      }
+
+      .pp-youtube-link i {
+        font-size: 48px;
+      }
+
+      .pp-youtube-link strong {
+        font-size: 17px;
+      }
+
+      .pp-theme-toggle {
+        padding: 9px 11px;
+        font-size: 12px;
+      }
+
+    }
+
+
+    /* ================= REDUCED MOTION ================= */
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .pp-marquee-track {
+        animation: none;
+      }
+
+      .pp-youtube-link i {
+        transition: none;
+      }
+
+      body.pp-public,
+      body.pp-public * {
+        transition-duration: 0.01ms !important;
+      }
+
+    }
+
+  </style>
+
+  <!-- Load saved theme early -->
+  <script>
+    try {
+      const savedTheme = localStorage.getItem("parcelpro_theme") || "light";
+      document.documentElement.setAttribute("data-parcelpro-theme", savedTheme);
+    } catch (error) {
+      document.documentElement.setAttribute("data-parcelpro-theme", "light");
+    }
+  </script>
+
+</head>
+
+
+<body class="pp-public">
+
+<div id="publicLanding">
+
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <header class="pp-header">
+
+    <a class="pp-brand" href="index.html">
+
+      <span class="pp-brand-icon">
+        <i class="bi bi-box-seam-fill"></i>
+      </span>
+
+      Parcel<span>Pro</span>
+
+    </a>
+
+
+    <!-- Mobile Menu Button -->
+
+    <button
+      class="pp-menu-btn"
+      id="menuToggle"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="navLinks"
+      type="button">
+
+      <i class="bi bi-list"></i>
+
+    </button>
+
+
+    <!-- Navigation -->
+
+    <nav class="pp-nav" id="navLinks">
+
+      <a href="index.html">Home</a>
+
+      <a href="#trackSection">Track parcel</a>
+
+      <a href="#services">Services</a>
+
+      <a href="international.html">International</a>
+
+      <!-- ADDED: CONTACT US -->
+      <a href="#contactSection">Contact Us</a>
+
+      <a href="faq.html">FAQ</a>
+
+    </nav>
+
+
+    <!-- Header Actions -->
+
+    <div class="pp-head-actions">
+
+      <a class="pp-login" href="user.html">
+
+        <i class="bi bi-person-circle"></i>
+
+        User login
+
+      </a>
+
+
+      <!-- ADMIN BUTTON -->
+
+      <a class="pp-admin" href="admin/admin.html">
+
+        Admin
+
+        <i class="bi bi-box-arrow-up-right"></i>
+
+      </a>
+
+
+      <!-- DARK / LIGHT MODE BUTTON -->
+
+      <button
+        type="button"
+        id="themeToggle"
+        class="pp-theme-toggle"
+        aria-label="Switch to dark mode"
+        title="Switch theme">
+
+        <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+
+        <span id="themeText">Dark Mode</span>
+
+      </button>
+
+    </div>
+
+  </header>
+
+
+
+  <!-- =====================================================
+       RUNNING ANNOUNCEMENT
+  ====================================================== -->
+
+  <div class="pp-marquee" aria-label="ParcelPro announcements">
+
+    <div class="pp-marquee-track">
+
+      <span>
+        <i class="bi bi-box-seam-fill"></i>
+        PARCELPRO — DELIVERING SMARTER, TRACKING EASIER
+      </span>
+
+      <span>
+        <i class="bi bi-truck"></i>
+        YOUR PARCEL, OUR PRIORITY
+      </span>
+
+      <span>
+        <i class="bi bi-globe-asia-australia"></i>
+        LOCAL & INTERNATIONAL SHIPPING
+      </span>
+
+      <span>
+        <i class="bi bi-whatsapp"></i>
+        NEED HELP? CONTACT OUR SUPPORT TEAM
+      </span>
+
+      <span>
+        <i class="bi bi-box-seam-fill"></i>
+        PARCELPRO — DELIVERING SMARTER, TRACKING EASIER
+      </span>
+
+      <span>
+        <i class="bi bi-truck"></i>
+        YOUR PARCEL, OUR PRIORITY
+      </span>
+
+      <span>
+        <i class="bi bi-globe-asia-australia"></i>
+        LOCAL & INTERNATIONAL SHIPPING
+      </span>
+
+      <span>
+        <i class="bi bi-whatsapp"></i>
+        NEED HELP? CONTACT OUR SUPPORT TEAM
+      </span>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       MAIN CONTENT
+  ====================================================== -->
+
+  <main>
+
+
+    <!-- ================= HERO ================= -->
+
+    <section class="pp-hero" id="publicHome">
+
+      <div class="pp-hero-copy">
+
+        <span class="pp-kicker">
+
+          <i class="bi bi-lightning-charge-fill"></i>
+
+          SMARTER DELIVERY, SIMPLER LIFE
+
+        </span>
+
+
+        <h1>
+
+          Every parcel has<br>
+
+          <em>a place to go.</em>
+
+        </h1>
+
+
+        <p>
+
+          From local deliveries to cross-border shipping,
+          ParcelPro keeps every journey moving.
+
+        </p>
+
+
+        <div class="pp-hero-actions">
+
+          <a class="pp-btn-orange" href="#trackSection">
+
+            Track your delivery
+
+            <i class="bi bi-arrow-right"></i>
+
+          </a>
+
+
+          <a class="pp-btn-outline" href="international.html">
+
+            Explore international
+
+          </a>
+
+        </div>
+
+
+        <div class="pp-trust">
+
+          <span>
+
+            <i class="bi bi-shield-check"></i>
+
+            Simple tracking
+
+          </span>
+
+
+          <span>
+
+            <i class="bi bi-globe-asia-australia"></i>
+
+            4 nearby countries
+
+          </span>
+
+
+          <span>
+
+            <i class="bi bi-box-seam"></i>
+
+            Easy parcel booking
+
+          </span>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- HERO SLIDER -->
+
+      <div class="pp-hero-slider" aria-label="ParcelPro delivery highlights">
+
+
+        <div class="pp-slide active">
+
+          <img
+            src="assets/images/header_1.png"
+            alt="ParcelPro parcel delivery illustration">
+
+          <div class="pp-slide-caption">
+
+            <b>Send with confidence</b>
+
+            <span>Local delivery made simple</span>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="pp-slide">
+
+          <img
+            src="assets/images/header_2.jpeg"
+            alt="ParcelPro courier delivery illustration">
+
+          <div class="pp-slide-caption">
+
+            <b>Follow every step</b>
+
+            <span>Know where your parcel is</span>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="pp-slide">
+
+          <img
+            src="assets/images/header_3.jpeg"
+            alt="ParcelPro international shipping illustration">
+
+          <div class="pp-slide-caption">
+
+            <b>Go beyond borders</b>
+
+            <span>Ship to our neighbouring countries</span>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- Slider Controls -->
+
+        <div class="pp-slider-controls">
+
+          <button
+            id="slidePrev"
+            aria-label="Previous image"
+            type="button">
+
+            <i class="bi bi-chevron-left"></i>
+
+          </button>
+
+
+          <span id="slideDots">
+
+            <button
+              class="active"
+              data-slide="0"
+              aria-label="Show image 1">
+            </button>
+
+            <button
+              data-slide="1"
+              aria-label="Show image 2">
+            </button>
+
+            <button
+              data-slide="2"
+              aria-label="Show image 3">
+            </button>
+
+          </span>
+
+
+          <button
+            id="slideNext"
+            aria-label="Next image"
+            type="button">
+
+            <i class="bi bi-chevron-right"></i>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ================= TRACK PARCEL ================= -->
+
+    <section class="pp-track-wrap" id="trackSection">
+
+      <div class="pp-track-card">
+
+
+        <div class="pp-track-title">
+
+          <span class="pp-round-icon">
+
+            <i class="bi bi-geo-alt-fill"></i>
+
+          </span>
+
+
+          <div>
+
+            <span class="pp-kicker">TRACK & TRACE</span>
+
+            <h2>Track your delivery</h2>
+
+            <p>
+
+              Enter your tracking number to see
+              the latest parcel status.
+
+            </p>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- Tracking Form -->
+
+        <form id="publicTrackingForm" class="pp-track-form">
+
+          <i class="bi bi-upc-scan"></i>
+
+
+          <input
+            id="publicTrackingInput"
+            type="text"
+            placeholder="Enter up to 5 tracking numbers, separated by commas"
+            aria-label="Tracking number(s)"
+            required>
+
+
+          <button type="submit">
+
+            Track parcel
+
+            <i class="bi bi-arrow-right"></i>
+
+          </button>
+
+        </form>
+
+
+
+        <p class="pp-track-hint">
+
+          <i class="bi bi-info-circle"></i>
+
+          You can search up to 5 deliveries in one go.
+          Example: PP1001, PP1002, PP1003.
+
+        </p>
+
+
+
+        <!-- Tracking Results -->
+
+        <div
+          id="publicTrackingResult"
+          class="public-tracking-result"
+          aria-live="polite">
+        </div>
+
+
+      </div>
+
+
+
+      <!-- Tracking Information -->
+
+      <div class="pp-track-explainer">
+
+
+        <div>
+
+          <i class="bi bi-search"></i>
+
+          <h3>Looking for something?</h3>
+
+          <p>
+
+            Track your parcels by entering your tracking number
+            in the search field above. You can also search up
+            to five deliveries at once.
+
+          </p>
+
+        </div>
+
+
+
+        <div>
+
+          <i class="bi bi-bell"></i>
+
+          <h3>Stay updated</h3>
+
+          <p>
+
+            Use ParcelPro’s Track and Trace tool to check
+            shipment progress across Malaysia and supported
+            international destinations.
+
+          </p>
+
+        </div>
+
+
+
+        <div>
+
+          <i class="bi bi-globe2"></i>
+
+          <h3>Local & overseas</h3>
+
+          <p>
+
+            Follow domestic deliveries and international
+            shipments to Indonesia, Brunei, Singapore and Thailand.
+
+          </p>
+
+        </div>
+
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ================= SERVICES ================= -->
+
+    <section class="pp-services" id="services">
+
+
+      <div class="pp-section-heading">
+
+        <span class="pp-kicker">WHAT YOU CAN DO</span>
+
+        <h2>One place for every delivery</h2>
+
+        <p>
+
+          Choose a service and let ParcelPro help with the next step.
+
+        </p>
+
+      </div>
+
+
+
+      <div class="pp-service-grid">
+
+
+        <!-- Service 1 -->
+
+        <a class="pp-service-card" href="user.html">
+
+          <span class="pp-service-icon">
+
+            <i class="bi bi-box-arrow-up-right"></i>
+
+          </span>
+
+          <h3>Send parcel with ParcelPro</h3>
+
+          <p>
+
+            Sign in to create a shipment request
+            and manage your parcel bookings.
+
+          </p>
+
+          <b>
+
+            Start shipping
+
+            <i class="bi bi-arrow-up-right"></i>
+
+          </b>
+
+        </a>
+
+
+
+        <!-- Service 2 -->
+
+        <a class="pp-service-card" href="user.html#shipping">
+
+          <span class="pp-service-icon">
+
+            <i class="bi bi-box2-heart"></i>
+
+          </span>
+
+          <h3>Shipping based on weight</h3>
+
+          <p>
+
+            Choose parcel weight and package size
+            to view an estimated shipping fee.
+
+          </p>
+
+          <b>
+
+            Check shipping estimate
+
+            <i class="bi bi-arrow-up-right"></i>
+
+          </b>
+
+        </a>
+
+
+
+        <!-- Service 3 -->
+
+        <a class="pp-service-card" href="international.html">
+
+          <span class="pp-service-icon">
+
+            <i class="bi bi-globe-asia-australia"></i>
+
+          </span>
+
+          <h3>International shipping</h3>
+
+          <p>
+
+            Send parcels to Indonesia, Brunei,
+            Singapore and Thailand.
+
+          </p>
+
+          <b>
+
+            Explore destinations
+
+            <i class="bi bi-arrow-up-right"></i>
+
+          </b>
+
+        </a>
+
+
+      </div>
+
+      <!-- ADDED: CONTACT SECTION ID -->
+      <div class="pp-first-contact" id="contactSection">
+
+        <div>
+
+          <span class="pp-kicker">NEED A HAND?</span>
+
+          <h2>First contact, friendly support.</h2>
+
+          <p>
+
+            Have a question before sending your parcel?
+            Our team is ready to help you with booking,
+            tracking and delivery enquiries.
+
+          </p>
+
+        </div>
+
+
+        <a
+          class="pp-btn-orange"
+          href="https://wa.link/ywkxrn"
+          target="_blank"
+          rel="noopener noreferrer">
+
+          Contact ParcelPro
+
+          <i class="bi bi-whatsapp"></i>
+
+        </a>
+
+      </div>
+
+
+    </section>
+
+
+
+    <!-- ================= WHATSAPP QR CODE ================= -->
+
+    <section class="pp-whatsapp-section">
+
+
+      <div class="pp-whatsapp-content">
+
+        <span class="pp-kicker">CONNECT WITH PARCELPRO</span>
+
+        <h2>Scan to contact us</h2>
+
+        <p>
+
+          Need assistance with your parcel?
+          Scan the QR code using your phone to connect
+          directly with our WhatsApp support team.
+
+        </p>
+
+
+        <a
+          href="https://wa.link/ywkxrn"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="pp-btn-orange">
+
+          <i class="bi bi-whatsapp"></i>
+
+          Contact us on WhatsApp
+
+        </a>
+
+      </div>
+
+
+
+      <div class="pp-qr-card">
+
+        <img
+          src="assets/images/qrwhatapps.png"
+          alt="ParcelPro WhatsApp QR Code"
+          onerror="this.onerror=null; this.src='assets/images/qrwhatapps.jpeg';">
+
+
+        <strong>ParcelPro WhatsApp</strong>
+
+        <small>Scan to chat with our team</small>
+
+
+      </div>
+
+
+    </section>
+
+
+
+    <!-- ================= YOUTUBE VIDEO ================= -->
+
+    <section class="pp-video-section" id="publicVideo">
+
+
+      <div class="pp-section-heading">
+
+        <span class="pp-kicker">DISCOVER PARCELPRO</span>
+
+        <h2>Get to Know ParcelPro</h2>
+
+        <p>
+
+          Discover how ParcelPro makes parcel delivery easier.
+
+        </p>
+
+      </div>
+
+
+
+      <!-- VIDEO CLOSED: CLICK TO OPEN YOUTUBE -->
+
+      <div class="parcel-video-container">
+
+        <a
+          class="pp-youtube-link"
+          href="https://www.youtube.com/watch?v=PTXvuzFLYxE"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open ParcelPro introduction video on YouTube">
+
+          <i class="bi bi-youtube"></i>
+
+          <strong>Watch on YouTube</strong>
+
+          <small>
+            Click here to watch the ParcelPro introduction video.
+          </small>
+
+          <i class="bi bi-box-arrow-up-right" style="font-size:18px;"></i>
+
+        </a>
+
+      </div>
+
+
+      <p class="pp-video-fallback">
+
+        <i class="bi bi-info-circle"></i>
+
+        The video will open on YouTube in a new tab.
+
+      </p>
+
+
+    </section>
+
+
+
+    <!-- ================= FEEDBACK FORM ================= -->
+
+    <section class="pp-feedback" id="feedbackSection">
+
+
+      <div>
+
+        <span class="pp-kicker">YOUR FEEDBACK MATTERS</span>
+
+        <h2>
+
+          Would you recommend ParcelPro to your friends and family?
+
+        </h2>
+
+        <p>
+
+          Tell us about your delivery experience.
+          Your feedback helps us improve our services.
+
+        </p>
+
+        <a href="customer_feedback.html" class="pp-view-feedback">
+          <i class="bi bi-chat-left-text-fill"></i>
+          View Customer Feedback
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+      </div>
+
+
+
+      <form id="feedbackForm" class="pp-feedback-form">
+
+
+        <label for="feedbackName">Your name</label>
+
+        <input
+          id="feedbackName"
+          type="text"
+          placeholder="Enter your name"
+          maxlength="100"
+          required>
+
+
+
+        <label for="feedbackRating">Your experience</label>
+
+        <select id="feedbackRating" required>
+
+          <option value="">Choose your rating</option>
+
+          <option value="Excellent">Excellent</option>
+
+          <option value="Good">Good</option>
+
+          <option value="Average">Average</option>
+
+          <option value="Poor">Poor</option>
+
+        </select>
+
+
+
+        <label for="feedbackMessage">Your feedback</label>
+
+        <textarea
+          id="feedbackMessage"
+          rows="4"
+          maxlength="1000"
+          placeholder="Write your message here..."
+          required></textarea>
+
+
+
+        <button type="submit" class="pp-btn-orange">
+
+          Submit feedback
+
+          <i class="bi bi-send"></i>
+
+        </button>
+
+
+
+        <p
+          id="feedbackSuccess"
+          class="pp-feedback-success"
+          role="status"
+          aria-live="polite">
+        </p>
+
+
+      </form>
+
+    </section>
+
+
+  </main>
+
+
+
+  <!-- =====================================================
+       FOOTER
+  ====================================================== -->
+
+  <footer class="pp-footer">
+
+
+    <div class="pp-footer-main">
+
+
+      <!-- BRAND -->
+
+      <div class="pp-footer-brand">
+
+        <a class="pp-brand pp-brand-light" href="index.html">
+
+          <span class="pp-brand-icon">
+
+            <i class="bi bi-box-seam-fill"></i>
+
+          </span>
+
+          Parcel<span>Pro</span>
+
+        </a>
+
+
+        <p>
+
+          Delivering smarter, tracking easier.
+          Your parcel journey starts here.
+
+        </p>
+
+
+
+        <div class="pp-social">
+
+
+          <a
+            href="https://www.instagram.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram">
+
+            <i class="bi bi-instagram"></i>
+
+          </a>
+
+
+          <a
+            href="https://www.tiktok.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="TikTok">
+
+            <i class="bi bi-tiktok"></i>
+
+          </a>
+
+
+          <a
+            href="https://wa.link/ywkxrn"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="WhatsApp">
+
+            <i class="bi bi-whatsapp"></i>
+
+          </a>
+
+
+        </div>
+
+      </div>
+
+
+
+      <!-- EXPLORE -->
+
+      <div>
+
+        <h3>Explore</h3>
+
+        <a href="#trackSection">Track parcel</a>
+
+        <a href="user.html">User login / Register</a>
+
+        <a href="international.html">International shipping</a>
+
+        <a href="admin/admin.html">Admin portal</a>
+
+      </div>
+
+
+
+      <!-- SUPPORT -->
+
+      <div>
+
+        <h3>Help & support</h3>
+
+        <a href="faq.html">FAQ</a>
+
+        <a href="faq.html#rider-registration">
+          ParcelPro rider registration
+        </a>
+
+        <a
+          href="https://wa.link/ywkxrn"
+          target="_blank"
+          rel="noopener noreferrer">
+
+          Contact us on WhatsApp
+
+        </a>
+
+        <a
+          href="https://www.youtube.com/watch?v=PTXvuzFLYxE"
+          target="_blank"
+          rel="noopener noreferrer">
+
+          YouTube video
+
+        </a>
+
+      </div>
+
+
+
+      <!-- LEGAL -->
+
+      <div>
+
+        <h3>Legal</h3>
+
+        <a href="terms.html">Terms of Use</a>
+
+        <a href="privacy.html">Privacy Policy</a>
+
+        <a href="#feedbackSection">Share feedback</a>
+
+      </div>
+
+
+    </div>
+
+
+
+    <!-- Footer Bottom -->
+
+    <div class="pp-footer-bottom">
+
+      <span>© 2026 ParcelPro. All rights reserved.</span>
+
+      <span>Made for smoother parcel journeys.</span>
+
+    </div>
+
+
+  </footer>
+
+
+</div>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Existing JavaScript -->
+<script src="js/public.js"></script>
+<script src="js/homepage.js"></script>
+<script src="js/customer_feedback_submit.js"></script>
+
+
+<!-- =====================================================
+     DARK MODE / LIGHT MODE FUNCTION
+====================================================== -->
+
+<script>
+(() => {
+  "use strict";
+
+  const themeToggle = document.getElementById("themeToggle");
+  const themeIcon = document.getElementById("themeIcon");
+  const themeText = document.getElementById("themeText");
+  const body = document.body;
+
+  if (!themeToggle || !themeIcon || !themeText) {
+    console.error("ParcelPro theme toggle elements not found.");
+    return;
+  }
+
+  // Read saved theme
+  let savedTheme = "light";
+
+  try {
+    savedTheme = localStorage.getItem("parcelpro_theme") || "light";
+  } catch (error) {
+    console.warn("Theme storage is unavailable.");
+  }
+
+  // Apply selected theme
+  function applyTheme(theme) {
+
+    const selectedTheme = theme === "dark" ? "dark" : "light";
+
+    body.setAttribute("data-theme", selectedTheme);
+
+    document.documentElement.setAttribute(
+      "data-parcelpro-theme",
+      selectedTheme
+    );
+
+    if (selectedTheme === "dark") {
+
+      themeIcon.className = "bi bi-sun-fill";
+
+      themeText.textContent = "Light Mode";
+
+      themeToggle.setAttribute(
+        "aria-label",
+        "Switch to light mode"
+      );
+
+      themeToggle.setAttribute(
+        "title",
+        "Switch to light mode"
+      );
+
+    } else {
+
+      themeIcon.className = "bi bi-moon-stars-fill";
+
+      themeText.textContent = "Dark Mode";
+
+      themeToggle.setAttribute(
+        "aria-label",
+        "Switch to dark mode"
+      );
+
+      themeToggle.setAttribute(
+        "title",
+        "Switch to dark mode"
+      );
+
+    }
+
+    // Save theme preference
+    try {
+      localStorage.setItem("parcelpro_theme", selectedTheme);
+    } catch (error) {
+      console.warn("Unable to save theme preference.");
+    }
+
+  }
+
+  // Load saved theme
+  applyTheme(savedTheme);
+
+  // Toggle between dark and light
+  themeToggle.addEventListener("click", () => {
+
+    const currentTheme = body.getAttribute("data-theme");
+
+    const newTheme =
+      currentTheme === "dark" ? "light" : "dark";
+
+    applyTheme(newTheme);
+
+  });
+
+})();
+</script>
+
+
+</body>
+</html>

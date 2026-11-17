@@ -1,0 +1,599 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>ParcelPro | Customer Portal</title>
+
+  <link rel="icon" href="assets/favicon.svg">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/public-refresh.css">
+
+  <style>
+    :root {
+      --navy:#082b55;
+      --blue:#124578;
+      --orange:#f47735;
+      --light:#f4f7fb;
+      --text:#26384d;
+      --muted:#78889b;
+      --border:#e7edf4;
+    }
+
+    * {box-sizing:border-box}
+    body.pp-public {
+      background:var(--light);
+      color:var(--text);
+      font-family:'DM Sans',sans-serif;
+    }
+
+    .hidden {display:none!important}
+
+    .pp-header {
+      position:sticky;top:0;z-index:100;
+      display:flex;align-items:center;justify-content:space-between;
+      gap:20px;padding:15px max(22px,calc((100% - 1120px)/2));
+      background:rgba(255,255,255,.97);
+      border-bottom:1px solid var(--border);
+    }
+    .pp-brand {
+      display:flex;align-items:center;gap:9px;
+      color:var(--navy);font:800 22px 'Manrope',sans-serif;
+      text-decoration:none;
+    }
+    .pp-brand span:last-child {color:var(--orange)}
+    .pp-brand-icon {color:var(--orange)}
+    .pp-nav {display:flex;gap:25px}
+    .pp-nav a {color:#52647a;font-weight:600;text-decoration:none}
+    .pp-nav a:hover {color:var(--orange)}
+    .pp-admin {
+      display:inline-flex;align-items:center;gap:8px;
+      padding:11px 19px;border-radius:9px;
+      background:var(--navy);color:white!important;
+      font-size:13px;font-weight:700;text-decoration:none;
+    }
+    .pp-admin:hover {background:var(--orange)}
+    .pp-page {padding:35px 20px 60px}
+    .pp-page-wrap {max-width:1120px;margin:auto}
+    .pp-kicker {
+      color:var(--orange);font-size:11px;
+      font-weight:800;letter-spacing:1.5px;
+    }
+
+    /* Login */
+    .login-page {margin:20px auto 40px}
+    .login-layout {
+      display:grid;grid-template-columns:1.05fr .95fr;
+      min-height:590px;background:white;
+      border:1px solid var(--border);border-radius:23px;
+      overflow:hidden;box-shadow:0 20px 65px rgba(8,43,85,.09);
+    }
+    .login-visual {
+      position:relative;display:flex;flex-direction:column;
+      justify-content:space-between;padding:45px;overflow:hidden;
+      color:white;background:
+        radial-gradient(circle at 85% 15%,rgba(244,119,53,.35),transparent 30%),
+        linear-gradient(145deg,#082b55,#104b7e);
+    }
+    .login-visual:before,.login-visual:after {
+      content:"";position:absolute;border:1px solid rgba(255,255,255,.11);
+      border-radius:50%;pointer-events:none;
+    }
+    .login-visual:before {width:430px;height:430px;right:-170px;top:100px}
+    .login-visual:after {width:300px;height:300px;right:-100px;top:165px}
+    .login-visual-content,.login-visual-bottom {position:relative;z-index:2}
+    .login-label {
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 13px;border-radius:30px;
+      background:rgba(255,255,255,.13);
+      font-size:11px;font-weight:800;letter-spacing:1.1px;
+    }
+    .login-visual h1 {
+      color:white;font:800 clamp(32px,4vw,45px)/1.18 'Manrope',sans-serif;
+      margin:25px 0 18px;max-width:430px;
+    }
+    .login-visual h1 span {color:#ff9a62}
+    .login-visual p {color:rgba(255,255,255,.78);font-size:14px;line-height:1.8;max-width:400px}
+    .login-art {display:flex;align-items:center;justify-content:center;min-height:175px;margin:20px 0;position:relative}
+    .login-art-box {
+      width:140px;height:120px;display:flex;align-items:center;justify-content:center;
+      border-radius:24px;background:linear-gradient(145deg,#ffad78,#f47735);
+      box-shadow:0 20px 35px rgba(0,0,0,.18);transform:rotate(-7deg);
+    }
+    .login-art-box i {font-size:72px;color:white}
+    .login-art-circle {position:absolute;width:205px;height:205px;border:1px dashed rgba(255,255,255,.45);border-radius:50%}
+    .login-feature-list {display:grid;gap:12px;margin-top:20px}
+    .login-feature {display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.93);font-size:13px}
+    .login-feature i {width:30px;height:30px;display:grid;place-items:center;background:rgba(255,255,255,.14);border-radius:8px;color:#ffad78}
+    .login-visual-bottom {color:rgba(255,255,255,.62);font-size:11px;letter-spacing:.5px}
+    .login-form-panel {display:flex;flex-direction:column;justify-content:center;padding:45px}
+    .login-heading {margin-bottom:25px}
+    .login-heading h2 {color:var(--navy);font:800 29px 'Manrope',sans-serif;margin:10px 0}
+    .login-heading p {color:var(--muted);font-size:13px;line-height:1.7}
+    .login-mobile-brand {display:none;color:var(--navy);font:800 22px 'Manrope',sans-serif;margin-bottom:20px}
+    .login-mobile-brand span {color:var(--orange)}
+    .customer-panel {
+      background:#fff;border:1px solid var(--border);
+      border-radius:16px;padding:25px;margin:20px 0;
+      box-shadow:0 8px 25px rgba(8,43,85,.05);
+    }
+    .login-card {border:0;padding:0;margin:0;box-shadow:none}
+    .customer-tabs {display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;background:#f0f3f8;border-radius:11px;margin-bottom:24px}
+    .customer-tabs button {border:0;border-radius:8px;padding:12px;font-size:13px;font-weight:700;background:transparent;color:#718096;cursor:pointer}
+    .customer-tabs button.active {background:var(--navy);color:white}
+    .login-form-panel .pp-form-grid {display:grid;gap:16px}
+    .pp-field label {display:block;color:#34465b;font-size:12px;font-weight:700;margin-bottom:8px}
+    .pp-field input {
+      width:100%;min-height:48px;padding:12px 14px;
+      border:1px solid #dfe6ee;border-radius:9px;
+      background:#fbfcfe;color:var(--text);font-size:13px;
+    }
+    .pp-field input:focus {outline:2px solid rgba(18,69,120,.15);border-color:var(--blue)}
+    .pp-submit {
+      width:100%;min-height:49px;margin-top:5px;border:0;
+      border-radius:9px;background:var(--orange);color:white;
+      font-size:13px;font-weight:800;cursor:pointer;
+    }
+    .pp-submit:hover {background:#df6227}
+    .login-security-note {display:flex;gap:9px;padding:13px;margin-top:22px;border-radius:9px;background:#f5f8fc;color:#718096;font-size:11px;line-height:1.6}
+    .login-security-note i {color:#16834b;font-size:15px}
+    .customer-message {display:none;padding:13px 16px;border-radius:10px;margin-top:18px;background:#eaf7ef;color:#17633a;font-size:13px}
+    .customer-message.error {background:#fff0f0;color:#a52828}
+
+    /* Dashboard */
+    .customer-dashboard {display:none}
+    .customer-dashboard-header {display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+    .customer-dashboard h1,.customer-dashboard h2 {color:var(--navy);font-family:'Manrope',sans-serif}
+    .customer-logout {border:0;background:#fff0ed;color:#d65332;border-radius:9px;padding:10px 15px;font-weight:700;cursor:pointer}
+    .dashboard-summary {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:22px}
+    .summary-card {background:#f5f8fc;border:1px solid #edf1f6;border-radius:13px;padding:17px}
+    .summary-card small {display:block;color:var(--muted);font-size:12px}
+    .summary-card strong {display:block;font:800 25px 'Manrope',sans-serif;color:var(--navy);margin-top:6px}
+    .customer-info-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+    .customer-info-item {background:#f5f8fc;border:1px solid #edf1f6;border-radius:12px;padding:16px;overflow-wrap:anywhere}
+    .customer-info-item small {display:block;color:var(--muted);margin-bottom:6px}
+    .customer-info-item strong {color:var(--navy)}
+
+    /* Tables */
+    .customer-table {width:100%;border-collapse:collapse;margin-top:15px;min-width:850px}
+    .customer-table th,.customer-table td {padding:14px;border-bottom:1px solid #e8edf3;text-align:left;white-space:nowrap}
+    .customer-table th {color:#718096;font-size:12px;background:#f8fafc}
+    .customer-table td {color:#17385f;font-size:13px}
+    .customer-table tbody tr:hover {background:#f8fafc}
+    .customer-table-wrap {overflow-x:auto;border:1px solid #edf1f6;border-radius:11px}
+    .empty-row {text-align:center!important;padding:25px!important;color:#718096!important}
+    .status-badge {display:inline-block;padding:5px 10px;border-radius:20px;background:#fff3df;color:#a45c00;font-size:11px;font-weight:700}
+    .status-badge.paid,.status-badge.delivered {background:#e7f8ee;color:#167344}
+    .status-badge.failed {background:#fff0f0;color:#b83232}
+    .table-action {border:0;border-radius:7px;padding:7px 11px;background:#edf4fb;color:#082b55;font-weight:700;cursor:pointer}
+
+    /* Forms */
+    .customer-form-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .customer-form-grid .full {grid-column:1/-1}
+    .customer-form-grid label {display:block;font-weight:700;font-size:13px;margin-bottom:8px;color:#17385f}
+    .customer-form-grid input,.customer-form-grid select,.customer-form-grid textarea {
+      width:100%;padding:12px;border:1px solid #dce4ed;border-radius:9px;
+      background:white;color:#17385f;font-family:inherit;outline:none;
+    }
+    .customer-form-grid input:focus,.customer-form-grid select:focus,.customer-form-grid textarea:focus {border-color:var(--blue);box-shadow:0 0 0 3px rgba(18,69,120,.08)}
+    .customer-form-grid textarea {min-height:85px;resize:vertical}
+    .section-divider {grid-column:1/-1;border-bottom:1px solid #e8edf3;padding-bottom:10px;margin-top:12px;color:var(--navy);font-weight:800;font-size:14px}
+    .fee-preview {background:#f2f6fb;border:1px solid #e7edf4;padding:17px;border-radius:12px;color:var(--navy)}
+    .fee-preview strong {font-size:25px;display:block;margin-top:5px;font-family:'Manrope',sans-serif}
+    .primary-action {border:0;border-radius:9px;padding:12px 17px;background:var(--navy);color:white;font-weight:700;cursor:pointer}
+    .primary-action:hover {background:var(--orange)}
+    .secondary-action {border:1px solid #dce4ed;border-radius:9px;padding:10px 14px;background:white;color:var(--navy);font-weight:700;cursor:pointer}
+    .shipping-choice {display:flex;gap:12px;flex-wrap:wrap}
+    .shipping-choice label {display:flex;align-items:center;gap:8px;padding:12px 16px;border:1px solid #dce4ed;border-radius:9px;background:#fff;cursor:pointer}
+    .shipping-choice input {width:auto;accent-color:var(--navy)}
+
+    /* Modals */
+    .modal-overlay {display:none;position:fixed;inset:0;z-index:9999;background:rgba(7,24,45,.68);padding:20px;overflow-y:auto;align-items:center;justify-content:center}
+    .modal-overlay.show {display:flex}
+    .payment-box,.receipt-box {background:white;width:100%;max-width:540px;border-radius:17px;padding:25px;margin:auto;box-shadow:0 15px 50px rgba(0,0,0,.2)}
+    .payment-option {display:flex;gap:12px;align-items:center;padding:14px;border:1px solid #dce4ed;border-radius:10px;margin-top:10px;cursor:pointer}
+    .payment-option input {accent-color:var(--navy)}
+    .payment-option:has(input:checked) {border-color:var(--navy);background:#f3f7fc}
+    .receipt-paper {border:1px dashed #b9c7d8;padding:22px;border-radius:10px;margin-top:15px;color:#17385f}
+    .receipt-logo {text-align:center;font-size:22px;font-weight:800;color:var(--navy)}
+    .receipt-row {display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #edf0f4;font-size:13px}
+    .receipt-row strong {text-align:right}
+    .receipt-total {display:flex;justify-content:space-between;font-size:18px;font-weight:800;padding-top:15px}
+    .pp-footer {background:white;border-top:1px solid var(--border);padding:20px}
+    .pp-footer-bottom {max-width:1120px;margin:auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px}
+    .pp-footer a {color:var(--navy);text-decoration:none}
+
+    @media(max-width:850px) {
+      .login-layout {grid-template-columns:1fr}
+      .login-visual {min-height:330px;padding:32px}
+      .login-visual h1 {font-size:34px}
+      .login-art {min-height:100px;margin:12px 0}
+      .login-art-box {width:90px;height:80px}
+      .login-art-box i {font-size:48px}
+      .login-art-circle {width:135px;height:135px}
+      .login-feature-list {grid-template-columns:repeat(2,1fr)}
+      .login-form-panel {padding:38px 32px}
+      .login-mobile-brand {display:block}
+      .dashboard-summary {grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+    @media(max-width:600px) {
+      .pp-header {padding:13px 15px}
+      .pp-nav {display:none!important}
+      .pp-admin {padding:9px 12px;font-size:11px}
+      .pp-page {padding:20px 12px 40px}
+      .login-layout {border-radius:17px}
+      .login-visual {min-height:270px;padding:25px}
+      .login-visual h1 {font-size:29px;margin:17px 0 10px}
+      .login-visual p {font-size:12px}
+      .login-art {display:none}
+      .login-feature-list {gap:9px}
+      .login-feature {font-size:11px}
+      .login-form-panel {padding:28px 22px}
+      .login-heading h2 {font-size:25px}
+      .customer-info-grid,.customer-form-grid {grid-template-columns:1fr}
+      .dashboard-summary {grid-template-columns:repeat(2,minmax(0,1fr))}
+      .customer-panel {padding:18px}
+      .customer-form-grid .full,.section-divider {grid-column:1/-1}
+      .pp-footer-bottom {justify-content:center;text-align:center}
+    }
+    @media print {
+      body * {visibility:hidden!important}
+      #receiptPrintArea,#receiptPrintArea * {visibility:visible!important}
+      #receiptPrintArea {position:absolute;left:0;top:0;width:100%;padding:20px}
+      .no-print {display:none!important}
+    }
+  </style>
+</head>
+
+<body class="pp-public">
+<header class="pp-header">
+  <a class="pp-brand" href="index.html">
+    <span class="pp-brand-icon"><i class="bi bi-box-seam-fill"></i></span>
+    Parcel<span>Pro</span>
+  </a>
+  <nav class="pp-nav">
+    <a href="index.html">Home</a>
+    <a href="international.html">International</a>
+    <a href="faq.html">FAQ</a>
+  </nav>
+  <div class="pp-head-actions">
+    <a class="pp-admin" href="admin/admin.html"><i class="bi bi-shield-lock"></i> Admin login</a>
+  </div>
+</header>
+
+<main class="pp-page">
+<div class="pp-page-wrap">
+
+  <!-- LOGIN / REGISTER -->
+  <section id="authView" class="login-page">
+    <div class="login-layout">
+      <div class="login-visual">
+        <div class="login-visual-content">
+          <span class="login-label"><i class="bi bi-box-seam"></i> PARCELPRO CUSTOMER PORTAL</span>
+          <h1>Your parcels,<br><span>our priority.</span></h1>
+          <p>Experience a smarter and easier way to manage your deliveries. Register shipments, make payments and track your parcels all in one place.</p>
+          <div class="login-art">
+            <div class="login-art-circle"></div>
+            <div class="login-art-box"><i class="bi bi-box-seam-fill"></i></div>
+          </div>
+          <div class="login-feature-list">
+            <div class="login-feature"><i class="bi bi-truck"></i><span>Easy parcel management</span></div>
+            <div class="login-feature"><i class="bi bi-geo-alt"></i><span>Convenient parcel tracking</span></div>
+            <div class="login-feature"><i class="bi bi-receipt"></i><span>Simple payment records</span></div>
+          </div>
+        </div>
+        <div class="login-visual-bottom">DELIVERING SMARTER, SIMPLER LIFE.</div>
+      </div>
+
+      <div class="login-form-panel">
+        <div class="login-mobile-brand">Parcel<span>Pro</span></div>
+        <div class="login-heading">
+          <span class="pp-kicker">WELCOME TO PARCELPRO</span>
+          <h2>Welcome back!</h2>
+          <p>Access your customer account to manage your shipments and delivery activities.</p>
+        </div>
+
+        <div class="customer-panel login-card">
+          <div class="customer-tabs">
+            <button type="button" id="loginTab" class="active">Log in</button>
+            <button type="button" id="registerTab">Create account</button>
+          </div>
+
+          <form id="userLoginForm" class="pp-form-grid">
+            <div class="pp-field">
+              <label for="userEmail">Email address</label>
+              <input type="email" id="userEmail" required autocomplete="email" placeholder="Enter your email address">
+            </div>
+            <div class="pp-field">
+              <label for="userPassword">Password</label>
+              <input type="password" id="userPassword" required autocomplete="current-password" placeholder="Enter your password">
+            </div>
+            <div class="pp-field">
+              <button class="pp-submit" type="submit">Log in to ParcelPro <i class="bi bi-arrow-right"></i></button>
+            </div>
+          </form>
+
+          <form id="userRegisterForm" class="pp-form-grid" style="display:none">
+            <div class="pp-field">
+              <label for="newUserName">Full name</label>
+              <input id="newUserName" type="text" required placeholder="Enter your full name">
+            </div>
+            <div class="pp-field">
+              <label for="newUserEmail">Email address</label>
+              <input id="newUserEmail" type="email" required placeholder="you@example.com">
+            </div>
+            <div class="pp-field">
+              <label for="newUserPhone">Phone number</label>
+              <input id="newUserPhone" type="tel" required placeholder="012-3456789">
+            </div>
+            <div class="pp-field">
+              <label for="newUserLocation">Address / Location</label>
+              <input id="newUserLocation" type="text" required placeholder="City, State">
+            </div>
+            <div class="pp-field">
+              <label for="newUserPassword">Password (minimum 6 characters)</label>
+              <input id="newUserPassword" type="password" minlength="6" required placeholder="Create a password">
+            </div>
+            <div class="pp-field">
+              <label for="confirmUserPassword">Confirm password</label>
+              <input id="confirmUserPassword" type="password" minlength="6" required placeholder="Confirm your password">
+            </div>
+            <div class="pp-field">
+              <button class="pp-submit" type="submit">Create customer account <i class="bi bi-arrow-right"></i></button>
+            </div>
+          </form>
+          <div class="customer-message" id="userMessage"></div>
+        </div>
+
+        <div class="login-security-note">
+          <i class="bi bi-shield-check"></i>
+          <span>Your account information is managed through the ParcelPro customer portal. This website currently uses demo storage.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUSTOMER DASHBOARD -->
+  <section id="customerDashboard" class="customer-dashboard">
+
+    <div class="customer-panel">
+      <div class="customer-dashboard-header">
+        <div>
+          <span class="pp-kicker">CUSTOMER DASHBOARD</span>
+          <h1 style="margin-bottom:5px">Welcome, <span id="dashboardName">Customer</span>!</h1>
+          <p style="margin:0">Manage your shipments and payments.</p>
+        </div>
+        <button type="button" id="customerLogout" class="customer-logout"><i class="bi bi-box-arrow-right"></i> Log out</button>
+      </div>
+
+      <div class="dashboard-summary">
+        <div class="summary-card"><small>Total parcels</small><strong id="summaryTotal">0</strong></div>
+        <div class="summary-card"><small>Pending deliveries</small><strong id="summaryPending">0</strong></div>
+        <div class="summary-card"><small>Paid transactions</small><strong id="summaryPayments">0</strong></div>
+        <div class="summary-card"><small>Domestic parcels</small><strong id="summaryDomestic">0</strong></div>
+        <div class="summary-card"><small>International parcels</small><strong id="summaryInternational">0</strong></div>
+      </div>
+    </div>
+
+    <!-- CREATE SHIPMENT -->
+    <div class="customer-panel" id="createShipment">
+      <span class="pp-kicker">NEW SHIPMENT</span>
+      <h2>Register a New Parcel</h2>
+      <p>Enter the sender and receiver details to create your shipment.</p>
+
+      <form id="shipmentForm">
+        <div class="customer-form-grid">
+          <div class="section-divider">Sender Information</div>
+          <div><label for="senderName">Sender name *</label><input id="senderName" required></div>
+          <div><label for="senderPhone">Sender phone *</label><input id="senderPhone" type="tel" required></div>
+          <div class="full"><label for="senderAddress">Sender address *</label><textarea id="senderAddress" required></textarea></div>
+
+          <div class="section-divider">Receiver Information</div>
+          <div><label for="receiverName">Receiver name *</label><input id="receiverName" required></div>
+          <div><label for="receiverPhone">Receiver phone *</label><input id="receiverPhone" type="tel" required></div>
+          <div class="full"><label for="receiverAddress">Receiver delivery address *</label><textarea id="receiverAddress" required></textarea></div>
+
+          <div class="section-divider">Shipping Information</div>
+          <div class="full">
+            <label>Shipping type *</label>
+            <div class="shipping-choice">
+              <label><input type="radio" id="domesticOption" name="shippingType" value="Domestic" checked> Domestic (Malaysia)</label>
+              <label><input type="radio" id="internationalOption" name="shippingType" value="International"> International</label>
+            </div>
+          </div>
+          <div id="destinationGroup" class="full hidden">
+            <label for="destinationCountry">Destination country *</label>
+            <select id="destinationCountry" disabled>
+              <option value="Singapore">Singapore</option>
+              <option value="Brunei">Brunei</option>
+              <option value="Indonesia">Indonesia</option>
+              <option value="Thailand">Thailand</option>
+            </select>
+          </div>
+
+          <div class="section-divider">Parcel Information</div>
+          <div>
+            <label for="shipmentType">Parcel type *</label>
+            <select id="shipmentType" required>
+              <option value="Document">Document</option>
+              <option value="Small package">Small package</option>
+              <option value="Medium package">Medium package</option>
+              <option value="Large package">Large package</option>
+            </select>
+          </div>
+          <div>
+            <label for="shipmentWeight">Parcel weight *</label>
+            <select id="shipmentWeight" required>
+              <option value="1">Up to 1 kg</option>
+              <option value="2">1.1 – 2 kg</option>
+              <option value="5">2.1 – 5 kg</option>
+              <option value="10">5.1 – 10 kg</option>
+            </select>
+          </div>
+          <div class="full">
+            <label for="shipmentDescription">Parcel description</label>
+            <textarea id="shipmentDescription" placeholder="Describe your parcel (optional)"></textarea>
+          </div>
+          <div><label for="shipmentDate">Expected delivery date *</label><input type="date" id="shipmentDate" required></div>
+          <div class="fee-preview">Estimated shipping fee<strong id="shipmentFee">RM 6.00</strong><small id="shipmentFeeNote">Demo shipping calculation</small></div>
+          <div class="full">
+            <button type="submit" class="primary-action">Continue to payment <i class="bi bi-arrow-right"></i></button>
+            <p style="font-size:12px;color:#78889b;margin-top:10px">Your shipment will only be registered after successful demo payment.</p>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- MY PARCELS -->
+    <div class="customer-panel">
+      <span class="pp-kicker">MY DELIVERIES</span>
+      <h2>My Parcel Tracking</h2>
+      <p>Track your shipments and check their payment status.</p>
+      <div class="customer-table-wrap">
+        <table class="customer-table">
+          <thead><tr>
+            <th>Tracking ID</th><th>Shipping Type</th><th>Destination</th>
+            <th>Receiver</th><th>Parcel Type</th><th>Expected Date</th>
+            <th>Shipping Fee</th><th>Delivery Status</th><th>Payment</th>
+          </tr></thead>
+          <tbody id="customerParcelsBody">
+            <tr><td colspan="9" class="empty-row">No parcel records found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:15px"><a href="index.html#trackSection">Track another parcel</a></p>
+    </div>
+
+    <!-- PAYMENT HISTORY -->
+    <div class="customer-panel">
+      <span class="pp-kicker">TRANSACTION RECORDS</span>
+      <h2>Payment History</h2>
+      <div class="customer-table-wrap">
+        <table class="customer-table">
+          <thead><tr>
+            <th>Receipt No.</th><th>Tracking ID</th><th>Payment Method</th>
+            <th>Amount</th><th>Date</th><th>Payment Status</th><th>Receipt</th>
+          </tr></thead>
+          <tbody id="paymentHistoryBody">
+            <tr><td colspan="7" class="empty-row">No payment records yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="customer-panel">
+      <span class="pp-kicker">MY ACCOUNT</span>
+      <h2>Personal Information</h2>
+      <div class="customer-info-grid">
+        <div class="customer-info-item"><small>Full name</small><strong id="profileCustomerName">-</strong></div>
+        <div class="customer-info-item"><small>Email address</small><strong id="profileCustomerEmail">-</strong></div>
+        <div class="customer-info-item"><small>Phone number</small><strong id="profileCustomerPhone">-</strong></div>
+        <div class="customer-info-item"><small>Location</small><strong id="profileCustomerLocation">-</strong></div>
+      </div>
+    </div>
+
+    <!-- SHIPPING ESTIMATOR -->
+    <div class="customer-panel" id="shipping">
+      <span class="pp-kicker">SHIPPING ESTIMATOR</span>
+      <h2>Estimate your shipping fee</h2>
+      <div class="customer-form-grid">
+        <div>
+          <label for="estimateShippingType">Shipping type</label>
+          <select id="estimateShippingType">
+            <option value="Domestic">Domestic (Malaysia)</option>
+            <option value="International">International</option>
+          </select>
+        </div>
+        <div id="estimateDestinationGroup" class="hidden">
+          <label for="estimateDestination">Destination country</label>
+          <select id="estimateDestination" disabled>
+            <option value="Singapore">Singapore</option>
+            <option value="Brunei">Brunei</option>
+            <option value="Indonesia">Indonesia</option>
+            <option value="Thailand">Thailand</option>
+          </select>
+        </div>
+        <div>
+          <label for="weight">Parcel weight</label>
+          <select id="weight">
+            <option value="1">Up to 1 kg</option>
+            <option value="2">1.1 – 2 kg</option>
+            <option value="5">2.1 – 5 kg</option>
+            <option value="10">5.1 – 10 kg</option>
+          </select>
+        </div>
+        <div>
+          <label for="pack">Package size</label>
+          <select id="pack">
+            <option value="Document">Document / flyer</option>
+            <option value="Small package">Small parcel</option>
+            <option value="Medium package">Medium parcel</option>
+            <option value="Large package">Large parcel</option>
+          </select>
+        </div>
+        <div class="full">
+          <button class="primary-action" type="button" id="estimateBtn">Calculate estimate</button>
+          <div id="estimateResult" class="hidden" style="margin-top:15px;color:#082b55"></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</div>
+</main>
+
+<footer class="pp-footer">
+  <div class="pp-footer-bottom">
+    <span>© 2026 ParcelPro</span>
+    <a href="terms.html">Terms</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="mailto:hello@parcelpro.example">Contact</a>
+  </div>
+</footer>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="payment-box">
+    <div class="customer-dashboard-header">
+      <div><span class="pp-kicker">SECURE CHECKOUT</span><h2 style="margin:5px 0">Complete Payment</h2></div>
+      <button type="button" class="secondary-action" id="closePaymentModal">Close</button>
+    </div>
+    <div class="fee-preview" style="margin-top:15px">
+      Amount to pay<strong id="paymentAmount">RM 0.00</strong>
+      <small id="paymentParcelSummary">New shipment</small>
+    </div>
+    <form id="paymentForm">
+      <h3 style="font-size:16px;margin-top:20px">Select payment method</h3>
+      <label class="payment-option"><input type="radio" name="paymentMethod" value="FPX Online Banking" required><span><strong>FPX Online Banking</strong><br><small>Demo online banking payment</small></span></label>
+      <label class="payment-option"><input type="radio" name="paymentMethod" value="Credit / Debit Card"><span><strong>Credit / Debit Card</strong><br><small>Demo card payment</small></span></label>
+      <label class="payment-option"><input type="radio" name="paymentMethod" value="E-Wallet"><span><strong>E-Wallet</strong><br><small>Demo e-wallet payment</small></span></label>
+      <p style="font-size:12px;color:#78889b;margin-top:15px">This is a demonstration payment only. No real money will be charged.</p>
+      <button class="primary-action" style="width:100%;margin-top:10px" type="submit" id="confirmPaymentBtn"><i class="bi bi-lock"></i> Confirm Demo Payment</button>
+    </form>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="modal-overlay" id="receiptModal">
+  <div class="receipt-box">
+    <div class="customer-dashboard-header no-print">
+      <h2 style="margin:0">Payment Receipt</h2>
+      <button type="button" class="secondary-action" id="closeReceiptModal">Close</button>
+    </div>
+    <div id="receiptPrintArea">
+      <div class="receipt-paper" id="receiptContent"></div>
+    </div>
+    <div class="no-print" style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <button type="button" class="primary-action" id="printReceiptBtn"><i class="bi bi-printer"></i> Print / Save PDF</button>
+      <button type="button" class="secondary-action" id="doneReceiptBtn">Done</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/user.js"></script>
+</body>
+</html>

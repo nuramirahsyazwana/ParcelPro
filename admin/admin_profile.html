@@ -1,0 +1,537 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ParcelPro admin profile settings">
+  <title>ParcelPro | My Profile</title>
+
+  <!-- FAVICON -->
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+  <!-- BOOTSTRAP -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- BOOTSTRAP ICONS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <!-- GOOGLE FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- MAIN CSS -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+
+<body>
+
+<!-- =====================================================
+     ADMIN APPLICATION
+===================================================== -->
+
+<div id="appShell" class="app-shell d-none">
+
+  <!-- SIDEBAR -->
+
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-brand">
+
+      <span class="brand-mark">
+        <i class="bi bi-box-seam-fill"></i>
+      </span>
+
+      <span class="brand-name">
+        Parcel<span>Pro</span>
+      </span>
+
+      <button
+        class="sidebar-close d-lg-none"
+        id="closeSidebar"
+        type="button"
+        aria-label="Close menu"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+    </div>
+
+    <div class="sidebar-caption">
+      WORKSPACE
+    </div>
+
+    <nav class="side-nav" aria-label="Main navigation">
+
+      <a href="admin.html" class="nav-link" data-page="dashboard">
+        <i class="bi bi-grid-1x2"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="admin_parcels.html" class="nav-link" data-page="parcels">
+        <i class="bi bi-box-seam"></i>
+        <span>Parcel Management</span>
+        <span class="nav-count" id="parcelNavCount">0</span>
+      </a>
+
+      <a href="admin_tracking.html" class="nav-link" data-page="tracking">
+        <i class="bi bi-geo-alt"></i>
+        <span>Parcel Tracking</span>
+      </a>
+
+      <a href="admin_customers.html" class="nav-link" data-page="customers">
+        <i class="bi bi-people"></i>
+        <span>Customer Management</span>
+      </a>
+
+      <a href="admin_deliveries.html" class="nav-link" data-page="deliveries">
+        <i class="bi bi-truck"></i>
+        <span>Delivery Management</span>
+      </a>
+
+    </nav>
+
+
+    <!-- PREFERENCES -->
+
+    <div class="sidebar-caption mt-4">
+      PREFERENCES
+    </div>
+
+    <nav class="side-nav">
+
+      <a href="admin_profile.html" class="nav-link active" data-page="profile">
+        <i class="bi bi-person-circle"></i>
+        <span>My Profile</span>
+      </a>
+
+    </nav>
+
+
+    <!-- SUPPORT -->
+
+    <div class="sidebar-bottom">
+
+      <div class="support-card">
+
+        <div class="support-icon">
+          <i class="bi bi-headset"></i>
+        </div>
+
+        <strong>Need a hand?</strong>
+
+        <p>Our support team is here to help.</p>
+
+        <a href="mailto:support@parcelpro.demo">
+          Contact support
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <!-- SIDEBAR BACKDROP -->
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+
+  <!-- =================================================
+       MAIN AREA
+  ================================================== -->
+
+  <div class="main-area">
+
+    <!-- TOPBAR -->
+
+    <header class="topbar">
+
+      <div class="d-flex align-items-center gap-3">
+
+        <button
+          class="icon-button menu-toggle d-lg-none"
+          id="openSidebar"
+          type="button"
+          aria-label="Open menu"
+        >
+          <i class="bi bi-list"></i>
+        </button>
+
+        <div>
+
+          <div class="topbar-date" id="currentDate"></div>
+
+          <div class="topbar-heading" id="topbarHeading">
+            My Profile
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="topbar-actions">
+
+        <!-- LANGUAGE -->
+
+        <label class="admin-language-picker">
+
+          <i class="bi bi-globe2"></i>
+
+          <select id="adminLanguageSelect">
+            <option value="en">EN</option>
+            <option value="ms">BM</option>
+            <option value="zh">中文</option>
+          </select>
+
+        </label>
+
+
+        <!-- NOTIFICATION -->
+
+        <button
+          class="icon-button notification-button"
+          type="button"
+          title="Notifications"
+        >
+          <i class="bi bi-bell"></i>
+          <span></span>
+        </button>
+
+
+        <!-- LOGOUT -->
+
+        <button
+          class="admin-top-logout"
+          id="logoutButton"
+          type="button"
+        >
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Log out</span>
+        </button>
+
+
+        <div class="topbar-divider"></div>
+
+
+        <!-- ADMIN INFORMATION -->
+
+        <div class="user-mini">
+
+          <div class="avatar" id="headerAvatar">
+            AD
+          </div>
+
+          <div class="user-mini-info">
+
+            <strong id="headerName">
+              Admin User
+            </strong>
+
+            <small>Administrator</small>
+
+          </div>
+
+          <i class="bi bi-chevron-down small text-muted"></i>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- =================================================
+         PROFILE CONTENT
+    ================================================== -->
+
+    <main class="content-area">
+
+
+      <!-- PAGE HEADER -->
+
+      <div class="page-heading-row">
+
+        <div>
+
+          <p class="eyebrow mb-2">
+            ACCOUNT SETTINGS
+          </p>
+
+          <h1 class="page-title">
+            My Profile
+          </h1>
+
+          <p class="page-subtitle">
+            Manage your account information and profile details.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- PROFILE LAYOUT -->
+
+      <div class="profile-layout">
+
+
+        <!-- PROFILE SUMMARY -->
+
+        <article class="panel profile-summary">
+
+          <div
+            class="profile-avatar"
+            id="profileAvatar"
+          >
+            AD
+          </div>
+
+          <h2 id="profileDisplayName">
+            Admin User
+          </h2>
+
+          <p id="profileDisplayEmail">
+            admin@parcelpro.com
+          </p>
+
+          <span class="role-pill">
+            Administrator
+          </span>
+
+          <hr class="my-4">
+
+          <p class="small text-muted mb-0">
+            ParcelPro Administration Account
+          </p>
+
+        </article>
+
+
+        <!-- PROFILE FORM -->
+
+        <article class="panel profile-form-panel">
+
+          <h2>Personal Information</h2>
+
+          <p class="text-muted small mb-4">
+            Update the personal information associated with your account.
+          </p>
+
+
+          <form id="profileForm">
+
+            <div class="row g-3">
+
+
+              <!-- FULL NAME -->
+
+              <div class="col-md-6">
+
+                <label class="form-label" for="profileName">
+                  Full Name
+                </label>
+
+                <input
+                  class="form-control"
+                  id="profileName"
+                  type="text"
+                  placeholder="Enter your full name"
+                  required
+                >
+
+              </div>
+
+
+              <!-- EMAIL -->
+
+              <div class="col-md-6">
+
+                <label class="form-label" for="profileEmail">
+                  Email Address
+                </label>
+
+                <input
+                  class="form-control"
+                  id="profileEmail"
+                  type="email"
+                  placeholder="admin@parcelpro.com"
+                  required
+                >
+
+              </div>
+
+
+              <!-- PHONE -->
+
+              <div class="col-md-6">
+
+                <label class="form-label" for="profilePhone">
+                  Phone Number
+                </label>
+
+                <input
+                  class="form-control"
+                  id="profilePhone"
+                  type="tel"
+                  placeholder="Enter your phone number"
+                >
+
+              </div>
+
+
+              <!-- ROLE -->
+
+              <div class="col-md-6">
+
+                <label class="form-label" for="profileRole">
+                  Account Role
+                </label>
+
+                <input
+                  class="form-control"
+                  id="profileRole"
+                  type="text"
+                  value="Administrator"
+                  readonly
+                >
+
+              </div>
+
+
+              <!-- PROFILE PHOTO -->
+
+              <div class="col-12">
+
+                <label class="form-label" for="profilePhoto">
+                  Profile Picture
+                </label>
+
+                <input
+                  class="form-control"
+                  id="profilePhoto"
+                  type="file"
+                  accept="image/*"
+                >
+
+                <small class="text-muted">
+                  Select an image to update your profile picture.
+                </small>
+
+              </div>
+
+            </div>
+
+
+            <!-- SAVE BUTTON -->
+
+            <div class="d-flex align-items-center flex-wrap gap-3 mt-4">
+
+              <button
+                class="btn btn-primary"
+                id="saveProfileBtn"
+                type="submit"
+              >
+                <i class="bi bi-check-lg me-2"></i>
+                Save Changes
+              </button>
+
+              <span
+                id="profileSaved"
+                class="text-success small d-none"
+              >
+                <i class="bi bi-check-circle me-1"></i>
+                Changes saved successfully.
+              </span>
+
+            </div>
+
+          </form>
+
+        </article>
+
+      </div>
+
+    </main>
+
+
+    <!-- FOOTER -->
+
+    <footer class="app-footer">
+
+      <span>
+        © 2026 <strong>ParcelPro</strong>. All rights reserved.
+      </span>
+
+      <span>
+        Delivering Smarter, Tracking Easier.
+      </span>
+
+    </footer>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     TOAST NOTIFICATION
+===================================================== -->
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+  <div
+    id="appToast"
+    class="toast border-0 shadow"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+
+    <div class="d-flex">
+
+      <div class="toast-body">
+
+        <i class="bi bi-check-circle-fill text-success me-2"></i>
+
+        <span id="toastMessage">
+          Saved successfully.
+        </span>
+
+      </div>
+
+      <button
+        type="button"
+        class="btn-close me-3 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
+<!-- BOOTSTRAP -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- SHARED ADMIN FUNCTIONS -->
+<script src="../js/admin_common.js"></script>
+
+<!-- PROFILE MANAGEMENT -->
+<script src="../js/admin_profile.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,992 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ParcelPro international shipping destinations, requirements and shipping information.">
+
+  <title>ParcelPro | International Shipping</title>
+
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/public-refresh.css">
+
+  <style>
+    :root {
+      --navy: #142d52;
+      --navy-dark: #0d203d;
+      --orange: #f29a38;
+      --text: #29394f;
+      --muted: #748197;
+      --border: #e6ecf4;
+      --background: #f5f8fc;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: var(--background);
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    /* =========================
+       PAGE
+    ========================= */
+
+    .international-page {
+      min-height: 100vh;
+      padding-bottom: 0;
+    }
+
+    /* =========================
+       TOP NAVIGATION
+    ========================= */
+
+    .international-topbar {
+      min-height: 76px;
+      padding: 0 7%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 3px 15px rgba(20,45,82,.04);
+      position: relative;
+      z-index: 5;
+    }
+
+    .international-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--navy);
+      font-family: 'Manrope', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -.8px;
+    }
+
+    .international-brand:hover {
+      color: var(--navy);
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: var(--navy);
+      color: var(--orange);
+      font-size: 21px;
+    }
+
+    .brand-name {
+      color: var(--navy);
+    }
+
+    .brand-name span,
+    .footer-brand span {
+      color: var(--orange);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .header-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 17px;
+      border: 1px solid #e2eaf4;
+      border-radius: 9px;
+      background: #f3f6fb;
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 700;
+      transition: .25s ease;
+    }
+
+    .back-home:hover {
+      background: var(--navy);
+      color: var(--white);
+      border-color: var(--navy);
+    }
+
+    /* =========================
+       HERO HEADER
+    ========================= */
+
+    .international-hero {
+      min-height: 285px;
+      padding: 55px 7%;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      color: var(--white);
+      background:
+        linear-gradient(
+          90deg,
+          rgba(13,32,61,.94) 0%,
+          rgba(20,45,82,.82) 48%,
+          rgba(20,45,82,.35) 100%
+        ),
+        url("images/assets/international_header.jpg");
+
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .hero-content {
+      width: 100%;
+      max-width: 1120px;
+      margin: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 13px;
+      margin-bottom: 15px;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 30px;
+      background: rgba(255,255,255,.10);
+      color: var(--white);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .hero-label i {
+      color: var(--orange);
+    }
+
+    .international-hero h1 {
+      margin: 0 0 12px;
+      color: var(--white);
+      font-family: 'Manrope', sans-serif;
+      font-size: clamp(30px, 4vw, 43px);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -1.2px;
+    }
+
+    .international-hero h1 span {
+      color: var(--orange);
+    }
+
+    .international-hero p {
+      max-width: 590px;
+      margin: 0;
+      color: #e5edf8;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .hero-divider {
+      width: 48px;
+      height: 4px;
+      margin-top: 20px;
+      border-radius: 10px;
+      background: var(--orange);
+    }
+
+    /* =========================
+       MAIN CONTENT
+    ========================= */
+
+    .international-container {
+      width: 100%;
+      max-width: 1120px;
+      margin: 35px auto 0;
+      padding: 0 22px;
+    }
+
+    .international-card {
+      padding: 27px;
+      margin-bottom: 21px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: var(--white);
+      box-shadow: 0 5px 20px rgba(20,45,82,.045);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-bottom: 22px;
+    }
+
+    .section-icon {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: var(--navy);
+      color: var(--orange);
+      font-size: 19px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      color: var(--navy);
+      font-family: 'Manrope', sans-serif;
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    .section-heading p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* =========================
+       DESTINATION CARDS
+    ========================= */
+
+    .country-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .country-card {
+      padding: 22px 14px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: #fbfcfe;
+      transition: .25s ease;
+    }
+
+    .country-card:hover {
+      transform: translateY(-4px);
+      border-color: #d3dfef;
+      box-shadow: 0 9px 22px rgba(20,45,82,.08);
+      background: var(--white);
+    }
+
+    .country-image {
+      width: 78px;
+      height: 78px;
+      margin: 0 auto 14px;
+      overflow: hidden;
+      border-radius: 50%;
+      border: 3px solid var(--white);
+      box-shadow: 0 3px 12px rgba(20,45,82,.13);
+      background: #fff;
+    }
+
+    .country-image img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .country-card h3 {
+      margin: 0 0 6px;
+      color: var(--navy);
+      font-family: 'Manrope', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .country-card p {
+      min-height: 32px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .country-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 12px;
+      padding: 6px 11px;
+      border-radius: 30px;
+      background: #eaf7ef;
+      color: #24834b;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    /* =========================
+       INFORMATION LISTS
+    ========================= */
+
+    .rules-list {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .rules-list li {
+      position: relative;
+      padding: 10px 8px 10px 31px;
+      margin-bottom: 3px;
+      border-bottom: 1px solid #f0f3f7;
+      color: #526174;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .rules-list li:last-child {
+      border-bottom: none;
+    }
+
+    .rules-list li::before {
+      content: "\F26A";
+      position: absolute;
+      left: 3px;
+      top: 11px;
+      color: var(--orange);
+      font-family: "bootstrap-icons";
+      font-size: 15px;
+    }
+
+    /* =========================
+       NOTICE BOXES
+    ========================= */
+
+    .notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-top: 18px;
+      padding: 15px 17px;
+      border: 1px solid #f1dfbd;
+      border-radius: 10px;
+      background: #fff9ed;
+      color: #79551a;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .notice > i {
+      margin-top: 2px;
+      color: #d99227;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .notice strong {
+      color: #69450d;
+    }
+
+    .info-notice {
+      border-color: #d8e7fa;
+      background: #f1f7ff;
+      color: #49617f;
+    }
+
+    .info-notice > i {
+      color: #3478d4;
+    }
+
+    .shipping-description {
+      margin: 0 0 12px;
+      color: #526174;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    /* =========================
+       CALL TO ACTION
+    ========================= */
+
+    .international-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 25px;
+      padding: 30px 35px;
+      margin-top: 27px;
+      border-radius: 15px;
+      background: linear-gradient(115deg, var(--navy-dark), #214b80);
+      box-shadow: 0 8px 22px rgba(20,45,82,.12);
+    }
+
+    .cta-content {
+      display: flex;
+      align-items: center;
+      gap: 19px;
+    }
+
+    .cta-icon {
+      width: 55px;
+      height: 55px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      background: rgba(255,255,255,.12);
+      color: var(--orange);
+      font-size: 25px;
+    }
+
+    .international-cta h2 {
+      margin: 0 0 7px;
+      color: var(--white);
+      font-family: 'Manrope', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .international-cta p {
+      max-width: 510px;
+      margin: 0;
+      color: #dce7f5;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .international-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      flex-shrink: 0;
+      padding: 13px 19px;
+      border: 1px solid var(--orange);
+      border-radius: 9px;
+      background: var(--orange);
+      color: var(--navy-dark);
+      font-size: 12px;
+      font-weight: 800;
+      transition: .25s ease;
+    }
+
+    .international-button:hover {
+      background: var(--white);
+      border-color: var(--white);
+      color: var(--navy);
+      transform: translateY(-2px);
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    .international-footer {
+      margin-top: 35px;
+      padding: 22px 7%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--navy-dark);
+      color: #dce5f1;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .footer-brand {
+      color: var(--white);
+      font-weight: 800;
+    }
+
+    /* =========================
+       TABLET
+    ========================= */
+
+    @media (max-width: 850px) {
+      .international-topbar {
+        padding: 0 5%;
+      }
+
+      .international-hero {
+        min-height: 260px;
+        padding: 45px 5%;
+      }
+
+      .country-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .international-cta {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 550px) {
+      .international-topbar {
+        min-height: 68px;
+        padding: 0 15px;
+      }
+
+      .international-brand {
+        gap: 8px;
+        font-size: 20px;
+      }
+
+      .brand-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+      }
+
+      .header-label {
+        display: none;
+      }
+
+      .back-home {
+        padding: 9px 10px;
+        gap: 6px;
+        font-size: 10px;
+      }
+
+      .international-hero {
+        min-height: 245px;
+        padding: 38px 20px;
+        background-position: center;
+      }
+
+      .hero-label {
+        font-size: 9px;
+        margin-bottom: 12px;
+      }
+
+      .international-hero h1 {
+        font-size: 31px;
+      }
+
+      .international-hero p {
+        font-size: 12px;
+        line-height: 1.7;
+      }
+
+      .international-container {
+        margin-top: 22px;
+        padding: 0 13px;
+      }
+
+      .international-card {
+        padding: 20px 16px;
+        margin-bottom: 16px;
+      }
+
+      .section-heading {
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .section-icon {
+        width: 37px;
+        height: 37px;
+        font-size: 17px;
+      }
+
+      .section-heading h2 {
+        font-size: 16px;
+      }
+
+      .section-heading p {
+        font-size: 10px;
+      }
+
+      .country-grid {
+        gap: 10px;
+      }
+
+      .country-card {
+        padding: 17px 8px;
+      }
+
+      .country-image {
+        width: 65px;
+        height: 65px;
+      }
+
+      .country-card h3 {
+        font-size: 13px;
+      }
+
+      .country-card p {
+        font-size: 10px;
+      }
+
+      .country-tag {
+        padding: 5px 8px;
+        font-size: 9px;
+      }
+
+      .rules-list li {
+        padding-left: 27px;
+        font-size: 11px;
+      }
+
+      .notice {
+        padding: 13px;
+        font-size: 11px;
+      }
+
+      .international-cta {
+        padding: 23px 18px;
+        gap: 18px;
+      }
+
+      .cta-content {
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .cta-icon {
+        width: 43px;
+        height: 43px;
+        font-size: 20px;
+      }
+
+      .international-cta h2 {
+        font-size: 17px;
+      }
+
+      .international-cta p {
+        font-size: 11px;
+      }
+
+      .international-button {
+        width: 100%;
+        padding: 12px;
+        font-size: 11px;
+      }
+
+      .international-footer {
+        padding: 20px 15px;
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .international-brand {
+        font-size: 17px;
+      }
+
+      .back-home {
+        font-size: 9px;
+      }
+
+      .international-hero h1 {
+        font-size: 27px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="international-page">
+
+  <!-- TOP NAVIGATION -->
+  <header class="international-topbar">
+
+    <a href="index.html" class="international-brand">
+      <span class="brand-icon">
+        <i class="bi bi-box-seam-fill"></i>
+      </span>
+
+      <span class="brand-name">Parcel<span>Pro</span></span>
+    </a>
+
+    <div class="header-right">
+      <span class="header-label">
+        Your trusted delivery partner
+      </span>
+
+      <a href="index.html" class="back-home">
+        <i class="bi bi-arrow-left"></i>
+        Back to Home
+      </a>
+    </div>
+
+  </header>
+
+
+  <!-- HERO HEADER -->
+  <section class="international-hero">
+
+    <div class="hero-content">
+
+      <div class="hero-label">
+        <i class="bi bi-globe2"></i>
+        ParcelPro Global Delivery
+      </div>
+
+      <h1>
+        International <span>Shipping</span>
+      </h1>
+
+      <p>
+        Send your parcels beyond borders with ParcelPro.
+        Explore our supported destinations and learn about
+        the shipping requirements before submitting your shipment.
+      </p>
+
+      <div class="hero-divider"></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- MAIN CONTENT -->
+  <div class="international-container">
+
+    <!-- AVAILABLE DESTINATIONS -->
+    <section class="international-card">
+
+      <div class="section-heading">
+        <div class="section-icon">
+          <i class="bi bi-globe2"></i>
+        </div>
+
+        <div>
+          <h2>Available Destinations</h2>
+          <p>Explore our supported international delivery destinations.</p>
+        </div>
+      </div>
+
+      <div class="country-grid">
+
+        <div class="country-card">
+          <div class="country-image">
+            <img src="assets/images/indonesia.jpg" alt="Indonesia flag">
+          </div>
+          <h3>Indonesia</h3>
+          <p>International delivery destination</p>
+          <span class="country-tag">
+            <i class="bi bi-check-circle-fill"></i>
+            Available
+          </span>
+        </div>
+
+        <div class="country-card">
+          <div class="country-image">
+            <img src="assets/images/brunei.png" alt="Brunei flag">
+          </div>
+          <h3>Brunei</h3>
+          <p>International delivery destination</p>
+          <span class="country-tag">
+            <i class="bi bi-check-circle-fill"></i>
+            Available
+          </span>
+        </div>
+
+        <div class="country-card">
+          <div class="country-image">
+            <img src="assets/images/singapore.png" alt="Singapore flag">
+          </div>
+          <h3>Singapore</h3>
+          <p>International delivery destination</p>
+          <span class="country-tag">
+            <i class="bi bi-check-circle-fill"></i>
+            Available
+          </span>
+        </div>
+
+        <div class="country-card">
+          <div class="country-image">
+            <img src="assets/images/thailand.png" alt="Thailand flag">
+          </div>
+          <h3>Thailand</h3>
+          <p>International delivery destination</p>
+          <span class="country-tag">
+            <i class="bi bi-check-circle-fill"></i>
+            Available
+          </span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- SHIPPING REQUIREMENTS -->
+    <section class="international-card">
+
+      <div class="section-heading">
+        <div class="section-icon">
+          <i class="bi bi-clipboard-check"></i>
+        </div>
+
+        <div>
+          <h2>Shipping Requirements</h2>
+          <p>Information needed before submitting an international parcel.</p>
+        </div>
+      </div>
+
+      <ul class="rules-list">
+        <li>Provide the recipient's full name and valid contact number.</li>
+        <li>Enter a complete delivery address, including postal code and country.</li>
+        <li>Provide the correct parcel weight and package type.</li>
+        <li>Ensure that the parcel is securely packed before shipping.</li>
+        <li>Declare the parcel contents accurately when required.</li>
+        <li>Additional customs duties, taxes or charges may apply depending on the destination country.</li>
+      </ul>
+
+    </section>
+
+
+    <!-- IMPORTANT SHIPPING RULES -->
+    <section class="international-card">
+
+      <div class="section-heading">
+        <div class="section-icon">
+          <i class="bi bi-shield-exclamation"></i>
+        </div>
+
+        <div>
+          <h2>Important Shipping Rules</h2>
+          <p>Please review these rules before sending your parcel.</p>
+        </div>
+      </div>
+
+      <ul class="rules-list">
+        <li>Prohibited and restricted items must not be included in parcels.</li>
+        <li>Dangerous goods, illegal substances and other restricted materials are not accepted.</li>
+        <li>Some products may require permits or additional documentation.</li>
+        <li>Customers are responsible for ensuring that their items comply with destination-country regulations.</li>
+        <li>Delivery times may vary due to customs inspections, weather conditions and operational delays.</li>
+      </ul>
+
+      <div class="notice">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+          <strong>Important Notice:</strong>
+          The customer should check the import regulations of the destination
+          country before submitting an international shipment. ParcelPro may
+          request additional information or reject shipments that do not meet
+          the applicable requirements.
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- INTERNATIONAL SHIPPING FEES -->
+    <section class="international-card">
+
+      <div class="section-heading">
+        <div class="section-icon">
+          <i class="bi bi-cash-coin"></i>
+        </div>
+
+        <div>
+          <h2>International Shipping Fees</h2>
+          <p>Understand how your estimated international shipping fee is calculated.</p>
+        </div>
+      </div>
+
+      <p class="shipping-description">
+        International shipping fees are estimated based on the destination
+        country, parcel weight and package type. The estimated fee will be
+        displayed when you complete the shipping form in your customer account.
+      </p>
+
+      <p class="shipping-description">
+        The administrator may review and confirm the final shipping fee
+        after checking the shipment details.
+      </p>
+
+      <div class="notice info-notice">
+        <i class="bi bi-info-circle-fill"></i>
+        <div>
+          The rates displayed in this student project prototype are
+          illustrative estimates only. They are not official courier rates
+          or guaranteed quotations.
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- CALL TO ACTION -->
+    <section class="international-cta">
+
+      <div class="cta-content">
+        <div class="cta-icon">
+          <i class="bi bi-box-seam"></i>
+        </div>
+
+        <div>
+          <h2>Ready to Ship Internationally?</h2>
+          <p>
+            Log in to your ParcelPro customer account or create a new account
+            to submit your international shipping request.
+          </p>
+        </div>
+      </div>
+
+      <a href="user.html#shipping" class="international-button">
+        <i class="bi bi-box-seam"></i>
+        Log In / Create Account and Ship
+        <i class="bi bi-arrow-right"></i>
+      </a>
+
+    </section>
+
+  </div>
+
+
+  <!-- FOOTER -->
+  <footer class="international-footer">
+
+    <div>
+      © 2026
+      <span class="footer-brand">Parcel<span>Pro</span></span>.
+      All rights reserved.
+    </div>
+
+    <div>
+      Delivering beyond borders, connecting destinations.
+    </div>
+
+  </footer>
+
+</main>
+
+</body>
+</html>

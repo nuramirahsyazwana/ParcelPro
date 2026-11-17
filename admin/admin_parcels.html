@@ -1,0 +1,875 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ParcelPro parcel management system">
+  <title>ParcelPro | Parcel Management</title>
+
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+  <!-- BOOTSTRAP CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- BOOTSTRAP ICONS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <!-- GOOGLE FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- PARCELPRO CSS -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+
+  <!-- INFOGRAPHIC STYLES -->
+  <style>
+    .analytics-card {
+      height: 100%;
+      border: 1px solid #edf0f4;
+      border-radius: 14px;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 3px 14px rgba(20, 35, 60, 0.04);
+    }
+
+    .analytics-icon {
+      width: 43px;
+      height: 43px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 20px;
+    }
+
+    .analytics-value {
+      font-family: 'Manrope', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      margin: 12px 0 2px;
+      color: #243247;
+    }
+
+    .analytics-label {
+      font-size: 13px;
+      color: #78869a;
+    }
+
+    .analytics-panel {
+      background: #fff;
+      border: 1px solid #edf0f4;
+      border-radius: 14px;
+      padding: 22px;
+      height: 100%;
+      box-shadow: 0 3px 14px rgba(20, 35, 60, 0.04);
+    }
+
+    .analytics-panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #26364a;
+      margin-bottom: 4px;
+    }
+
+    .analytics-panel-subtitle {
+      font-size: 12px;
+      color: #8995a5;
+      margin-bottom: 18px;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 280px;
+      width: 100%;
+    }
+
+    .performance-item {
+      margin-bottom: 22px;
+    }
+
+    .performance-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .performance-track {
+      height: 10px;
+      background: #edf1f5;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .performance-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 20px;
+      transition: width 0.4s ease;
+    }
+
+    .performance-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: #34445a;
+    }
+
+    @media (max-width: 576px) {
+      .analytics-card {
+        padding: 15px;
+      }
+
+      .analytics-value {
+        font-size: 24px;
+      }
+
+      .analytics-panel {
+        padding: 16px;
+      }
+
+      .chart-wrapper {
+        height: 250px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="appShell" class="app-shell d-none">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-brand">
+      <span class="brand-mark">
+        <i class="bi bi-box-seam-fill"></i>
+      </span>
+
+      <span class="brand-name">
+        Parcel<span>Pro</span>
+      </span>
+
+      <button class="sidebar-close d-lg-none" id="closeSidebar" type="button" aria-label="Close menu">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="sidebar-caption">WORKSPACE</div>
+
+    <nav class="side-nav" aria-label="Main navigation">
+
+      <a href="admin.html" class="nav-link" data-page="dashboard">
+        <i class="bi bi-grid-1x2"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="admin_parcels.html" class="nav-link active" data-page="parcels">
+        <i class="bi bi-box-seam"></i>
+        <span>Parcel Management</span>
+        <span class="nav-count" id="parcelNavCount">0</span>
+      </a>
+
+      <a href="admin_tracking.html" class="nav-link" data-page="tracking">
+        <i class="bi bi-geo-alt"></i>
+        <span>Parcel Tracking</span>
+      </a>
+
+      <a href="admin_customers.html" class="nav-link" data-page="customers">
+        <i class="bi bi-people"></i>
+        <span>Customer Management</span>
+      </a>
+
+      <a href="admin_deliveries.html" class="nav-link" data-page="deliveries">
+        <i class="bi bi-truck"></i>
+        <span>Delivery Management</span>
+      </a>
+
+    </nav>
+
+    <div class="sidebar-caption mt-4">PREFERENCES</div>
+
+    <nav class="side-nav">
+      <a href="admin_profile.html" class="nav-link" data-page="profile">
+        <i class="bi bi-person-circle"></i>
+        <span>My Profile</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="support-card">
+        <div class="support-icon">
+          <i class="bi bi-headset"></i>
+        </div>
+
+        <strong>Need a hand?</strong>
+        <p>Our support team is here to help.</p>
+
+        <a href="mailto:support@parcelpro.demo">
+          Contact support
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+      </div>
+    </div>
+
+  </aside>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+
+      <div class="d-flex align-items-center gap-3">
+
+        <button class="icon-button menu-toggle d-lg-none" id="openSidebar" type="button" aria-label="Open menu">
+          <i class="bi bi-list"></i>
+        </button>
+
+        <div>
+          <div class="topbar-date" id="currentDate"></div>
+          <div class="topbar-heading" id="topbarHeading">Parcel Management</div>
+        </div>
+
+      </div>
+
+      <div class="topbar-actions">
+
+        <label class="admin-language-picker">
+          <i class="bi bi-globe2"></i>
+          <select id="adminLanguageSelect">
+            <option value="en">EN</option>
+            <option value="ms">BM</option>
+            <option value="zh">中文</option>
+          </select>
+        </label>
+
+        <button class="icon-button notification-button" type="button" title="Notifications">
+          <i class="bi bi-bell"></i>
+          <span></span>
+        </button>
+
+        <button class="admin-top-logout" id="logoutButton" type="button">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Log out</span>
+        </button>
+
+        <div class="topbar-divider"></div>
+
+        <div class="user-mini">
+          <div class="avatar" id="headerAvatar">AD</div>
+
+          <div class="user-mini-info">
+            <strong id="headerName">Admin User</strong>
+            <small>Administrator</small>
+          </div>
+
+          <i class="bi bi-chevron-down small text-muted"></i>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <main class="content-area">
+
+      <!-- PAGE HEADER -->
+      <div class="page-heading-row">
+
+        <div>
+          <p class="eyebrow mb-2">SHIPMENT RECORDS</p>
+
+          <h1 class="page-title">Parcel Management</h1>
+
+          <p class="page-subtitle">
+            Create, update and organise all parcel records.
+          </p>
+        </div>
+
+        <button type="button" class="btn btn-primary" data-open-modal="parcelModal">
+          <i class="bi bi-plus-lg me-2"></i>
+          Add New Parcel
+        </button>
+
+      </div>
+
+      <!-- =================================================
+           PARCEL INFOGRAPHIC DASHBOARD
+      ================================================== -->
+
+      <section class="mb-4" aria-label="Parcel analytics">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <div>
+            <h2 class="h5 fw-bold mb-1">Parcel Analytics</h2>
+            <p class="text-muted small mb-0">
+              Overview of parcel status and delivery performance.
+            </p>
+          </div>
+
+          <span class="badge bg-light text-dark border">
+            <i class="bi bi-activity me-1"></i>
+            Live Statistics
+          </span>
+        </div>
+
+        <!-- SUMMARY CARDS -->
+        <div class="row g-3 mb-3">
+
+          <div class="col-6 col-xl-3">
+            <div class="analytics-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="analytics-icon bg-primary-subtle text-primary">
+                  <i class="bi bi-box-seam"></i>
+                </div>
+                <span class="small text-muted">TOTAL</span>
+              </div>
+
+              <div class="analytics-value" id="analyticsTotal">0</div>
+              <div class="analytics-label">Total Parcels</div>
+            </div>
+          </div>
+
+          <div class="col-6 col-xl-3">
+            <div class="analytics-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="analytics-icon bg-warning-subtle text-warning">
+                  <i class="bi bi-clock-history"></i>
+                </div>
+                <span class="small text-muted">PENDING</span>
+              </div>
+
+              <div class="analytics-value" id="analyticsPending">0</div>
+              <div class="analytics-label">Awaiting Processing</div>
+            </div>
+          </div>
+
+          <div class="col-6 col-xl-3">
+            <div class="analytics-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="analytics-icon bg-info-subtle text-info">
+                  <i class="bi bi-truck"></i>
+                </div>
+                <span class="small text-muted">ACTIVE</span>
+              </div>
+
+              <div class="analytics-value" id="analyticsTransit">0</div>
+              <div class="analytics-label">Active Shipments</div>
+            </div>
+          </div>
+
+          <div class="col-6 col-xl-3">
+            <div class="analytics-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="analytics-icon bg-success-subtle text-success">
+                  <i class="bi bi-check-circle"></i>
+                </div>
+                <span class="small text-muted">COMPLETED</span>
+              </div>
+
+              <div class="analytics-value" id="analyticsDelivered">0</div>
+              <div class="analytics-label">Delivered Parcels</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CHART AND PERFORMANCE -->
+        <div class="row g-3">
+
+          <div class="col-lg-7">
+            <div class="analytics-panel">
+
+              <h3 class="analytics-panel-title">
+                Parcel Status Distribution
+              </h3>
+
+              <p class="analytics-panel-subtitle">
+                Breakdown of all parcel records by delivery status.
+              </p>
+
+              <div class="chart-wrapper">
+                <canvas
+                  id="parcelStatusChart"
+                  role="img"
+                  aria-label="Doughnut chart showing parcel distribution by status">
+                </canvas>
+              </div>
+
+              <div id="chartEmptyMessage" class="text-center text-muted small d-none mt-2">
+                No parcel data available to display.
+              </div>
+
+            </div>
+          </div>
+
+          <div class="col-lg-5">
+            <div class="analytics-panel">
+
+              <h3 class="analytics-panel-title">
+                Delivery Performance
+              </h3>
+
+              <p class="analytics-panel-subtitle">
+                Progress calculated from current parcel records.
+              </p>
+
+              <!-- DELIVERY RATE -->
+              <div class="performance-item">
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small fw-semibold">Delivery Completion</span>
+                  <span class="performance-value" id="deliveryRateLabel">0%</span>
+                </div>
+
+                <div class="performance-track">
+                  <div
+                    class="performance-fill bg-success"
+                    id="deliveryRateBar">
+                  </div>
+                </div>
+
+                <small class="text-muted" id="deliveryRateDescription">
+                  0 of 0 parcels delivered
+                </small>
+
+              </div>
+
+              <!-- ACTIVE SHIPMENTS -->
+              <div class="performance-item">
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small fw-semibold">Active Shipments</span>
+                  <span class="performance-value" id="activeRateLabel">0%</span>
+                </div>
+
+                <div class="performance-track">
+                  <div
+                    class="performance-fill bg-info"
+                    id="activeRateBar">
+                  </div>
+                </div>
+
+                <small class="text-muted" id="activeRateDescription">
+                  0 active shipments
+                </small>
+
+              </div>
+
+              <!-- CANCELLED PARCELS -->
+              <div class="performance-item">
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small fw-semibold">Cancelled Parcels</span>
+                  <span class="performance-value" id="cancelledRateLabel">0%</span>
+                </div>
+
+                <div class="performance-track">
+                  <div
+                    class="performance-fill bg-danger"
+                    id="cancelledRateBar">
+                  </div>
+                </div>
+
+                <small class="text-muted" id="cancelledRateDescription">
+                  0 cancelled parcels
+                </small>
+
+              </div>
+
+              <div class="border-top pt-3 mt-4">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="small text-muted">Total parcel records</span>
+                  <strong id="performanceTotal">0</strong>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =================================================
+           PARCEL TABLE PANEL
+      ================================================== -->
+
+      <article class="panel table-panel">
+
+        <!-- SEARCH AND FILTER -->
+        <div class="toolbar">
+
+          <div class="search-box">
+            <i class="bi bi-search"></i>
+
+            <input
+              id="parcelSearch"
+              type="search"
+              placeholder="Search tracking ID or customer..."
+              aria-label="Search parcels"
+              autocomplete="off">
+          </div>
+
+          <select
+            id="statusFilter"
+            class="form-select filter-select"
+            aria-label="Filter parcel status">
+
+            <option value="">All statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Processing">Processing</option>
+            <option value="Picked Up">Picked Up</option>
+            <option value="In Transit">In Transit</option>
+            <option value="Out for Delivery">Out for Delivery</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Failed">Failed</option>
+            <option value="Cancelled">Cancelled</option>
+
+          </select>
+
+        </div>
+
+        <!-- PARCEL TABLE -->
+        <div class="table-responsive">
+
+          <table class="table data-table align-middle">
+
+            <thead>
+              <tr>
+                <th>Tracking ID</th>
+                <th>Recipient</th>
+                <th>Phone</th>
+                <th>Parcel Type</th>
+                <th>Shipping Fee</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody id="parcelsTableBody">
+              <tr>
+                <td colspan="8" class="text-center py-4 text-muted">
+                  <div>
+                    <i class="bi bi-arrow-repeat fs-3 d-block mb-2"></i>
+                    Loading parcel records...
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+
+          </table>
+
+        </div>
+
+        <!-- TABLE FOOTER -->
+        <div class="table-footer">
+
+          <span id="parcelCountLabel">0 parcels</span>
+
+          <span class="small text-muted">
+            Parcel records are stored in this browser.
+          </span>
+
+        </div>
+
+      </article>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <span>
+        © 2026 <strong>ParcelPro</strong>. All rights reserved.
+      </span>
+
+      <span>
+        Delivering Smarter, Tracking Easier.
+      </span>
+    </footer>
+
+  </div>
+</div>
+
+<!-- =======================================================
+     ADD / EDIT PARCEL MODAL
+======================================================= -->
+
+<div
+  class="modal fade"
+  id="parcelModal"
+  tabindex="-1"
+  aria-labelledby="parcelModalTitle"
+  aria-hidden="true">
+
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <div>
+          <h2 class="modal-title" id="parcelModalTitle">
+            Add New Parcel
+          </h2>
+
+          <p class="modal-subtitle">
+            Select a registered customer and enter shipment details.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close">
+        </button>
+
+      </div>
+
+      <form id="parcelForm">
+
+        <div class="modal-body">
+
+          <input type="hidden" id="parcelEditId">
+
+          <div class="row g-3">
+
+            <!-- CUSTOMER -->
+            <div class="col-12">
+
+              <label class="form-label" for="parcelRecipient">
+                Select Registered Customer *
+              </label>
+
+              <select class="form-select" id="parcelRecipient" required>
+                <option value="">Select customer</option>
+              </select>
+
+              <small class="text-muted">
+                Customer information can be filled automatically.
+              </small>
+
+            </div>
+
+            <!-- PHONE -->
+            <div class="col-md-6">
+
+              <label class="form-label" for="parcelPhone">
+                Phone Number *
+              </label>
+
+              <input
+                class="form-control"
+                id="parcelPhone"
+                type="tel"
+                placeholder="Customer phone number"
+                required>
+
+            </div>
+
+            <!-- ADDRESS -->
+            <div class="col-md-6">
+
+              <label class="form-label" for="parcelAddress">
+                Delivery Address *
+              </label>
+
+              <input
+                class="form-control"
+                id="parcelAddress"
+                type="text"
+                placeholder="Enter delivery address"
+                required>
+
+            </div>
+
+            <!-- TYPE -->
+            <div class="col-md-6">
+
+              <label class="form-label" for="parcelType">
+                Parcel Type
+              </label>
+
+              <select class="form-select" id="parcelType">
+                <option value="Document">Document</option>
+                <option value="Small package">Small Package</option>
+                <option value="Medium package">Medium Package</option>
+                <option value="Large package">Large Package</option>
+              </select>
+
+            </div>
+
+            <!-- SHIPPING FEE -->
+            <div class="col-md-6">
+
+              <label class="form-label" for="parcelShippingFee">
+                Shipping Fee (RM)
+              </label>
+
+              <div class="input-group">
+
+                <span class="input-group-text">RM</span>
+
+                <input
+                  class="form-control"
+                  id="parcelShippingFee"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00">
+
+              </div>
+
+              <small class="text-muted">
+                Enter the shipping fee for this parcel.
+              </small>
+
+            </div>
+
+            <!-- DATE -->
+            <div class="col-md-6">
+
+              <label class="form-label" for="parcelDate">
+                Expected Delivery Date *
+              </label>
+
+              <input
+                class="form-control"
+                id="parcelDate"
+                type="date"
+                required>
+
+            </div>
+
+            <!-- STATUS -->
+            <div class="col-md-6">
+
+              <label class="form-label" for="parcelStatus">
+                Parcel Status
+              </label>
+
+              <select class="form-select" id="parcelStatus">
+                <option value="Pending">Pending</option>
+                <option value="Processing">Processing</option>
+                <option value="Picked Up">Picked Up</option>
+                <option value="In Transit">In Transit</option>
+                <option value="Out for Delivery">Out for Delivery</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Failed">Failed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+
+            </div>
+
+            <!-- COURIER -->
+            <div class="col-md-6">
+
+              <label class="form-label" for="parcelCourier">
+                Assigned Courier
+              </label>
+
+              <input
+                class="form-control"
+                id="parcelCourier"
+                type="text"
+                placeholder="e.g. Daniel Lee">
+
+            </div>
+
+            <!-- DELIVERY PROOF -->
+            <div class="col-12">
+
+              <label class="form-label" for="deliveryProof">
+                Delivery Proof Photo
+              </label>
+
+              <input
+                class="form-control"
+                id="deliveryProof"
+                type="file"
+                accept="image/*">
+
+              <small class="text-muted">
+                Upload a delivery proof image when required.
+              </small>
+
+              <div id="proofPreview" class="small text-muted mt-2">
+                No proof photo selected.
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-light"
+            data-bs-dismiss="modal">
+            Cancel
+          </button>
+
+          <button class="btn btn-primary" type="submit">
+            <i class="bi bi-check-lg me-2"></i>
+            Save Parcel
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+  <div
+    id="appToast"
+    class="toast border-0 shadow"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true">
+
+    <div class="d-flex">
+
+      <div class="toast-body">
+        <i class="bi bi-check-circle-fill text-success me-2"></i>
+        <span id="toastMessage">Saved successfully.</span>
+      </div>
+
+      <button
+        type="button"
+        class="btn-close me-3 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Close">
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- JAVASCRIPT -->
+
+<!-- BOOTSTRAP -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- SHARED ADMIN FUNCTIONS -->
+<script src="../js/admin_common.js"></script>
+
+<!-- PARCEL MANAGEMENT -->
+<script src="../js/admin_parcels.js"></script>
+
+</body>
+</html>

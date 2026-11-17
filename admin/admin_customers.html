@@ -1,0 +1,624 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ParcelPro customer management">
+  <title>ParcelPro | Customer Management</title>
+
+  <!-- FAVICON -->
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+  <!-- BOOTSTRAP -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- BOOTSTRAP ICONS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <!-- GOOGLE FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- MAIN CSS -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+
+<body>
+
+<!-- =====================================================
+     ADMIN APPLICATION
+===================================================== -->
+
+<div id="appShell" class="app-shell d-none">
+
+  <!-- SIDEBAR -->
+
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-brand">
+
+      <span class="brand-mark">
+        <i class="bi bi-box-seam-fill"></i>
+      </span>
+
+      <span class="brand-name">
+        Parcel<span>Pro</span>
+      </span>
+
+      <button
+        class="sidebar-close d-lg-none"
+        id="closeSidebar"
+        type="button"
+        aria-label="Close menu"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+    </div>
+
+    <div class="sidebar-caption">
+      WORKSPACE
+    </div>
+
+    <nav class="side-nav" aria-label="Main navigation">
+
+      <a href="admin.html" class="nav-link" data-page="dashboard">
+        <i class="bi bi-grid-1x2"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="admin_parcels.html" class="nav-link" data-page="parcels">
+        <i class="bi bi-box-seam"></i>
+        <span>Parcel Management</span>
+        <span class="nav-count" id="parcelNavCount">0</span>
+      </a>
+
+      <a href="admin_tracking.html" class="nav-link" data-page="tracking">
+        <i class="bi bi-geo-alt"></i>
+        <span>Parcel Tracking</span>
+      </a>
+
+      <a href="admin_customers.html" class="nav-link active" data-page="customers">
+        <i class="bi bi-people"></i>
+        <span>Customer Management</span>
+      </a>
+
+      <a href="admin_deliveries.html" class="nav-link" data-page="deliveries">
+        <i class="bi bi-truck"></i>
+        <span>Delivery Management</span>
+      </a>
+
+    </nav>
+
+
+    <!-- PREFERENCES -->
+
+    <div class="sidebar-caption mt-4">
+      PREFERENCES
+    </div>
+
+    <nav class="side-nav">
+
+      <a href="admin_profile.html" class="nav-link" data-page="profile">
+        <i class="bi bi-person-circle"></i>
+        <span>My Profile</span>
+      </a>
+
+    </nav>
+
+
+    <!-- SUPPORT -->
+
+    <div class="sidebar-bottom">
+
+      <div class="support-card">
+
+        <div class="support-icon">
+          <i class="bi bi-headset"></i>
+        </div>
+
+        <strong>Need a hand?</strong>
+
+        <p>Our support team is here to help.</p>
+
+        <a href="mailto:support@parcelpro.demo">
+          Contact support
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <!-- SIDEBAR BACKDROP -->
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+
+  <!-- =================================================
+       MAIN AREA
+  ================================================== -->
+
+  <div class="main-area">
+
+    <!-- TOPBAR -->
+
+    <header class="topbar">
+
+      <div class="d-flex align-items-center gap-3">
+
+        <button
+          class="icon-button menu-toggle d-lg-none"
+          id="openSidebar"
+          type="button"
+          aria-label="Open menu"
+        >
+          <i class="bi bi-list"></i>
+        </button>
+
+        <div>
+
+          <div class="topbar-date" id="currentDate"></div>
+
+          <div class="topbar-heading" id="topbarHeading">
+            Customer Management
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="topbar-actions">
+
+        <!-- LANGUAGE -->
+
+        <label class="admin-language-picker">
+
+          <i class="bi bi-globe2"></i>
+
+          <select id="adminLanguageSelect">
+            <option value="en">EN</option>
+            <option value="ms">BM</option>
+            <option value="zh">中文</option>
+          </select>
+
+        </label>
+
+
+        <!-- NOTIFICATION -->
+
+        <button
+          class="icon-button notification-button"
+          type="button"
+          title="Notifications"
+        >
+          <i class="bi bi-bell"></i>
+          <span></span>
+        </button>
+
+
+        <!-- LOGOUT -->
+
+        <button
+          class="admin-top-logout"
+          id="logoutButton"
+          type="button"
+        >
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Log out</span>
+        </button>
+
+
+        <div class="topbar-divider"></div>
+
+
+        <!-- ADMIN INFORMATION -->
+
+        <div class="user-mini">
+
+          <div class="avatar" id="headerAvatar">
+            AD
+          </div>
+
+          <div class="user-mini-info">
+            <strong id="headerName">Admin User</strong>
+            <small>Administrator</small>
+          </div>
+
+          <i class="bi bi-chevron-down small text-muted"></i>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- =================================================
+         CUSTOMER MANAGEMENT CONTENT
+    ================================================== -->
+
+    <main class="content-area">
+
+      <!-- PAGE HEADER -->
+
+      <div class="page-heading-row">
+
+        <div>
+
+          <p class="eyebrow mb-2">
+            CUSTOMER DIRECTORY
+          </p>
+
+          <h1 class="page-title">
+            Customer Management
+          </h1>
+
+          <p class="page-subtitle">
+            View and manage registered ParcelPro customers.
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-add-customer
+        >
+          <i class="bi bi-person-plus me-2"></i>
+          Add customer
+        </button>
+
+      </div>
+
+
+      <!-- CUSTOMER TABLE PANEL -->
+
+      <article class="panel table-panel">
+
+        <!-- SEARCH TOOLBAR -->
+
+        <div class="toolbar">
+
+          <div class="search-box">
+
+            <i class="bi bi-search"></i>
+
+            <input
+              id="customerSearch"
+              type="search"
+              placeholder="Search name, email or phone..."
+              aria-label="Search customers"
+            >
+
+          </div>
+
+          <span
+            class="ms-auto small text-muted"
+            id="customerCountLabel"
+          >
+            0 customers
+          </span>
+
+        </div>
+
+
+        <!-- CUSTOMER TABLE -->
+
+        <div class="table-responsive">
+
+          <table class="table data-table align-middle">
+
+            <thead>
+
+              <tr>
+                <th>Customer ID</th>
+                <th>Customer Name</th>
+                <th>Email Address</th>
+                <th>Phone Number</th>
+                <th>Address</th>
+                <th>Status</th>
+                <th class="text-end">Actions</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="customersTableBody">
+
+              <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                  Loading customer records...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+
+        <!-- TABLE FOOTER -->
+
+        <div class="table-footer">
+
+          <span>
+            Customer records
+          </span>
+
+          <span class="small text-muted">
+            Customer information is stored in this browser.
+          </span>
+
+        </div>
+
+      </article>
+
+    </main>
+
+
+    <!-- FOOTER -->
+
+    <footer class="app-footer">
+
+      <span>
+        © 2026 <strong>ParcelPro</strong>. All rights reserved.
+      </span>
+
+      <span>
+        Delivering Smarter, Tracking Easier.
+      </span>
+
+    </footer>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     ADD / EDIT CUSTOMER MODAL
+===================================================== -->
+
+<div
+  class="modal fade"
+  id="customerModal"
+  tabindex="-1"
+  aria-labelledby="customerModalTitle"
+  aria-hidden="true"
+>
+
+  <div class="modal-dialog modal-dialog-centered">
+
+    <div class="modal-content">
+
+      <!-- MODAL HEADER -->
+
+      <div class="modal-header">
+
+        <div>
+
+          <h2 class="modal-title" id="customerModalTitle">
+            Add New Customer
+          </h2>
+
+          <p class="modal-subtitle">
+            Enter the customer's information.
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+
+      </div>
+
+
+      <!-- CUSTOMER FORM -->
+
+      <form id="customerForm">
+
+        <div class="modal-body">
+
+          <!-- EDIT CUSTOMER ID -->
+
+          <input
+            type="hidden"
+            id="customerEditId"
+          >
+
+
+          <!-- CUSTOMER NAME -->
+
+          <div class="mb-3">
+
+            <label class="form-label" for="customerName">
+              Full Name *
+            </label>
+
+            <input
+              class="form-control"
+              id="customerName"
+              type="text"
+              placeholder="Enter full name"
+              required
+            >
+
+          </div>
+
+
+          <!-- CUSTOMER EMAIL -->
+
+          <div class="mb-3">
+
+            <label class="form-label" for="customerEmail">
+              Email Address *
+            </label>
+
+            <input
+              class="form-control"
+              id="customerEmail"
+              type="email"
+              placeholder="customer@example.com"
+              required
+            >
+
+          </div>
+
+
+          <!-- CUSTOMER PHONE -->
+
+          <div class="mb-3">
+
+            <label class="form-label" for="customerPhone">
+              Phone Number *
+            </label>
+
+            <input
+              class="form-control"
+              id="customerPhone"
+              type="tel"
+              placeholder="Enter phone number"
+              required
+            >
+
+          </div>
+
+
+          <!-- CUSTOMER ADDRESS -->
+
+          <div class="mb-3">
+
+            <label class="form-label" for="customerAddress">
+              Address
+            </label>
+
+            <textarea
+              class="form-control"
+              id="customerAddress"
+              rows="3"
+              placeholder="Enter customer address"
+            ></textarea>
+
+          </div>
+
+
+          <!-- CUSTOMER STATUS -->
+
+          <div class="mb-3">
+
+            <label class="form-label" for="customerStatus">
+              Account Status
+            </label>
+
+            <select
+              class="form-select"
+              id="customerStatus"
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- MODAL FOOTER -->
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-light"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            <i class="bi bi-check-lg me-2"></i>
+            Save Customer
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     TOAST NOTIFICATION
+===================================================== -->
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+  <div
+    id="appToast"
+    class="toast border-0 shadow"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+
+    <div class="d-flex">
+
+      <div class="toast-body">
+
+        <i class="bi bi-check-circle-fill text-success me-2"></i>
+
+        <span id="toastMessage">
+          Saved successfully.
+        </span>
+
+      </div>
+
+      <button
+        type="button"
+        class="btn-close me-3 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
+<!-- BOOTSTRAP -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- SHARED ADMIN FUNCTIONS -->
+<script src="../js/admin_common.js"></script>
+
+<!-- CUSTOMER MANAGEMENT -->
+<script src="../js/admin_customers.js"></script>
+
+</body>
+</html>

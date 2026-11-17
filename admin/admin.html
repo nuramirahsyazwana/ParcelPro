@@ -1,0 +1,979 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ParcelPro parcel delivery management dashboard">
+  <title>ParcelPro | Admin Dashboard</title>
+
+  <!-- FAVICON -->
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+  <!-- BOOTSTRAP -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <!-- BOOTSTRAP ICONS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+  >
+
+  <!-- GOOGLE FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- MAIN CSS -->
+  <link rel="stylesheet" href="../css/style.css">
+
+</head>
+
+<body>
+
+<!-- =====================================================
+     1. ADMIN LOGIN & REGISTER
+===================================================== -->
+
+<main id="authScreen" class="auth-screen">
+
+  <div class="auth-decoration"></div>
+
+  <section class="auth-card">
+
+    <a href="../index.html" class="auth-back-home">
+      <i class="bi bi-arrow-left"></i>
+      <span data-i18n="backHome">Back to homepage</span>
+    </a>
+
+    <div class="brand-lockup mb-4">
+
+      <span class="brand-mark">
+        <i class="bi bi-box-seam-fill"></i>
+      </span>
+
+      <span class="brand-name">
+        Parcel<span>Pro</span>
+      </span>
+
+    </div>
+
+
+    <!-- LOGIN PANEL -->
+
+    <div id="loginPanel">
+
+      <p class="eyebrow">PARCEL DELIVERY MANAGEMENT</p>
+
+      <h1 class="auth-title">Welcome back!</h1>
+
+      <p class="text-muted mb-4">
+        Sign in to manage your deliveries.
+      </p>
+
+      <div
+        id="loginAlert"
+        class="alert alert-danger d-none"
+        role="alert"
+      ></div>
+
+      <form id="loginForm" novalidate>
+
+        <label class="form-label" for="loginEmail">
+          Email address
+        </label>
+
+        <div class="input-icon mb-3">
+
+          <i class="bi bi-envelope"></i>
+
+          <input
+            class="form-control"
+            id="loginEmail"
+            type="email"
+            placeholder="admin@parcelpro.com"
+            required
+          >
+
+        </div>
+
+
+        <label class="form-label" for="loginPassword">
+          Password
+        </label>
+
+        <div class="input-icon mb-2">
+
+          <i class="bi bi-lock"></i>
+
+          <input
+            class="form-control"
+            id="loginPassword"
+            type="password"
+            placeholder="Enter your password"
+            required
+          >
+
+          <button
+            class="password-toggle"
+            type="button"
+            data-toggle-password="loginPassword"
+            aria-label="Show password"
+          >
+            <i class="bi bi-eye"></i>
+          </button>
+
+        </div>
+
+
+        <div class="d-flex justify-content-between align-items-center small mb-4">
+
+          <span class="text-muted">
+            Demo access
+          </span>
+
+          <span class="text-primary fw-semibold">
+            Admin account
+          </span>
+
+        </div>
+
+
+        <button
+          class="btn btn-primary w-100 py-3"
+          type="submit"
+        >
+          Sign in
+          <i class="bi bi-arrow-right ms-2"></i>
+        </button>
+
+      </form>
+
+
+      <p class="text-center text-muted small mt-4 mb-0">
+        New to ParcelPro?
+        <a href="#" id="showRegister">Create an account</a>
+      </p>
+
+    </div>
+
+
+    <!-- REGISTER PANEL -->
+
+    <div id="registerPanel" class="d-none">
+
+      <p class="eyebrow">JOIN PARCELPRO</p>
+
+      <h1 class="auth-title">Create account</h1>
+
+      <p class="text-muted mb-4">
+        Register a demo account to explore the system.
+      </p>
+
+      <div
+        id="registerAlert"
+        class="alert alert-danger d-none"
+        role="alert"
+      ></div>
+
+      <form id="registerForm" novalidate>
+
+        <label class="form-label" for="registerName">
+          Full name
+        </label>
+
+        <input
+          class="form-control mb-3"
+          id="registerName"
+          placeholder="Your name"
+          required
+        >
+
+
+        <label class="form-label" for="registerEmail">
+          Email address
+        </label>
+
+        <input
+          class="form-control mb-3"
+          id="registerEmail"
+          type="email"
+          placeholder="you@example.com"
+          required
+        >
+
+
+        <label class="form-label" for="registerPassword">
+          Password
+        </label>
+
+        <input
+          class="form-control mb-3"
+          id="registerPassword"
+          type="password"
+          minlength="6"
+          placeholder="At least 6 characters"
+          required
+        >
+
+
+        <button
+          class="btn btn-primary w-100 py-3"
+          type="submit"
+        >
+          Create account
+          <i class="bi bi-arrow-right ms-2"></i>
+        </button>
+
+      </form>
+
+
+      <p class="text-center text-muted small mt-4 mb-0">
+        Already registered?
+        <a href="#" id="showLogin">Sign in</a>
+      </p>
+
+    </div>
+
+
+    <!-- DEMO LOGIN INFORMATION -->
+
+    <div class="demo-hint mt-4">
+
+      <i class="bi bi-info-circle me-2"></i>
+
+      Demo login:
+
+      <strong>admin@parcelpro.com</strong> /
+      <strong>admin123</strong>
+
+    </div>
+
+  </section>
+
+
+  <p class="auth-footer">
+    © 2026 ParcelPro. Delivering Smarter, Tracking Easier.
+  </p>
+
+</main>
+
+
+<!-- =====================================================
+     2. ADMIN APPLICATION
+===================================================== -->
+
+<div id="appShell" class="app-shell d-none">
+
+
+  <!-- SIDEBAR -->
+
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-brand">
+
+      <span class="brand-mark">
+        <i class="bi bi-box-seam-fill"></i>
+      </span>
+
+      <span class="brand-name">
+        Parcel<span>Pro</span>
+      </span>
+
+      <button
+        class="sidebar-close d-lg-none"
+        id="closeSidebar"
+        type="button"
+        aria-label="Close menu"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+    </div>
+
+
+    <div class="sidebar-caption">
+      WORKSPACE
+    </div>
+
+
+    <!-- MAIN NAVIGATION -->
+
+    <nav class="side-nav" aria-label="Main navigation">
+
+      <a
+        href="admin.html"
+        class="nav-link active"
+        data-page="dashboard"
+      >
+        <i class="bi bi-grid-1x2"></i>
+        <span>Dashboard</span>
+      </a>
+
+
+      <a
+        href="admin_parcels.html"
+        class="nav-link"
+        data-page="parcels"
+      >
+        <i class="bi bi-box-seam"></i>
+        <span>Parcel Management</span>
+        <span class="nav-count" id="parcelNavCount">0</span>
+      </a>
+
+
+      <a
+        href="admin_tracking.html"
+        class="nav-link"
+        data-page="tracking"
+      >
+        <i class="bi bi-geo-alt"></i>
+        <span>Parcel Tracking</span>
+      </a>
+
+
+      <a
+        href="admin_customers.html"
+        class="nav-link"
+        data-page="customers"
+      >
+        <i class="bi bi-people"></i>
+        <span>Customer Management</span>
+      </a>
+
+
+      <a
+        href="admin_deliveries.html"
+        class="nav-link"
+        data-page="deliveries"
+      >
+        <i class="bi bi-truck"></i>
+        <span>Delivery Management</span>
+      </a>
+
+    </nav>
+
+
+    <!-- PREFERENCES -->
+
+    <div class="sidebar-caption mt-4">
+      PREFERENCES
+    </div>
+
+    <nav class="side-nav">
+
+      <a
+        href="admin_profile.html"
+        class="nav-link"
+        data-page="profile"
+      >
+        <i class="bi bi-person-circle"></i>
+        <span>My Profile</span>
+      </a>
+
+    </nav>
+
+
+    <!-- SIDEBAR SUPPORT -->
+
+    <div class="sidebar-bottom">
+
+      <div class="support-card">
+
+        <div class="support-icon">
+          <i class="bi bi-headset"></i>
+        </div>
+
+        <strong>Need a hand?</strong>
+
+        <p>Our support team is here to help.</p>
+
+        <a href="mailto:support@parcelpro.demo">
+          Contact support
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <!-- SIDEBAR BACKDROP -->
+
+  <div
+    class="sidebar-backdrop"
+    id="sidebarBackdrop"
+  ></div>
+
+
+  <!-- =================================================
+       3. MAIN AREA
+  ================================================== -->
+
+  <div class="main-area">
+
+
+    <!-- TOPBAR -->
+
+    <header class="topbar">
+
+      <div class="d-flex align-items-center gap-3">
+
+        <button
+          class="icon-button menu-toggle d-lg-none"
+          id="openSidebar"
+          type="button"
+          aria-label="Open menu"
+        >
+          <i class="bi bi-list"></i>
+        </button>
+
+        <div>
+
+          <div
+            class="topbar-date"
+            id="currentDate"
+          ></div>
+
+          <div
+            class="topbar-heading"
+            id="topbarHeading"
+          >
+            Dashboard
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="topbar-actions">
+
+
+        <!-- LANGUAGE -->
+
+        <label class="admin-language-picker">
+
+          <i class="bi bi-globe2"></i>
+
+          <select id="adminLanguageSelect">
+            <option value="en">EN</option>
+            <option value="ms">BM</option>
+            <option value="zh">中文</option>
+          </select>
+
+        </label>
+
+
+        <!-- NOTIFICATION -->
+
+        <button
+          class="icon-button notification-button"
+          type="button"
+          title="Notifications"
+        >
+          <i class="bi bi-bell"></i>
+          <span></span>
+        </button>
+
+
+        <!-- LOGOUT -->
+
+        <button
+          class="admin-top-logout"
+          id="logoutButton"
+          type="button"
+        >
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Log out</span>
+        </button>
+
+
+        <div class="topbar-divider"></div>
+
+
+        <!-- ADMIN INFORMATION -->
+
+        <div class="user-mini">
+
+          <div
+            class="avatar"
+            id="headerAvatar"
+          >
+            AD
+          </div>
+
+          <div class="user-mini-info">
+
+            <strong id="headerName">
+              Admin User
+            </strong>
+
+            <small>Administrator</small>
+
+          </div>
+
+          <i class="bi bi-chevron-down small text-muted"></i>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- =================================================
+         4. DASHBOARD CONTENT
+    ================================================== -->
+
+    <main class="content-area">
+
+
+      <!-- DASHBOARD -->
+
+      <section
+        class="page-section active"
+        id="page-dashboard"
+      >
+
+
+        <!-- WELCOME -->
+
+        <div class="welcome-row">
+
+          <div>
+
+            <p class="eyebrow mb-2">
+              OVERVIEW
+            </p>
+
+            <h1 class="page-title">
+              Good day,
+              <span id="welcomeName">Admin</span>
+              <span class="wave">✦</span>
+            </h1>
+
+            <p class="page-subtitle">
+              Here’s what’s happening with your parcels today.
+            </p>
+
+          </div>
+
+
+          <a
+            href="admin_parcels.html"
+            class="btn btn-primary"
+            data-page-link="parcels"
+          >
+            <i class="bi bi-plus-lg me-2"></i>
+            Add new parcel
+          </a>
+
+        </div>
+
+
+        <!-- STATISTICS -->
+
+        <div class="stats-grid">
+
+
+          <!-- TOTAL PARCELS -->
+
+          <article class="stat-card">
+
+            <div class="stat-top">
+
+              <span>Total parcels</span>
+
+              <span class="stat-icon blue">
+                <i class="bi bi-box-seam"></i>
+              </span>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statTotal"
+            >
+              0
+            </div>
+
+            <div class="stat-foot">
+
+              <span class="stat-neutral">
+                All registered parcels
+              </span>
+
+            </div>
+
+          </article>
+
+
+          <!-- DELIVERED -->
+
+          <article class="stat-card">
+
+            <div class="stat-top">
+
+              <span>Delivered</span>
+
+              <span class="stat-icon green">
+                <i class="bi bi-check2-circle"></i>
+              </span>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statDelivered"
+            >
+              0
+            </div>
+
+            <div class="stat-foot">
+
+              <span class="stat-positive">
+                Successfully completed
+              </span>
+
+            </div>
+
+          </article>
+
+
+          <!-- IN TRANSIT -->
+
+          <article class="stat-card">
+
+            <div class="stat-top">
+
+              <span>In transit</span>
+
+              <span class="stat-icon purple">
+                <i class="bi bi-truck"></i>
+              </span>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statTransit"
+            >
+              0
+            </div>
+
+            <div class="stat-foot">
+
+              <span class="stat-neutral">
+                On the way
+              </span>
+
+            </div>
+
+          </article>
+
+
+          <!-- PENDING -->
+
+          <article class="stat-card">
+
+            <div class="stat-top">
+
+              <span>Pending</span>
+
+              <span class="stat-icon orange">
+                <i class="bi bi-hourglass-split"></i>
+              </span>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statPending"
+            >
+              0
+            </div>
+
+            <div class="stat-foot">
+
+              <span class="stat-neutral">
+                Awaiting dispatch
+              </span>
+
+            </div>
+
+          </article>
+
+        </div>
+
+
+        <!-- CHART AND QUICK ACTIONS -->
+
+        <div class="dashboard-grid">
+
+
+          <!-- DELIVERY CHART -->
+
+          <article class="panel chart-panel">
+
+            <div class="panel-heading">
+
+              <div>
+                <h2>Delivery performance</h2>
+                <p>Parcel status distribution</p>
+              </div>
+
+              <span class="panel-period">
+                <i class="bi bi-calendar3 me-1"></i>
+                Current records
+              </span>
+
+            </div>
+
+            <div class="chart-wrap">
+
+              <canvas id="deliveryChart"></canvas>
+
+            </div>
+
+            <div class="chart-legend">
+
+              <span>
+                <i class="legend-dot delivered"></i>
+                Delivered
+              </span>
+
+              <span>
+                <i class="legend-dot transit"></i>
+                In transit
+              </span>
+
+              <span>
+                <i class="legend-dot pending"></i>
+                Pending
+              </span>
+
+            </div>
+
+          </article>
+
+
+          <!-- QUICK ACTIONS -->
+
+          <article class="panel quick-panel">
+
+            <div class="panel-heading">
+
+              <div>
+                <h2>Quick actions</h2>
+                <p>Common tasks at a glance</p>
+              </div>
+
+            </div>
+
+
+            <a
+              href="admin_parcels.html"
+              class="quick-action"
+              data-page-link="parcels"
+            >
+
+              <span class="quick-icon orange">
+                <i class="bi bi-plus-circle"></i>
+              </span>
+
+              <span>
+                <strong>Add a parcel</strong>
+                <small>Register a new shipment</small>
+              </span>
+
+              <i class="bi bi-chevron-right ms-auto"></i>
+
+            </a>
+
+
+            <a
+              href="admin_tracking.html"
+              class="quick-action"
+              data-page-link="tracking"
+            >
+
+              <span class="quick-icon blue">
+                <i class="bi bi-search"></i>
+              </span>
+
+              <span>
+                <strong>Track a parcel</strong>
+                <small>Check delivery progress</small>
+              </span>
+
+              <i class="bi bi-chevron-right ms-auto"></i>
+
+            </a>
+
+
+            <a
+              href="admin_customers.html"
+              class="quick-action"
+              data-page-link="customers"
+            >
+
+              <span class="quick-icon green">
+                <i class="bi bi-person-plus"></i>
+              </span>
+
+              <span>
+                <strong>View customers</strong>
+                <small>Manage customer records</small>
+              </span>
+
+              <i class="bi bi-chevron-right ms-auto"></i>
+
+            </a>
+
+          </article>
+
+        </div>
+
+
+        <!-- RECENT PARCELS -->
+
+        <article class="panel table-panel mt-4">
+
+          <div class="panel-heading">
+
+            <div>
+              <h2>Recent parcels</h2>
+              <p>Latest parcel activity in your system</p>
+            </div>
+
+            <a
+              href="admin_parcels.html"
+              class="btn btn-light btn-sm"
+              data-page-link="parcels"
+            >
+              View all
+              <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+
+          </div>
+
+
+          <div class="table-responsive">
+
+            <table class="table data-table align-middle">
+
+              <thead>
+
+                <tr>
+                  <th>Tracking ID</th>
+                  <th>Customer</th>
+                  <th>Destination</th>
+                  <th>Date</th>
+                  <th>Shipping Fee</th>
+                  <th>Status</th>
+                </tr>
+
+              </thead>
+
+              <tbody id="recentParcelsBody"></tbody>
+
+            </table>
+
+          </div>
+
+        </article>
+
+      </section>
+
+    </main>
+
+
+    <!-- =================================================
+         5. FOOTER
+    ================================================== -->
+
+    <footer class="app-footer">
+
+      <span>
+        © 2026 <strong>ParcelPro</strong>. All rights reserved.
+      </span>
+
+      <span>
+        Delivering Smarter, Tracking Easier.
+      </span>
+
+    </footer>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     6. TOAST NOTIFICATION
+===================================================== -->
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+  <div
+    id="appToast"
+    class="toast border-0 shadow"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+
+    <div class="d-flex">
+
+      <div class="toast-body">
+
+        <i class="bi bi-check-circle-fill text-success me-2"></i>
+
+        <span id="toastMessage">
+          Saved successfully.
+        </span>
+
+      </div>
+
+      <button
+        type="button"
+        class="btn-close me-3 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     7. JAVASCRIPT
+===================================================== -->
+
+<!-- BOOTSTRAP BUNDLE -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<!-- SHARED ADMIN FUNCTIONS -->
+<script src="../js/admin_common.js"></script>
+
+<!-- DASHBOARD FUNCTIONS -->
+<script src="../js/admin.js"></script>
+
+</body>
+</html>
