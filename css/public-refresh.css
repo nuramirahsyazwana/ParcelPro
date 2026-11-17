@@ -326,3 +326,75 @@ body.pp-public{background:#fff;color:#14243a;font-family:'DM Sans',sans-serif}
     animation: none;
   }
 }
+
+/* =========================================
+   PARCELPRO - MOBILE NAVIGATION FIX
+   ========================================= */
+
+@media screen and (max-width: 760px) {
+
+  .pp-header {
+    position: sticky !important;
+    top: 0;
+    z-index: 1050 !important;
+    overflow: visible !important;
+    height: 68px !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+  }
+
+  .pp-menu-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1052 !important;
+    order: 3;
+    margin-left: 8px;
+    cursor: pointer;
+    pointer-events: auto !important;
+  }
+
+  .pp-head-actions {
+    margin-left: auto !important;
+  }
+
+  .pp-header nav#navLinks.pp-nav {
+    display: none !important;
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 12px 22px !important;
+    background: #ffffff !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    z-index: 1051 !important;
+    box-shadow: 0 10px 20px rgba(0, 19, 41, 0.15) !important;
+  }
+
+  .pp-header nav#navLinks.pp-nav.open {
+    display: flex !important;
+  }
+
+  .pp-header nav#navLinks.pp-nav a {
+    display: block !important;
+    width: 100%;
+    padding: 14px 0 !important;
+    color: #082b55 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    text-decoration: none;
+    border-bottom: 1px solid #edf1f5;
+  }
+
+  .pp-header nav#navLinks.pp-nav a:last-child {
+    border-bottom: none;
+  }
+
+}
