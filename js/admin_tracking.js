@@ -3,8 +3,18 @@
    PARCELPRO - ADMIN_TRACKING.JS
    Parcel Tracking System
    Linked with ADMIN_PARCELS.JS
-   Shared Storage: parcelpro_parcels
-   Search by Tracking ID + Live Status Updates
+
+   UPDATED:
+   - Shared parcel storage
+   - Search by Tracking ID first
+   - Parcel ID fallback for legacy records
+   - Customer ID displayed separately
+   - Current status synchronized with Parcel Management
+   - Preserve existing tracking history
+   - Auto-refresh after parcel updates
+   - Support same-tab and other-tab updates
+
+   Storage: localStorage
 ========================================================= */
 
 (() => {
@@ -17,7 +27,9 @@
   const Admin = window.ParcelProAdmin;
 
   if (!Admin) {
-    console.error("ParcelProAdmin not found. Load admin_common.js first.");
+    console.error(
+      "ParcelProAdmin not found. Load admin_common.js first."
+    );
     return;
   }
 
@@ -49,7 +61,10 @@
     try {
       if (typeof Admin.readList === "function") {
         const records = Admin.readList(STORAGE.parcels);
-        if (Array.isArray(records)) return records;
+
+        if (Array.isArray(records)) {
+          return records;
+        }
       }
 
       const records = JSON.parse(
@@ -59,7 +74,11 @@
       return Array.isArray(records) ? records : [];
 
     } catch (error) {
-      console.error("Unable to read parcel records:", error);
+      console.error(
+        "Unable to read parcel records:",
+        error
+      );
+
       return [];
     }
   }
@@ -130,22 +149,29 @@
 
     if (!searchValue) return null;
 
-    return getParcels().find(parcel => {
+    const parcels = getParcels();
+
+    // Search by Tracking ID first.
+    const trackingMatch = parcels.find(parcel => {
       const trackingId = normalizeId(
         parcel.trackingNumber || parcel.trackingNo
       );
 
-      const parcelId = normalizeId(parcel.id);
+      return trackingId === searchValue;
+    });
 
-      return (
-        trackingId === searchValue ||
-        parcelId === searchValue
-      );
-    }) || null;
+    if (trackingMatch) {
+      return trackingMatch;
+    }
+
+    // Fallback: support older Parcel ID records.
+    return parcels.find(parcel =>
+      normalizeId(parcel.id) === searchValue
+    ) || null;
   }
 
   // =======================================================
-  // 6. TRACKING HISTORY
+  // 6. TRACKING HISTORY CONFIGURATION
   // =======================================================
 
   function getStatusDescription(status) {
@@ -165,30 +191,66 @@
       failed: "Delivery attempt was unsuccessful."
     };
 
-    return descriptions[value] || "Parcel status updated.";
+    return descriptions[value] ||
+      "Parcel status updated.";
   }
 
   function getTrackingHistory(parcel) {
-    const history = Array.isArray(parcel.history)
-      ? parcel.history
-      : Array.isArray(parcel.trackingHistory)
-        ? parcel.trackingHistory
-        : [];
+    let history = [];
 
-    if (history.length > 0) {
-      return history;
+    // Read current history.
+    if (
+      Array.isArray(parcel.history) &&
+      parcel.history.length > 0
+    ) {
+      history = [...parcel.history];
+
+    } else if (
+      Array.isArray(parcel.trackingHistory) &&
+      parcel.trackingHistory.length > 0
+    ) {
+      history = [...parcel.trackingHistory];
+
+    } else if (Array.isArray(parcel.history)) {
+      history = [...parcel.history];
+
+    } else if (Array.isArray(parcel.trackingHistory)) {
+      history = [...parcel.trackingHistory];
     }
 
-    return [{
-      status: parcel.status || "Pending",
-      date:
-        parcel.updated ||
-        parcel.updatedAt ||
-        parcel.created ||
-        parcel.date ||
-        "",
-      description: getStatusDescription(parcel.status)
-    }];
+    const currentStatus = String(
+      parcel.status || "Pending"
+    ).trim();
+
+    const latestHistory = history.length
+      ? history[history.length - 1]
+      : null;
+
+    const latestStatus = String(
+      latestHistory?.status || ""
+    ).trim();
+
+    // Ensure displayed history matches current parcel status.
+    if (
+      !latestHistory ||
+      latestStatus.toLowerCase() !==
+      currentStatus.toLowerCase()
+    ) {
+      history.push({
+        status: currentStatus,
+
+        date:
+          parcel.updated ||
+          parcel.updatedAt ||
+          parcel.created ||
+          parcel.date ||
+          "",
+
+        description: getStatusDescription(currentStatus)
+      });
+    }
+
+    return history;
   }
 
   // =======================================================
@@ -233,7 +295,9 @@
 
             <div class="tracking-history-content">
               <strong>${escape(status)}</strong>
+
               <p>${escape(description)}</p>
+
               <small>${escape(formatDate(date))}</small>
             </div>
           </div>
@@ -246,21 +310,28 @@
       parcel.finalPrice ??
       parcel.price;
 
+    const currentStatus = parcel.status || "Pending";
+
     elements.result.innerHTML = `
       <div class="card border-0 shadow-sm mt-4">
         <div class="card-body p-4">
 
           <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+
             <div>
-              <small class="text-muted">PARCEL TRACKING ID</small>
+              <small class="text-muted">
+                PARCEL TRACKING ID
+              </small>
+
               <h5 class="fw-bold mb-1">
                 ${escape(trackingNumber)}
               </h5>
             </div>
 
-            <span class="badge ${escape(statusClass(parcel.status))} px-3 py-2">
-              ${escape(parcel.status || "Pending")}
+            <span class="badge ${escape(statusClass(currentStatus))} px-3 py-2">
+              ${escape(currentStatus)}
             </span>
+
           </div>
 
           <hr>
@@ -269,6 +340,7 @@
 
             <div class="col-md-6">
               <small class="text-muted">Customer ID</small>
+
               <div class="fw-semibold">
                 ${escape(parcel.customerId || "-")}
               </div>
@@ -276,6 +348,7 @@
 
             <div class="col-md-6">
               <small class="text-muted">Recipient</small>
+
               <div class="fw-semibold">
                 ${escape(recipient)}
               </div>
@@ -283,6 +356,7 @@
 
             <div class="col-md-6">
               <small class="text-muted">Phone Number</small>
+
               <div class="fw-semibold">
                 ${escape(parcel.phone || "-")}
               </div>
@@ -290,13 +364,19 @@
 
             <div class="col-md-6">
               <small class="text-muted">Delivery Address</small>
+
               <div class="fw-semibold">
-                ${escape(parcel.address || parcel.receiverAddress || "-")}
+                ${escape(
+                  parcel.address ||
+                  parcel.receiverAddress ||
+                  "-"
+                )}
               </div>
             </div>
 
             <div class="col-md-6">
               <small class="text-muted">Courier</small>
+
               <div class="fw-semibold">
                 ${escape(parcel.courier || "-")}
               </div>
@@ -304,6 +384,7 @@
 
             <div class="col-md-6">
               <small class="text-muted">Parcel Type</small>
+
               <div class="fw-semibold">
                 ${escape(parcel.type || "-")}
               </div>
@@ -311,19 +392,27 @@
 
             <div class="col-md-6">
               <small class="text-muted">Shipping Date</small>
+
               <div class="fw-semibold">
-                ${escape(formatDate(parcel.date || parcel.created || ""))}
+                ${escape(
+                  formatDate(parcel.date || parcel.created || "")
+                )}
               </div>
             </div>
 
             <div class="col-md-6">
               <small class="text-muted">Shipping Fee</small>
+
               <div class="fw-semibold">
-                ${fee !== undefined && fee !== null
-                  ? escape(typeof Admin.money === "function"
-                      ? Admin.money(Number(fee) || 0)
-                      : "RM " + (Number(fee) || 0).toFixed(2))
-                  : "-"}
+                ${
+                  fee !== undefined && fee !== null
+                    ? escape(
+                        typeof Admin.money === "function"
+                          ? Admin.money(Number(fee) || 0)
+                          : "RM " + (Number(fee) || 0).toFixed(2)
+                      )
+                    : "-"
+                }
               </div>
             </div>
 
@@ -372,12 +461,19 @@
   // =======================================================
 
   function searchTracking(event) {
-    if (event) event.preventDefault();
+    if (event) {
+      event.preventDefault();
+    }
 
-    const trackingNumber = elements.input?.value.trim() || "";
+    const trackingNumber =
+      elements.input?.value.trim() || "";
 
     if (!trackingNumber) {
-      showMessage("Please enter a parcel tracking ID.", "warning");
+      showMessage(
+        "Please enter a parcel tracking ID.",
+        "warning"
+      );
+
       return;
     }
 
@@ -420,7 +516,8 @@
   // =======================================================
 
   function refreshCurrentTracking() {
-    const trackingNumber = elements.input?.value.trim() || "";
+    const trackingNumber =
+      elements.input?.value.trim() || "";
 
     if (!trackingNumber) return;
 
@@ -428,6 +525,7 @@
 
     if (parcel) {
       renderTracking(parcel);
+
     } else {
       clearTracking();
     }
@@ -444,6 +542,7 @@
         "submit",
         searchTracking
       );
+
     } else if (elements.searchButton) {
       elements.searchButton.addEventListener(
         "click",
@@ -456,7 +555,7 @@
       clearTracking
     );
 
-    // Updates from Parcel Management in the same tab
+    // Same-tab Parcel Management updates.
     window.addEventListener(
       "parcelpro:dataUpdated",
       event => {
@@ -469,7 +568,7 @@
       }
     );
 
-    // Updates from another browser tab
+    // Other-tab localStorage updates.
     window.addEventListener("storage", event => {
       if (
         event.key === STORAGE.parcels ||
@@ -502,6 +601,7 @@
       "DOMContentLoaded",
       initialise
     );
+
   } else {
     initialise();
   }
