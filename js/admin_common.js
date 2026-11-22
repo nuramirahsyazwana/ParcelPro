@@ -3,6 +3,12 @@
    PARCELPRO - ADMIN COMMON
    Shared Data + Authentication + Helpers
    Storage: localStorage
+
+   UPDATED:
+   - Admin-only customer shipping fees
+   - 5 existing customers have shipping fee information
+   - Actual parcel fees take priority
+   - Demo fees do not create Customer Portal parcels
 ========================================================= */
 
 (() => {
@@ -18,11 +24,14 @@
     users: "parcelpro_users",
     session: "parcelpro_session",
     payments: "parcelpro_payments",
-    language: "parcelpro_admin_language"
+    language: "parcelpro_admin_language",
+
+    // Admin-only shipping fee records
+    adminCustomerFees: "parcelpro_admin_customer_shipping_fees"
   };
 
   // =======================================================
-  // 2. DEFAULT DATA
+  // 2. DEFAULT CUSTOMER DATA
   // =======================================================
 
   const seedCustomers = [
@@ -62,6 +71,10 @@
       location: "Kuala Lumpur"
     }
   ];
+
+  // =======================================================
+  // 3. DEFAULT PARCEL DATA
+  // =======================================================
 
   const seedParcels = [
     {
@@ -162,13 +175,68 @@
   ];
 
   // =======================================================
-  // 3. STORAGE HELPERS
+  // 4. ADMIN-ONLY CUSTOMER SHIPPING FEES
+  //
+  // These are separate from Customer Portal parcels.
+  // Amir and Lim are demonstration shipping records.
+  // Their fees are calculated using the existing rates.
+  // =======================================================
+
+  const seedAdminCustomerFees = [
+    {
+      customerEmail: "aisyah.rahman@email.com",
+      shippingFee: 10.00,
+      packageType: "Small package",
+      weight: 1,
+      shippingType: "Domestic",
+      destinationCountry: "Malaysia"
+    },
+    {
+      customerEmail: "daniel.tan@email.com",
+      shippingFee: 6.00,
+      packageType: "Document",
+      weight: 1,
+      shippingType: "Domestic",
+      destinationCountry: "Malaysia"
+    },
+    {
+      customerEmail: "nur.izzati@email.com",
+      shippingFee: 15.00,
+      packageType: "Medium package",
+      weight: 1,
+      shippingType: "Domestic",
+      destinationCountry: "Malaysia"
+    },
+    {
+      customerEmail: "amir.m@email.com",
+      shippingFee: 17.50,
+      packageType: "Medium package",
+      weight: 2,
+      shippingType: "Domestic",
+      destinationCountry: "Malaysia"
+    },
+    {
+      customerEmail: "lim.weijian@email.com",
+      shippingFee: 15.00,
+      packageType: "Small package",
+      weight: 3,
+      shippingType: "Domestic",
+      destinationCountry: "Malaysia"
+    }
+  ];
+
+  // =======================================================
+  // 5. STORAGE HELPERS
   // =======================================================
 
   function read(key, fallback = null) {
     try {
       const value = localStorage.getItem(key);
-      return value === null ? fallback : JSON.parse(value);
+
+      return value === null
+        ? fallback
+        : JSON.parse(value);
+
     } catch (error) {
       console.error("ParcelPro storage read error:", error);
       return fallback;
@@ -179,6 +247,7 @@
     try {
       localStorage.setItem(key, JSON.stringify(value));
       return true;
+
     } catch (error) {
       console.error("ParcelPro storage save error:", error);
       return false;
@@ -187,10 +256,16 @@
 
   function readList(key) {
     const value = read(key, []);
+
     return Array.isArray(value) ? value : [];
   }
 
+  // =======================================================
+  // 6. INITIALISE STORAGE
+  // =======================================================
+
   function initialiseStorage() {
+
     if (localStorage.getItem(STORAGE.customers) === null) {
       save(STORAGE.customers, seedCustomers);
     }
@@ -208,12 +283,24 @@
         role: "admin"
       }]);
     }
+
+    // Initialise Admin-only shipping fee information.
+    // Does not modify Customer Portal parcel records.
+
+    if (
+      localStorage.getItem(STORAGE.adminCustomerFees) === null
+    ) {
+      save(
+        STORAGE.adminCustomerFees,
+        seedAdminCustomerFees
+      );
+    }
   }
 
   initialiseStorage();
 
   // =======================================================
-  // 4. SHARED DATA
+  // 7. SHARED DATA
   // =======================================================
 
   let parcels = readList(STORAGE.parcels);
@@ -222,7 +309,7 @@
   let currentUser = read(STORAGE.session, null);
 
   // =======================================================
-  // 5. GENERAL HELPERS
+  // 8. GENERAL HELPERS
   // =======================================================
 
   const $ = selector => document.querySelector(selector);
@@ -232,7 +319,9 @@
   ];
 
   function normalizeEmail(email) {
-    return String(email || "").trim().toLowerCase();
+    return String(email || "")
+      .trim()
+      .toLowerCase();
   }
 
   function escapeHTML(value) {
@@ -256,7 +345,7 @@
   }
 
   // =======================================================
-  // MONEY FORMAT
+  // 9. MONEY FORMAT
   // =======================================================
 
   function money(value) {
@@ -267,17 +356,14 @@
   }
 
   // =======================================================
-  // SHIPPING FEE HELPER
-  // FIXED: Do not let finalPrice = 0 hide shippingFee.
-  // Existing seed parcel prices are used as fallback.
+  // 10. SHIPPING FEE HELPER
   // =======================================================
 
   function getParcelFee(parcel = {}) {
 
-    // Check saved parcel prices first.
     const savedPrices = [
-      parcel.finalPrice,
       parcel.shippingFee,
+      parcel.finalPrice,
       parcel.price
     ];
 
@@ -289,7 +375,10 @@
         value !== ""
       ) {
         const amount = Number(
-          String(value).replace(/RM\s*/i, "").replace(/,/g, "")
+          String(value)
+            .replace(/RM\s*/i, "")
+            .replace(/,/g, "")
+            .trim()
         );
 
         if (Number.isFinite(amount) && amount > 0) {
@@ -298,8 +387,8 @@
       }
     }
 
-    // If saved parcel has no valid price,
-    // find its matching default seed parcel.
+    // Fallback to original seed parcel data.
+
     const trackingId = String(
       parcel.trackingNumber || parcel.id || ""
     ).trim();
@@ -309,21 +398,28 @@
     );
 
     if (defaultParcel) {
+
       const defaultPrice = Number(
-        defaultParcel.finalPrice ??
         defaultParcel.shippingFee ??
+        defaultParcel.finalPrice ??
         defaultParcel.price ??
         0
       );
 
-      if (Number.isFinite(defaultPrice) && defaultPrice > 0) {
+      if (
+        Number.isFinite(defaultPrice) &&
+        defaultPrice > 0
+      ) {
         return defaultPrice;
       }
     }
 
-    // No price available.
     return 0;
   }
+
+  // =======================================================
+  // 11. DATE HELPERS
+  // =======================================================
 
   function dateFormat(value) {
     if (!value) return "—";
@@ -353,7 +449,7 @@
   }
 
   // =======================================================
-  // STATUS HELPERS
+  // 12. STATUS HELPERS
   // =======================================================
 
   function normalizeStatus(status) {
@@ -382,7 +478,9 @@
   function statusClass(status) {
     const value = normalizeStatus(status);
 
-    if (value === "Delivered") return "status-delivered";
+    if (value === "Delivered") {
+      return "status-delivered";
+    }
 
     if (
       value === "In Transit" ||
@@ -392,7 +490,10 @@
       return "status-transit";
     }
 
-    if (value === "Cancelled" || value === "Failed") {
+    if (
+      value === "Cancelled" ||
+      value === "Failed"
+    ) {
       return "status-cancelled";
     }
 
@@ -412,15 +513,18 @@
   }
 
   // =======================================================
-  // 6. CUSTOMER HELPERS
+  // 13. CUSTOMER HELPERS
   // =======================================================
 
   function getCustomerForParcel(parcel = {}) {
+
     return customers.find(customer =>
       String(customer.id) === String(parcel.customerId)
     ) || customers.find(customer =>
       normalizeEmail(customer.email) ===
-      normalizeEmail(parcel.customerEmail || parcel.senderEmail)
+      normalizeEmail(
+        parcel.customerEmail || parcel.senderEmail
+      )
     ) || null;
   }
 
@@ -445,7 +549,11 @@
   }
 
   function getCustomerParcels(customer = {}) {
-    return parcels.filter(parcel =>
+
+    // Refresh parcel data before matching.
+    const currentParcels = readList(STORAGE.parcels);
+
+    return currentParcels.filter(parcel =>
       String(parcel.customerId) === String(customer.id) ||
       (
         customer.email &&
@@ -455,13 +563,59 @@
     );
   }
 
+  // =======================================================
+  // 14. ADMIN CUSTOMER SHIPPING FEE
+  //
+  // Actual parcel fees take priority.
+  // Admin-only demo fees are used when no parcel exists.
+  // =======================================================
+
+  function getAdminCustomerShippingFee(customer = {}) {
+
+    const customerParcels = getCustomerParcels(customer);
+
+    // If actual parcel records exist, calculate their total.
+    if (customerParcels.length > 0) {
+
+      return customerParcels.reduce((total, parcel) => {
+        return total + getParcelFee(parcel);
+      }, 0);
+    }
+
+    // Otherwise, read Admin-only fee information.
+    const fees = readList(STORAGE.adminCustomerFees);
+
+    const customerEmail = normalizeEmail(customer.email);
+
+    const record = fees.find(item =>
+      normalizeEmail(item.customerEmail) === customerEmail
+    );
+
+    if (!record) {
+      return null;
+    }
+
+    const amount = Number(record.shippingFee);
+
+    return (
+      Number.isFinite(amount) && amount > 0
+    ) ? amount : null;
+  }
+
+  // =======================================================
+  // 15. LINK OLD PARCELS TO CUSTOMERS
+  // =======================================================
+
   function linkOldParcelsToCustomers() {
+
     let changed = false;
 
     parcels = parcels.map(parcel => {
+
       let customer = getCustomerForParcel(parcel);
 
       if (!customer) {
+
         const recipient = String(
           parcel.customerName ||
           parcel.senderName ||
@@ -478,9 +632,12 @@
 
       const updated = {
         ...parcel,
+
         customerId: parcel.customerId || customer.id,
-        customerEmail: parcel.customerEmail || customer.email || "",
-        customerName: parcel.customerName || customer.name || ""
+        customerEmail:
+          parcel.customerEmail || customer.email || "",
+        customerName:
+          parcel.customerName || customer.name || ""
       };
 
       if (!updated.senderName) {
@@ -496,7 +653,10 @@
           customer.location || customer.address || "";
       }
 
-      if (JSON.stringify(updated) !== JSON.stringify(parcel)) {
+      if (
+        JSON.stringify(updated) !==
+        JSON.stringify(parcel)
+      ) {
         changed = true;
       }
 
@@ -509,10 +669,11 @@
   }
 
   // =======================================================
-  // 7. DATA REFRESH + EVENT SYSTEM
+  // 16. DATA REFRESH + EVENT SYSTEM
   // =======================================================
 
   function refreshData() {
+
     parcels = readList(STORAGE.parcels);
     customers = readList(STORAGE.customers);
     users = readList(STORAGE.users);
@@ -527,6 +688,7 @@
   }
 
   function dispatchDataUpdated(key = STORAGE.parcels) {
+
     const detail = {
       key,
       parcels: readList(STORAGE.parcels),
@@ -537,42 +699,53 @@
     refreshData();
 
     window.dispatchEvent(
-      new CustomEvent("parcelpro:dataUpdated", { detail })
+      new CustomEvent("parcelpro:dataUpdated", {
+        detail
+      })
     );
 
     document.dispatchEvent(
-      new CustomEvent("parcelpro:dataUpdated", { detail })
+      new CustomEvent("parcelpro:dataUpdated", {
+        detail
+      })
     );
   }
 
   function setParcels(value) {
+
     if (!Array.isArray(value)) return false;
 
     if (!save(STORAGE.parcels, value)) return false;
 
     parcels = value;
+
     dispatchDataUpdated(STORAGE.parcels);
 
     return true;
   }
 
   function setCustomers(value) {
+
     if (!Array.isArray(value)) return false;
 
     if (!save(STORAGE.customers, value)) return false;
 
     customers = value;
+
     dispatchDataUpdated(STORAGE.customers);
 
     return true;
   }
 
   function persist() {
+
     const parcelsSaved = save(STORAGE.parcels, parcels);
     const customersSaved = save(STORAGE.customers, customers);
 
     if (parcelsSaved && customersSaved) {
+
       dispatchDataUpdated(STORAGE.parcels);
+
       return true;
     }
 
@@ -580,10 +753,11 @@
   }
 
   // =======================================================
-  // 8. TOAST + ALERT
+  // 17. TOAST + ALERT
   // =======================================================
 
   function toast(message) {
+
     const toastElement = $("#appToast");
 
     if (!toastElement || !window.bootstrap) {
@@ -603,6 +777,7 @@
   }
 
   function showAlert(selector, message) {
+
     const element = $(selector);
 
     if (!element) return;
@@ -616,10 +791,11 @@
   }
 
   // =======================================================
-  // 9. USER INTERFACE
+  // 18. USER INTERFACE
   // =======================================================
 
   function updateUserUI() {
+
     if (!currentUser) return;
 
     const name = currentUser.name || "Admin User";
@@ -664,20 +840,23 @@
     }
 
     if ($("#profileEmail")) {
-      $("#profileEmail").value = currentUser.email || "";
+      $("#profileEmail").value =
+        currentUser.email || "";
     }
   }
 
   // =======================================================
-  // 10. NAVIGATION
+  // 19. NAVIGATION
   // =======================================================
 
   function closeSidebar() {
+
     $("#sidebar")?.classList.remove("open");
     $("#sidebarBackdrop")?.classList.remove("show");
   }
 
   function navigate(page) {
+
     const pageURLs = {
       dashboard: "admin.html",
       parcels: "admin_parcels.html",
@@ -698,33 +877,47 @@
   }
 
   function initialiseNavigation() {
+
     $$("[data-page]").forEach(link => {
+
       link.addEventListener("click", event => {
+
         event.preventDefault();
+
         navigate(link.dataset.page);
       });
     });
 
     $$("[data-page-link]").forEach(button => {
+
       button.addEventListener("click", () => {
         navigate(button.dataset.pageLink);
       });
     });
 
     $("#openSidebar")?.addEventListener("click", () => {
+
       $("#sidebar")?.classList.add("open");
       $("#sidebarBackdrop")?.classList.add("show");
     });
 
-    $("#closeSidebar")?.addEventListener("click", closeSidebar);
-    $("#sidebarBackdrop")?.addEventListener("click", closeSidebar);
+    $("#closeSidebar")?.addEventListener(
+      "click",
+      closeSidebar
+    );
+
+    $("#sidebarBackdrop")?.addEventListener(
+      "click",
+      closeSidebar
+    );
   }
 
   // =======================================================
-  // 11. AUTHENTICATION
+  // 20. AUTHENTICATION
   // =======================================================
 
   function showApp(user) {
+
     if (!user) return;
 
     currentUser = {
@@ -755,6 +948,7 @@
   }
 
   function isLoggedIn() {
+
     refreshData();
 
     if (!currentUser?.email) return false;
@@ -767,12 +961,14 @@
   }
 
   function requireAdmin() {
+
     if (!isLoggedIn()) {
       location.replace("admin.html");
       return false;
     }
 
     $("#appShell")?.classList.remove("d-none");
+
     updateUserUI();
 
     return true;
@@ -784,7 +980,9 @@
   }
 
   function logout() {
+
     localStorage.removeItem(STORAGE.session);
+
     currentUser = null;
 
     const appShell = $("#appShell");
@@ -793,8 +991,11 @@
     appShell?.classList.add("d-none");
 
     if (authScreen) {
+
       authScreen.classList.remove("d-none");
+
     } else {
+
       location.href = "admin.html";
       return;
     }
@@ -809,36 +1010,50 @@
   }
 
   function initialiseAuthentication() {
+
     const authScreen = $("#authScreen");
     const appShell = $("#appShell");
 
     if (authScreen && appShell) {
+
       if (currentUser && isLoggedIn()) {
+
         const matchedUser = users.find(user =>
           normalizeEmail(user.email) ===
           normalizeEmail(currentUser.email)
         );
 
         showApp(matchedUser);
+
       } else {
+
         localStorage.removeItem(STORAGE.session);
+
         currentUser = null;
 
         authScreen.classList.remove("d-none");
         appShell.classList.add("d-none");
       }
+
     } else {
+
       if (!requireAdmin()) return;
     }
 
     $("#loginForm")?.addEventListener("submit", event => {
+
       event.preventDefault();
+
       hideAlert("#loginAlert");
 
       refreshData();
 
-      const email = normalizeEmail($("#loginEmail")?.value);
-      const password = $("#loginPassword")?.value || "";
+      const email = normalizeEmail(
+        $("#loginEmail")?.value
+      );
+
+      const password =
+        $("#loginPassword")?.value || "";
 
       const user = users.find(item =>
         normalizeEmail(item.email) === email &&
@@ -846,18 +1061,22 @@
       );
 
       if (!user) {
+
         showAlert(
           "#loginAlert",
           "Invalid email address or password. Please try again."
         );
+
         return;
       }
 
       if (user.role && user.role !== "admin") {
+
         showAlert(
           "#loginAlert",
           "Please use the Customer Portal to access your account."
         );
+
         return;
       }
 
@@ -865,30 +1084,42 @@
     });
 
     $("#registerForm")?.addEventListener("submit", event => {
+
       event.preventDefault();
+
       hideAlert("#registerAlert");
 
       refreshData();
 
-      const name = $("#registerName")?.value.trim() || "";
-      const email = normalizeEmail($("#registerEmail")?.value);
-      const password = $("#registerPassword")?.value || "";
+      const name =
+        $("#registerName")?.value.trim() || "";
+
+      const email = normalizeEmail(
+        $("#registerEmail")?.value
+      );
+
+      const password =
+        $("#registerPassword")?.value || "";
 
       if (!name || !email || password.length < 6) {
+
         showAlert(
           "#registerAlert",
           "Please complete all fields. Password must contain at least 6 characters."
         );
+
         return;
       }
 
       if (users.some(user =>
         normalizeEmail(user.email) === email
       )) {
+
         showAlert(
           "#registerAlert",
           "An account with this email already exists."
         );
+
         return;
       }
 
@@ -903,18 +1134,22 @@
       users.push(newUser);
 
       if (!save(STORAGE.users, users)) {
+
         showAlert(
           "#registerAlert",
           "Unable to save your account."
         );
+
         return;
       }
 
       showApp(newUser);
+
       toast("Your account has been created.");
     });
 
     $("#showRegister")?.addEventListener("click", event => {
+
       event.preventDefault();
 
       $("#loginPanel")?.classList.add("d-none");
@@ -922,6 +1157,7 @@
     });
 
     $("#showLogin")?.addEventListener("click", event => {
+
       event.preventDefault();
 
       $("#registerPanel")?.classList.add("d-none");
@@ -931,29 +1167,36 @@
     $("#logoutButton")?.addEventListener("click", logout);
 
     $$("[data-toggle-password]").forEach(button => {
+
       button.addEventListener("click", () => {
+
         const input = $("#" + button.dataset.togglePassword);
 
         if (!input) return;
 
         input.type =
-          input.type === "password" ? "text" : "password";
+          input.type === "password"
+            ? "text"
+            : "password";
 
-        button.innerHTML = input.type === "password"
-          ? '<i class="bi bi-eye"></i>'
-          : '<i class="bi bi-eye-slash"></i>';
+        button.innerHTML =
+          input.type === "password"
+            ? '<i class="bi bi-eye"></i>'
+            : '<i class="bi bi-eye-slash"></i>';
       });
     });
   }
 
   // =======================================================
-  // 12. DATE + LANGUAGE
+  // 21. DATE + LANGUAGE
   // =======================================================
 
   function initialiseDate() {
+
     const dateElement = $("#currentDate");
 
     if (dateElement) {
+
       dateElement.textContent =
         new Date().toLocaleDateString("en-MY", {
           weekday: "long",
@@ -965,17 +1208,25 @@
   }
 
   function initialiseLanguage() {
+
     const select = $("#adminLanguageSelect");
+
     const savedLanguage =
       localStorage.getItem(STORAGE.language) || "en";
 
     if (select) {
+
       select.value = savedLanguage;
 
       select.addEventListener("change", event => {
+
         const language = event.target.value;
 
-        localStorage.setItem(STORAGE.language, language);
+        localStorage.setItem(
+          STORAGE.language,
+          language
+        );
+
         document.documentElement.lang = language;
 
         toast(
@@ -992,10 +1243,11 @@
   }
 
   // =======================================================
-  // 13. CUSTOMER DROPDOWN
+  // 22. CUSTOMER DROPDOWN
   // =======================================================
 
   function populateParcelCustomers(selectedId = "") {
+
     const select = $("#parcelRecipient");
 
     if (!select) return;
@@ -1004,6 +1256,7 @@
       '<option value="">Select customer</option>';
 
     customers.forEach(customer => {
+
       const option = document.createElement("option");
 
       option.value = String(customer.id);
@@ -1011,7 +1264,9 @@
       option.textContent =
         `${customer.name || customer.email} (${customer.email || ""})`;
 
-      if (String(customer.id) === String(selectedId)) {
+      if (
+        String(customer.id) === String(selectedId)
+      ) {
         option.selected = true;
       }
 
@@ -1020,6 +1275,7 @@
   }
 
   function fillCustomerDetails() {
+
     const select = $("#parcelRecipient");
 
     if (!select) return;
@@ -1032,8 +1288,10 @@
     const address = $("#parcelAddress");
 
     if (!customer) {
+
       if (phone) phone.value = "";
       if (address) address.value = "";
+
       return;
     }
 
@@ -1042,12 +1300,14 @@
     }
 
     if (address) {
+
       address.value =
         customer.location || customer.address || "";
     }
   }
 
   function initialiseCustomerDropdown() {
+
     populateParcelCustomers();
 
     $("#parcelRecipient")?.addEventListener(
@@ -1057,47 +1317,60 @@
   }
 
   // =======================================================
-  // 14. CROSS-TAB STORAGE UPDATES
+  // 23. CROSS-TAB STORAGE UPDATES
   // =======================================================
 
   window.addEventListener("storage", event => {
+
     if (
       event.key === STORAGE.customers ||
       event.key === STORAGE.parcels ||
       event.key === STORAGE.users ||
       event.key === STORAGE.payments ||
+      event.key === STORAGE.adminCustomerFees ||
       event.key === null
     ) {
+
       refreshData();
 
       const changedKey = event.key || STORAGE.parcels;
 
       dispatchDataUpdated(changedKey);
+
       updateUserUI();
+
       populateParcelCustomers();
     }
   });
 
   // =======================================================
-  // 15. INITIALISE
+  // 24. INITIALISE
   // =======================================================
 
   function initialise() {
+
     refreshData();
+
     linkOldParcelsToCustomers();
 
     initialiseNavigation();
+
     initialiseAuthentication();
+
     initialiseDate();
+
     initialiseLanguage();
+
     initialiseCustomerDropdown();
+
   }
 
   // =======================================================
-  // 16. PUBLIC API
+  // 25. PUBLIC API
   // =======================================================
 
   window.ParcelProAdmin = {
+
     STORAGE,
 
     $,
@@ -1156,20 +1429,26 @@
     normalizeEmail,
     initials,
     money,
+
     getParcelFee,
+    getAdminCustomerShippingFee,
+
     dateFormat,
     getToday,
+
     normalizeStatus,
     statusClass,
 
     getShippingType,
     getDestination,
+
     getCustomerForParcel,
     getCustomerName,
     getReceiverName,
     getCustomerParcels,
 
     linkOldParcelsToCustomers,
+
     populateParcelCustomers,
     fillCustomerDetails,
 
@@ -1183,13 +1462,25 @@
 
     getCurrentUser: () => currentUser,
     getCurrentAdmin: () => currentUser,
+
     getParcels: () => readList(STORAGE.parcels),
     getCustomers: () => readList(STORAGE.customers)
+
   };
 
+  // =======================================================
+  // 26. DOCUMENT INITIALISATION
+  // =======================================================
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initialise);
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      initialise
+    );
+
   } else {
+
     initialise();
   }
 
