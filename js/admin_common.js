@@ -13,6 +13,7 @@
    - Added parcel PP1005 for Lim Wei Jian
    - Existing localStorage data is preserved
    - Actual parcel fees take priority
+   - Backup fee used when parcel fee is RM0.00
 ========================================================= */
 
 (() => {
@@ -508,6 +509,7 @@
       }
     }
 
+    // Fallback to the default seed parcel fee.
     const trackingId = String(
       parcel.trackingNumber || parcel.id || ""
     ).trim();
@@ -698,19 +700,30 @@
   // =======================================================
   // 15. ADMIN CUSTOMER SHIPPING FEE
   // Actual parcel fees take priority.
+  // Backup fee is used when actual fee is missing or zero.
   // =======================================================
 
   function getAdminCustomerShippingFee(customer = {}) {
 
     const customerParcels = getCustomerParcels(customer);
 
-    if (customerParcels.length > 0) {
-
-      return customerParcels.reduce((total, parcel) => {
+    // Step 1: Calculate actual parcel fees.
+    const actualTotal = customerParcels.reduce(
+      (total, parcel) => {
         return total + getParcelFee(parcel);
-      }, 0);
+      },
+      0
+    );
+
+    // Step 2: Use actual fee if greater than zero.
+    if (
+      Number.isFinite(actualTotal) &&
+      actualTotal > 0
+    ) {
+      return actualTotal;
     }
 
+    // Step 3: Find backup fee record using email.
     const fees = readList(STORAGE.adminCustomerFees);
 
     const customerEmail = normalizeEmail(customer.email);
@@ -719,15 +732,43 @@
       normalizeEmail(item.customerEmail) === customerEmail
     );
 
-    if (!record) {
-      return null;
+    if (record) {
+
+      const amount = Number(
+        String(record.shippingFee ?? 0)
+          .replace(/RM\s*/i, "")
+          .replace(/,/g, "")
+          .trim()
+      );
+
+      if (
+        Number.isFinite(amount) &&
+        amount > 0
+      ) {
+        return amount;
+      }
     }
 
-    const amount = Number(record.shippingFee);
+    // Step 4: Last fallback to default seed fee.
+    const defaultRecord = seedAdminCustomerFees.find(item =>
+      normalizeEmail(item.customerEmail) === customerEmail
+    );
 
-    return (
-      Number.isFinite(amount) && amount > 0
-    ) ? amount : null;
+    if (defaultRecord) {
+
+      const defaultAmount = Number(
+        defaultRecord.shippingFee
+      );
+
+      if (
+        Number.isFinite(defaultAmount) &&
+        defaultAmount > 0
+      ) {
+        return defaultAmount;
+      }
+    }
+
+    return null;
   }
 
   // Get the complete fee record for one customer.
@@ -736,6 +777,9 @@
     const fees = readList(STORAGE.adminCustomerFees);
 
     return fees.find(item =>
+      normalizeEmail(item.customerEmail) ===
+      normalizeEmail(customer.email)
+    ) || seedAdminCustomerFees.find(item =>
       normalizeEmail(item.customerEmail) ===
       normalizeEmail(customer.email)
     ) || null;
