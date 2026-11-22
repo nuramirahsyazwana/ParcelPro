@@ -505,3 +505,207 @@ body.pp-public{background:#fff;color:#14243a;font-family:'DM Sans',sans-serif}
   }
 }
 
+
+/* =====================================================
+   CUSTOMER TRACKING - SIX STATUS PROGRESS
+===================================================== */
+
+.pp-status-progress {
+  margin: 25px 0;
+  padding: 22px 18px;
+  background: #f8fafc;
+  border: 1px solid #e5eaf0;
+  border-radius: 14px;
+}
+
+.pp-status-progress-title {
+  margin: 0 0 25px;
+  color: #172b4d;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.pp-status-progress-title i {
+  margin-right: 7px;
+  color: #e98232;
+}
+
+.pp-status-steps {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.pp-status-step {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  text-align: center;
+}
+
+/* Connecting line */
+
+.pp-status-step::after {
+  content: "";
+  position: absolute;
+  top: 17px;
+  left: 50%;
+  width: 100%;
+  height: 3px;
+  background: #dce2e9;
+  z-index: 0;
+}
+
+.pp-status-step:last-child::after {
+  display: none;
+}
+
+.pp-status-step.is-complete::after {
+  background: #e98232;
+}
+
+/* Status circles */
+
+.pp-status-step-icon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 2px solid #dce2e9;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #8993a1;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+.pp-status-step.is-complete .pp-status-step-icon {
+  background: #e98232;
+  border-color: #e98232;
+  color: #ffffff;
+}
+
+.pp-status-step.is-current .pp-status-step-icon {
+  background: #172b4d;
+  border-color: #172b4d;
+  color: #ffffff;
+  box-shadow: 0 0 0 5px rgba(233, 130, 50, 0.18);
+}
+
+/* Labels */
+
+.pp-status-step-label {
+  display: block;
+  max-width: 100px;
+  margin-top: 12px;
+  color: #8993a1;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.pp-status-step.is-complete .pp-status-step-label {
+  color: #d66f20;
+}
+
+.pp-status-step.is-current .pp-status-step-label {
+  color: #172b4d;
+  font-weight: 800;
+}
+
+/* Failed / cancelled / unknown status */
+
+.pp-status-progress-message {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 20px 0;
+  padding: 13px 16px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 600;
+}
+
+.pp-status-progress-message.is-exception {
+  background: #fff1f0;
+  color: #b42318;
+}
+
+/* Dark mode */
+
+body.pp-public[data-theme="dark"] .pp-status-progress {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+body.pp-public[data-theme="dark"] .pp-status-progress-title {
+  color: #f9fafb;
+}
+
+body.pp-public[data-theme="dark"] .pp-status-step-icon {
+  background: #273449;
+  border-color: #4b5563;
+  color: #cbd5e1;
+}
+
+body.pp-public[data-theme="dark"] .pp-status-step.is-complete .pp-status-step-icon {
+  background: #e98232;
+  border-color: #e98232;
+  color: #ffffff;
+}
+
+body.pp-public[data-theme="dark"] .pp-status-step.is-current .pp-status-step-icon {
+  background: #e98232;
+  border-color: #e98232;
+  color: #ffffff;
+}
+
+body.pp-public[data-theme="dark"] .pp-status-step-label {
+  color: #9ca3af;
+}
+
+body.pp-public[data-theme="dark"] .pp-status-step.is-current .pp-status-step-label,
+body.pp-public[data-theme="dark"] .pp-status-step.is-complete .pp-status-step-label {
+  color: #fbbf24;
+}
+
+body.pp-public[data-theme="dark"] .pp-status-progress-message {
+  background: #273449;
+  color: #e5e7eb;
+}
+
+body.pp-public[data-theme="dark"] .pp-status-progress-message.is-exception {
+  background: #451f25;
+  color: #fca5a5;
+}
+
+/* Mobile layout */
+
+@media (max-width: 600px) {
+  .pp-status-progress {
+    padding: 18px 8px;
+  }
+
+  .pp-status-step-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .pp-status-step::after {
+    top: 14px;
+  }
+
+  .pp-status-step-label {
+    max-width: 65px;
+    font-size: 9px;
+  }
+}
