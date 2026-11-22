@@ -5,6 +5,14 @@
    Add + Edit + Delete + Search + Filter
    Customer Portal Integration
    Data Visualisation - Infographic Dashboard
+
+   UPDATED:
+   - Tracking History auto-update when parcel status changes
+   - Preserve existing tracking history
+   - Keep Customer ID and Parcel Tracking ID separate
+   - Prevent duplicate parcel ID and tracking number
+   - Dispatch updates for Parcel Tracking integration
+
    Storage: localStorage
 ========================================================= */
 
@@ -52,7 +60,6 @@
     filter: $("#statusFilter"),
     count: $("#parcelCountLabel"),
 
-    // Infographic elements
     chart: $("#parcelStatusChart"),
     chartEmpty: $("#chartEmptyMessage"),
 
@@ -105,6 +112,7 @@
       }
 
       const result = JSON.parse(localStorage.getItem(key) || "[]");
+
       return Array.isArray(result) ? result : [];
 
     } catch (error) {
@@ -125,8 +133,10 @@
     try {
       if (typeof Admin.saveList === "function") {
         Admin.saveList(STORAGE.parcels, parcels);
+
       } else if (typeof Admin.save === "function") {
         Admin.save(STORAGE.parcels, parcels);
+
       } else {
         localStorage.setItem(
           STORAGE.parcels,
@@ -219,6 +229,7 @@
       bootstrap.Toast.getOrCreateInstance(
         toastElement
       ).show();
+
     } else {
       alert(message);
     }
@@ -245,23 +256,109 @@
     );
   }
 
+  // =======================================================
+  // 4A. GENERATE UNIQUE PARCEL ID
+  // =======================================================
+
   function generateParcelId() {
     const parcels = getParcels();
+
     let id;
 
     do {
       id = "PCL" +
         Date.now().toString().slice(-8) +
         Math.floor(Math.random() * 1000);
+
     } while (
-      parcels.some(parcel => String(parcel.id) === id)
+      parcels.some(parcel =>
+        String(parcel.id) === id ||
+        String(parcel.trackingNumber || "") === id
+      )
     );
 
     return id;
   }
 
   // =======================================================
-  // 4A. INFOGRAPHIC - PARCEL STATUS CONFIGURATION
+  // 4B. TRACKING HISTORY CONFIGURATION
+  // =======================================================
+
+  function getStatusDescription(status) {
+
+    const descriptions = {
+      "Pending": "Your parcel has been registered.",
+
+      "Processing": "Your parcel is being processed.",
+
+      "Picked Up": "Your parcel has been picked up by the courier.",
+
+      "In Transit": "Your parcel is currently in transit.",
+
+      "Out for Delivery": "Your parcel is out for delivery.",
+
+      "Delivered": "Your parcel has been successfully delivered.",
+
+      "Failed": "Delivery attempt was unsuccessful.",
+
+      "Cancelled": "This parcel delivery has been cancelled."
+    };
+
+    return descriptions[status] || "Parcel status updated.";
+  }
+
+  function getExistingHistory(parcel) {
+
+    if (Array.isArray(parcel.history)) {
+      return [...parcel.history];
+    }
+
+    if (Array.isArray(parcel.trackingHistory)) {
+      return [...parcel.trackingHistory];
+    }
+
+    return [];
+  }
+
+  function updateTrackingHistory(existingParcel, newStatus) {
+
+    const history = existingParcel
+      ? getExistingHistory(existingParcel)
+      : [];
+
+    const previousStatus = existingParcel?.status || "";
+
+    const statusChanged =
+      String(previousStatus).trim().toLowerCase() !==
+      String(newStatus).trim().toLowerCase();
+
+    // Add initial tracking history for a new parcel.
+    if (!existingParcel) {
+
+      history.push({
+        status: newStatus,
+        date: new Date().toISOString(),
+        description: getStatusDescription(newStatus)
+      });
+
+      return history;
+    }
+
+    // Only add a history record when status changes.
+    if (statusChanged) {
+
+      history.push({
+        status: newStatus,
+        date: new Date().toISOString(),
+        description: getStatusDescription(newStatus)
+      });
+    }
+
+    return history;
+  }
+
+  // =======================================================
+  // 5. INFOGRAPHIC - PARCEL STATUS CONFIGURATION
   // =======================================================
 
   let parcelStatusChart = null;
@@ -307,17 +404,14 @@
   }
 
   // =======================================================
-  // 4B. INFOGRAPHIC - UPDATE SUMMARY CARDS
+  // 6. INFOGRAPHIC - UPDATE SUMMARY CARDS
   // =======================================================
 
   function updateSummaryCards(parcels) {
 
     const total = parcels.length;
 
-    const pending = getStatusCount(
-      parcels,
-      "Pending"
-    );
+    const pending = getStatusCount(parcels, "Pending");
 
     const transit = parcels.filter(parcel => [
       "processing",
@@ -326,10 +420,7 @@
       "out for delivery"
     ].includes(normalizeStatus(parcel))).length;
 
-    const delivered = getStatusCount(
-      parcels,
-      "Delivered"
-    );
+    const delivered = getStatusCount(parcels, "Delivered");
 
     if (elements.total) {
       elements.total.textContent = total;
@@ -349,22 +440,16 @@
   }
 
   // =======================================================
-  // 4C. INFOGRAPHIC - UPDATE PERFORMANCE BARS
+  // 7. INFOGRAPHIC - UPDATE PERFORMANCE BARS
   // =======================================================
 
   function updatePerformance(parcels) {
 
     const total = parcels.length;
 
-    const delivered = getStatusCount(
-      parcels,
-      "Delivered"
-    );
+    const delivered = getStatusCount(parcels, "Delivered");
 
-    const cancelled = getStatusCount(
-      parcels,
-      "Cancelled"
-    );
+    const cancelled = getStatusCount(parcels, "Cancelled");
 
     const active = parcels.filter(parcel => [
       "processing",
@@ -373,20 +458,11 @@
       "out for delivery"
     ].includes(normalizeStatus(parcel))).length;
 
-    const deliveryRate = calculatePercentage(
-      delivered,
-      total
-    );
+    const deliveryRate = calculatePercentage(delivered, total);
 
-    const activeRate = calculatePercentage(
-      active,
-      total
-    );
+    const activeRate = calculatePercentage(active, total);
 
-    const cancelledRate = calculatePercentage(
-      cancelled,
-      total
-    );
+    const cancelledRate = calculatePercentage(cancelled, total);
 
     if (elements.deliveryRateLabel) {
       elements.deliveryRateLabel.textContent =
@@ -439,7 +515,7 @@
   }
 
   // =======================================================
-  // 4D. INFOGRAPHIC - DOUGHNUT CHART
+  // 8. INFOGRAPHIC - DOUGHNUT CHART
   // =======================================================
 
   function renderParcelChart(parcels) {
@@ -460,10 +536,7 @@
     const hasData = parcels.length > 0;
 
     if (elements.chartEmpty) {
-      elements.chartEmpty.classList.toggle(
-        "d-none",
-        hasData
-      );
+      elements.chartEmpty.classList.toggle("d-none", hasData);
     }
 
     const chartData = {
@@ -472,12 +545,9 @@
       datasets: [{
         label: "Number of Parcels",
         data: statusCounts,
-
         backgroundColor: chartColors,
-
         borderColor: "#ffffff",
         borderWidth: 3,
-
         hoverOffset: 8
       }]
     };
@@ -485,7 +555,6 @@
     const chartOptions = {
       responsive: true,
       maintainAspectRatio: false,
-
       cutout: "65%",
 
       plugins: {
@@ -497,6 +566,7 @@
             pointStyle: "circle",
             padding: 16,
             boxWidth: 8,
+
             font: {
               family: "DM Sans",
               size: 11
@@ -542,7 +612,7 @@
   }
 
   // =======================================================
-  // 4E. INFOGRAPHIC - MAIN UPDATE FUNCTION
+  // 9. INFOGRAPHIC - MAIN UPDATE FUNCTION
   // =======================================================
 
   function updateParcelAnalytics(parcels = getParcels()) {
@@ -555,13 +625,15 @@
   }
 
   // =======================================================
-  // 5. POPULATE CUSTOMER DROPDOWN
+  // 10. POPULATE CUSTOMER DROPDOWN
   // =======================================================
 
   function populateCustomers() {
+
     if (!elements.recipient) return;
 
     const customers = getCustomers();
+
     const previousValue = elements.recipient.value;
 
     elements.recipient.innerHTML = `
@@ -569,6 +641,7 @@
     `;
 
     customers.forEach(customer => {
+
       const option = document.createElement("option");
 
       option.value =
@@ -576,8 +649,7 @@
         customer.email ||
         getCustomerName(customer);
 
-      option.textContent =
-        getCustomerName(customer);
+      option.textContent = getCustomerName(customer);
 
       elements.recipient.appendChild(option);
     });
@@ -593,14 +665,13 @@
   }
 
   // =======================================================
-  // 6. RENDER PARCEL TABLE
+  // 11. RENDER PARCEL TABLE
   // =======================================================
 
   function renderParcels() {
 
     const parcels = getParcels();
 
-    // Update infographic using all parcel records
     updateParcelAnalytics(parcels);
 
     if (!elements.table) {
@@ -621,6 +692,7 @@
       const searchable = [
         parcel.id,
         parcel.trackingNumber,
+        parcel.customerId,
         parcel.recipient,
         parcel.customerName,
         parcel.customerEmail,
@@ -650,6 +722,7 @@
     }
 
     if (filtered.length === 0) {
+
       elements.table.innerHTML = `
         <tr>
           <td colspan="8" class="text-center py-5">
@@ -661,12 +734,14 @@
           </td>
         </tr>
       `;
+
       return;
     }
 
     elements.table.innerHTML = filtered.map(parcel => {
 
       const id = parcel.id || "";
+
       const tracking = parcel.trackingNumber || id || "-";
 
       const recipient =
@@ -734,10 +809,11 @@
   }
 
   // =======================================================
-  // 7. MODAL FUNCTIONS
+  // 12. MODAL FUNCTIONS
   // =======================================================
 
   function showModal() {
+
     if (!elements.modal) return;
 
     if (window.bootstrap && bootstrap.Modal) {
@@ -748,6 +824,7 @@
   }
 
   function hideModal() {
+
     if (!elements.modal) return;
 
     if (window.bootstrap && bootstrap.Modal) {
@@ -758,10 +835,11 @@
   }
 
   // =======================================================
-  // 8. ADD PARCEL
+  // 13. ADD PARCEL
   // =======================================================
 
   function openAddModal() {
+
     if (!elements.form) return;
 
     elements.form.reset();
@@ -792,11 +870,15 @@
         "No proof photo selected.";
     }
 
+    if (elements.proof) {
+      elements.proof.value = "";
+    }
+
     showModal();
   }
 
   // =======================================================
-  // 9. EDIT PARCEL
+  // 14. EDIT PARCEL
   // =======================================================
 
   function editParcel(id) {
@@ -862,7 +944,12 @@
       elements.courier.value = parcel.courier || "";
     }
 
+    if (elements.proof) {
+      elements.proof.value = "";
+    }
+
     if (elements.proofPreview) {
+
       elements.proofPreview.innerHTML = parcel.proofPhoto
         ? `<img src="${escapeHTML(parcel.proofPhoto)}"
              alt="Delivery proof"
@@ -874,7 +961,7 @@
   }
 
   // =======================================================
-  // 10. CUSTOMER DETAILS
+  // 15. CUSTOMER DETAILS
   // =======================================================
 
   function updateCustomerDetails() {
@@ -900,7 +987,7 @@
   }
 
   // =======================================================
-  // 11. DELIVERY PROOF IMAGE
+  // 16. DELIVERY PROOF IMAGE
   // =======================================================
 
   function readProofPhoto() {
@@ -929,6 +1016,7 @@
       const reader = new FileReader();
 
       reader.onload = () => resolve(reader.result);
+
       reader.onerror = () => resolve(false);
 
       reader.readAsDataURL(file);
@@ -979,7 +1067,7 @@
   }
 
   // =======================================================
-  // 12. SAVE PARCEL
+  // 17. SAVE PARCEL
   // =======================================================
 
   async function saveParcel(event) {
@@ -1002,6 +1090,7 @@
     }
 
     const customerValue = elements.recipient?.value || "";
+
     const customer = findCustomer(customerValue);
 
     const proofPhoto = await readProofPhoto();
@@ -1019,11 +1108,27 @@
       Number(elements.shippingFee?.value || 0) || 0
     );
 
+    // -----------------------------------------------
+    // NEW: STATUS AND TRACKING HISTORY
+    // -----------------------------------------------
+
+    const newStatus = elements.status?.value || "Pending";
+
+    const history = updateTrackingHistory(
+      existingParcel,
+      newStatus
+    );
+
+    // -----------------------------------------------
+    // PARCEL DATA
+    // -----------------------------------------------
+
     const parcelData = {
       ...(existingParcel || {}),
 
       id: parcelId,
 
+      // Keep parcel tracking ID separate from Customer ID.
       trackingNumber:
         existingParcel?.trackingNumber || parcelId,
 
@@ -1047,15 +1152,25 @@
           customerValue,
 
       phone: elements.phone?.value.trim() || "",
+
       address: elements.address?.value.trim() || "",
+
       type: elements.type?.value || "",
 
       shippingFee,
+
       finalPrice: shippingFee,
+
       price: shippingFee,
 
       date: elements.date?.value || "",
-      status: elements.status?.value || "Pending",
+
+      // Current parcel status
+      status: newStatus,
+
+      // NEW: Tracking history for Parcel Tracking page
+      history: history,
+
       courier: elements.courier?.value.trim() || "",
 
       proofPhoto: proofPhoto || oldProof,
@@ -1065,6 +1180,10 @@
 
       updated: new Date().toISOString()
     };
+
+    // -----------------------------------------------
+    // SAVE RECORD
+    // -----------------------------------------------
 
     if (existingParcel) {
 
@@ -1095,7 +1214,7 @@
   }
 
   // =======================================================
-  // 13. DELETE PARCEL
+  // 18. DELETE PARCEL
   // =======================================================
 
   function deleteParcel(id) {
@@ -1126,7 +1245,7 @@
   }
 
   // =======================================================
-  // 14. EVENT LISTENERS
+  // 19. EVENT LISTENERS
   // =======================================================
 
   function bindEvents() {
@@ -1216,7 +1335,7 @@
   }
 
   // =======================================================
-  // 15. INITIALISE
+  // 20. INITIALISE
   // =======================================================
 
   function initialise() {
