@@ -1,29 +1,33 @@
 
 /* =========================================================
    PARCELPRO - ADMIN_TRACKING.JS
-   Parcel Tracking Management
-   Search + Display Parcel Details + Tracking History
-   Storage: localStorage
+   Parcel Tracking System
+   Linked with ADMIN_PARCELS.JS
+   Shared Storage: parcelpro_parcels
+   Search by Tracking ID + Live Status Updates
 ========================================================= */
 
 (() => {
   "use strict";
 
   // =======================================================
-  // 1. CHECK SHARED ADMIN
+  // 1. SHARED ADMIN SYSTEM
   // =======================================================
 
   const Admin = window.ParcelProAdmin;
 
   if (!Admin) {
-    console.error(
-      "ParcelProAdmin not found. Please load admin_common.js first."
-    );
+    console.error("ParcelProAdmin not found. Load admin_common.js first.");
     return;
   }
 
-  const STORAGE = Admin.STORAGE;
-  const $ = Admin.$ || ((selector) => document.querySelector(selector));
+  const STORAGE = {
+    parcels: Admin.STORAGE?.parcels || "parcelpro_parcels"
+  };
+
+  const $ = Admin.$ || (selector =>
+    document.querySelector(selector)
+  );
 
   // =======================================================
   // 2. DOM ELEMENTS
@@ -38,23 +42,44 @@
   };
 
   // =======================================================
-  // 3. DATA FUNCTIONS
+  // 3. SHARED PARCEL STORAGE
   // =======================================================
 
   function getParcels() {
-    return Admin.readList(STORAGE.parcels);
+    try {
+      if (typeof Admin.readList === "function") {
+        const records = Admin.readList(STORAGE.parcels);
+        if (Array.isArray(records)) return records;
+      }
+
+      const records = JSON.parse(
+        localStorage.getItem(STORAGE.parcels) || "[]"
+      );
+
+      return Array.isArray(records) ? records : [];
+
+    } catch (error) {
+      console.error("Unable to read parcel records:", error);
+      return [];
+    }
   }
 
+  // =======================================================
+  // 4. HELPER FUNCTIONS
+  // =======================================================
+
   function escape(value) {
-    return typeof Admin.escapeHTML === "function"
-      ? Admin.escapeHTML(value ?? "")
-      : String(value ?? "").replace(/[&<>"']/g, char => ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#039;"
-        })[char]);
+    if (typeof Admin.escapeHTML === "function") {
+      return Admin.escapeHTML(value ?? "");
+    }
+
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[char]);
   }
 
   function formatDate(value) {
@@ -64,7 +89,11 @@
       return Admin.dateFormat(value);
     }
 
-    return value;
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime())
+      ? String(value)
+      : date.toLocaleDateString("en-MY");
   }
 
   function statusClass(status) {
@@ -77,57 +106,52 @@
       .replace(/\s+/g, "-");
   }
 
-  function showToast(message, type = "success") {
-    if (typeof Admin.toast === "function") {
-      Admin.toast(message, type);
-    } else {
-      console.log(message);
-    }
+  function normalizeId(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase();
+  }
+
+  function getTrackingId(parcel) {
+    return String(
+      parcel.trackingNumber ||
+      parcel.trackingNo ||
+      parcel.id ||
+      ""
+    ).trim();
   }
 
   // =======================================================
-  // 4. FIND PARCEL
+  // 5. FIND PARCEL BY TRACKING ID
   // =======================================================
 
   function findParcel(trackingNumber) {
-    const searchValue = trackingNumber.trim().toLowerCase();
+    const searchValue = normalizeId(trackingNumber);
 
     if (!searchValue) return null;
 
     return getParcels().find(parcel => {
-      const id = String(parcel.id || "").toLowerCase();
-      const trackingId = String(
-        parcel.trackingNumber || ""
-      ).toLowerCase();
+      const trackingId = normalizeId(
+        parcel.trackingNumber || parcel.trackingNo
+      );
 
-      return id === searchValue || trackingId === searchValue;
+      const parcelId = normalizeId(parcel.id);
+
+      return (
+        trackingId === searchValue ||
+        parcelId === searchValue
+      );
     }) || null;
   }
 
   // =======================================================
-  // 5. GET TRACKING HISTORY
+  // 6. TRACKING HISTORY
   // =======================================================
 
-  function getTrackingHistory(parcel) {
-    const history = Array.isArray(parcel.history)
-      ? parcel.history
-      : Array.isArray(parcel.trackingHistory)
-        ? parcel.trackingHistory
-        : [];
-
-    if (history.length > 0) {
-      return history;
-    }
-
-    return [{
-      status: parcel.status || "Pending",
-      date: parcel.updatedAt || parcel.created || parcel.date || "",
-      description: getStatusDescription(parcel.status)
-    }];
-  }
-
   function getStatusDescription(status) {
-    const value = String(status || "").toLowerCase();
+    const value = String(status || "")
+      .trim()
+      .toLowerCase();
 
     const descriptions = {
       pending: "Your parcel has been registered.",
@@ -144,15 +168,37 @@
     return descriptions[value] || "Parcel status updated.";
   }
 
+  function getTrackingHistory(parcel) {
+    const history = Array.isArray(parcel.history)
+      ? parcel.history
+      : Array.isArray(parcel.trackingHistory)
+        ? parcel.trackingHistory
+        : [];
+
+    if (history.length > 0) {
+      return history;
+    }
+
+    return [{
+      status: parcel.status || "Pending",
+      date:
+        parcel.updated ||
+        parcel.updatedAt ||
+        parcel.created ||
+        parcel.date ||
+        "",
+      description: getStatusDescription(parcel.status)
+    }];
+  }
+
   // =======================================================
-  // 6. RENDER TRACKING RESULT
+  // 7. RENDER TRACKING RESULT
   // =======================================================
 
   function renderTracking(parcel) {
     if (!elements.result) return;
 
-    const trackingNumber =
-      parcel.trackingNumber || parcel.id || "-";
+    const trackingNumber = getTrackingId(parcel) || "-";
 
     const recipient =
       parcel.recipient ||
@@ -167,7 +213,12 @@
       .reverse()
       .map(item => {
         const status = item.status || "Updated";
-        const date = item.date || item.createdAt || "";
+
+        const date =
+          item.date ||
+          item.createdAt ||
+          item.updated ||
+          "";
 
         const description =
           item.description ||
@@ -190,14 +241,18 @@
       })
       .join("");
 
+    const fee =
+      parcel.shippingFee ??
+      parcel.finalPrice ??
+      parcel.price;
+
     elements.result.innerHTML = `
       <div class="card border-0 shadow-sm mt-4">
         <div class="card-body p-4">
 
           <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-
             <div>
-              <small class="text-muted">TRACKING NUMBER</small>
+              <small class="text-muted">PARCEL TRACKING ID</small>
               <h5 class="fw-bold mb-1">
                 ${escape(trackingNumber)}
               </h5>
@@ -206,12 +261,18 @@
             <span class="badge ${escape(statusClass(parcel.status))} px-3 py-2">
               ${escape(parcel.status || "Pending")}
             </span>
-
           </div>
 
           <hr>
 
           <div class="row g-3 mb-4">
+
+            <div class="col-md-6">
+              <small class="text-muted">Customer ID</small>
+              <div class="fw-semibold">
+                ${escape(parcel.customerId || "-")}
+              </div>
+            </div>
 
             <div class="col-md-6">
               <small class="text-muted">Recipient</small>
@@ -255,6 +316,17 @@
               </div>
             </div>
 
+            <div class="col-md-6">
+              <small class="text-muted">Shipping Fee</small>
+              <div class="fw-semibold">
+                ${fee !== undefined && fee !== null
+                  ? escape(typeof Admin.money === "function"
+                      ? Admin.money(Number(fee) || 0)
+                      : "RM " + (Number(fee) || 0).toFixed(2))
+                  : "-"}
+              </div>
+            </div>
+
           </div>
 
           <hr>
@@ -275,43 +347,8 @@
     elements.result.style.display = "block";
 
     if (elements.message) {
-      elements.message.textContent = "";
+      elements.message.innerHTML = "";
     }
-  }
-
-  // =======================================================
-  // 7. SEARCH TRACKING
-  // =======================================================
-
-  function searchTracking(event) {
-    if (event) event.preventDefault();
-
-    if (!elements.input) return;
-
-    const trackingNumber = elements.input.value.trim();
-
-    if (!trackingNumber) {
-      showMessage("Please enter a tracking number.", "warning");
-      return;
-    }
-
-    const parcel = findParcel(trackingNumber);
-
-    if (!parcel) {
-      if (elements.result) {
-        elements.result.innerHTML = "";
-        elements.result.style.display = "none";
-      }
-
-      showMessage(
-        "No parcel found. Please check the tracking number.",
-        "danger"
-      );
-
-      return;
-    }
-
-    renderTracking(parcel);
   }
 
   // =======================================================
@@ -325,15 +362,46 @@
           ${escape(message)}
         </div>
       `;
+    } else {
+      alert(message);
+    }
+  }
+
+  // =======================================================
+  // 9. SEARCH TRACKING
+  // =======================================================
+
+  function searchTracking(event) {
+    if (event) event.preventDefault();
+
+    const trackingNumber = elements.input?.value.trim() || "";
+
+    if (!trackingNumber) {
+      showMessage("Please enter a parcel tracking ID.", "warning");
+      return;
+    }
+
+    const parcel = findParcel(trackingNumber);
+
+    if (!parcel) {
+      if (elements.result) {
+        elements.result.innerHTML = "";
+        elements.result.style.display = "none";
+      }
+
+      showMessage(
+        "No parcel found. Please check your Tracking ID.",
+        "danger"
+      );
 
       return;
     }
 
-    showToast(message, type);
+    renderTracking(parcel);
   }
 
   // =======================================================
-  // 9. CLEAR RESULT
+  // 10. CLEAR RESULT
   // =======================================================
 
   function clearTracking() {
@@ -348,60 +416,72 @@
   }
 
   // =======================================================
-  // 10. EVENT LISTENERS
+  // 11. REFRESH CURRENT TRACKING
+  // =======================================================
+
+  function refreshCurrentTracking() {
+    const trackingNumber = elements.input?.value.trim() || "";
+
+    if (!trackingNumber) return;
+
+    const parcel = findParcel(trackingNumber);
+
+    if (parcel) {
+      renderTracking(parcel);
+    } else {
+      clearTracking();
+    }
+  }
+
+  // =======================================================
+  // 12. EVENT LISTENERS
   // =======================================================
 
   function bindEvents() {
 
     if (elements.form) {
-      elements.form.addEventListener("submit", searchTracking);
+      elements.form.addEventListener(
+        "submit",
+        searchTracking
+      );
+    } else if (elements.searchButton) {
+      elements.searchButton.addEventListener(
+        "click",
+        searchTracking
+      );
     }
 
-    if (elements.searchButton) {
-      elements.searchButton.addEventListener("click", searchTracking);
-    }
+    elements.input?.addEventListener(
+      "input",
+      clearTracking
+    );
 
-    if (elements.input) {
-      elements.input.addEventListener("input", clearTracking);
-    }
-
-    window.addEventListener("parcelpro:dataUpdated", event => {
-      if (
-        !event.detail?.key ||
-        event.detail.key === STORAGE.parcels
-      ) {
-        if (elements.input && elements.input.value.trim()) {
-          const parcel = findParcel(elements.input.value);
-
-          if (parcel) {
-            renderTracking(parcel);
-          } else {
-            clearTracking();
-          }
+    // Updates from Parcel Management in the same tab
+    window.addEventListener(
+      "parcelpro:dataUpdated",
+      event => {
+        if (
+          !event.detail?.key ||
+          event.detail.key === STORAGE.parcels
+        ) {
+          refreshCurrentTracking();
         }
       }
-    });
+    );
 
+    // Updates from another browser tab
     window.addEventListener("storage", event => {
       if (
         event.key === STORAGE.parcels ||
         event.key === null
       ) {
-        if (elements.input && elements.input.value.trim()) {
-          const parcel = findParcel(elements.input.value);
-
-          if (parcel) {
-            renderTracking(parcel);
-          } else {
-            clearTracking();
-          }
-        }
+        refreshCurrentTracking();
       }
     });
   }
 
   // =======================================================
-  // 11. INITIALISE
+  // 13. INITIALISE
   // =======================================================
 
   function initialise() {
@@ -411,11 +491,17 @@
       elements.result.style.display = "none";
     }
 
-    console.log("ParcelPro Tracking Management loaded.");
+    console.log(
+      "ParcelPro Tracking connected to shared parcel storage:",
+      STORAGE.parcels
+    );
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initialise);
+    document.addEventListener(
+      "DOMContentLoaded",
+      initialise
+    );
   } else {
     initialise();
   }
