@@ -227,11 +227,9 @@
       "processing": "processing",
       "picked up": "picked up",
 
-      // Customer display: Shipped
       "shipped": "shipped",
       "in transit": "shipped",
 
-      // Merge both Admin status variations.
       "out of delivery": "out of delivery",
       "out for delivery": "out of delivery",
 
@@ -241,7 +239,6 @@
       "canceled": "cancelled"
     };
 
-    // Preserve unknown statuses.
     return aliases[value] || value;
   }
 
@@ -455,7 +452,6 @@
         : "";
 
       if (currentStatus === previousStatus) {
-        // Keep latest entry for consecutive duplicate status.
         uniqueEntries[uniqueEntries.length - 1] = entry;
 
       } else {
@@ -475,7 +471,6 @@
 
     entries = removeDuplicateHistory(entries);
 
-    // If no history exists, show current parcel status.
     if (entries.length === 0) {
       entries = [
         {
@@ -744,7 +739,6 @@
       return stage.status === currentStatus;
     });
 
-    // Failed and Cancelled are exceptional statuses.
     if (["failed", "cancelled"].includes(currentStatus)) {
       return `
         <div class="pp-status-progress-message is-exception">
@@ -759,7 +753,6 @@
       `;
     }
 
-    // Do not incorrectly highlight Pending for unknown statuses.
     if (currentIndex === -1) {
       return `
         <div class="pp-status-progress-message">
@@ -1026,64 +1019,31 @@
 
   // =======================================================
   // 26. TRACKING FORM SUBMISSION
-  // FIX: EVENT DELEGATION
+  // Direct form event listener
   // =======================================================
 
-  document.addEventListener("submit", (event) => {
+  function initialiseTrackingForm() {
 
-    const form = event.target;
+    const trackingForm = document.getElementById("publicTrackingForm");
+    const trackingInput = document.getElementById("publicTrackingInput");
+    const trackingResult = document.getElementById("publicTrackingResult");
 
-    if (!form || form.id !== "publicTrackingForm") {
-      return;
-    }
-
-    event.preventDefault();
-
-    const input = document.getElementById("publicTrackingInput");
-    const result = document.getElementById("publicTrackingResult");
-
-    if (!input || !result) {
+    if (!trackingForm || !trackingInput || !trackingResult) {
       console.error("ParcelPro: Tracking form elements not found.");
       return;
     }
 
-    const trackingIds = parseTrackingInput(input.value);
+    trackingForm.addEventListener("submit", function (event) {
 
-    trackParcels(trackingIds);
+      event.preventDefault();
 
-  });
+      const trackingIds = parseTrackingInput(trackingInput.value);
 
-  // Support a tracking button configured as type="button".
-  document.addEventListener("click", (event) => {
+      trackParcels(trackingIds);
 
-    const button = event.target.closest(
-      "#publicTrackingForm button"
-    );
+    });
 
-    if (!button) {
-      return;
-    }
-
-    // Normal submit buttons are handled by the submit listener.
-    if (button.type !== "button") {
-      return;
-    }
-
-    event.preventDefault();
-
-    const input = document.getElementById("publicTrackingInput");
-    const result = document.getElementById("publicTrackingResult");
-
-    if (!input || !result) {
-      console.error("ParcelPro: Tracking form elements not found.");
-      return;
-    }
-
-    const trackingIds = parseTrackingInput(input.value);
-
-    trackParcels(trackingIds);
-
-  });
+  }
 
   // =======================================================
   // 27. REFRESH TRACKING RESULTS
@@ -1170,7 +1130,6 @@
     applyLanguage();
   }
 
-  // Support different existing language selector IDs.
   [
     "#languageSelect",
     "#languageSelector",
@@ -1188,7 +1147,6 @@
 
   });
 
-  // Support language buttons using data-language.
   document.querySelectorAll("[data-language]").forEach((button) => {
 
     button.addEventListener("click", () => {
@@ -1256,6 +1214,8 @@
     applyLanguage();
 
     initialiseMobileNavigation();
+
+    initialiseTrackingForm();
 
     console.log("ParcelPro Public Tracking initialized.");
 
