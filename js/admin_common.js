@@ -5,10 +5,14 @@
    Storage: localStorage
 
    UPDATED:
-   - Admin-only customer shipping fees
-   - 5 existing customers have shipping fee information
+   - 5 complete default customers
+   - Every customer has a Customer ID
+   - Every customer has a Tracking Number
+   - Every customer has shipping fee information
+   - Added parcel PP1004 for Muhammad Amir
+   - Added parcel PP1005 for Lim Wei Jian
+   - Existing localStorage data is preserved
    - Actual parcel fees take priority
-   - Demo fees do not create Customer Portal parcels
 ========================================================= */
 
 (() => {
@@ -25,8 +29,6 @@
     session: "parcelpro_session",
     payments: "parcelpro_payments",
     language: "parcelpro_admin_language",
-
-    // Admin-only shipping fee records
     adminCustomerFees: "parcelpro_admin_customer_shipping_fees"
   };
 
@@ -74,6 +76,7 @@
 
   // =======================================================
   // 3. DEFAULT PARCEL DATA
+  // Each customer has one tracking number.
   // =======================================================
 
   const seedParcels = [
@@ -94,9 +97,9 @@
       shippingType: "Domestic",
       destinationCountry: "Malaysia",
       weight: 1,
-      shippingFee: 10,
-      finalPrice: 10,
-      price: 10,
+      shippingFee: 10.00,
+      finalPrice: 10.00,
+      price: 10.00,
       paymentStatus: "Paid",
       proofPhoto: "",
       history: [
@@ -112,6 +115,7 @@
         }
       ]
     },
+
     {
       id: "PP1002",
       trackingNumber: "PP1002",
@@ -129,9 +133,9 @@
       shippingType: "Domestic",
       destinationCountry: "Malaysia",
       weight: 1,
-      shippingFee: 6,
-      finalPrice: 6,
-      price: 6,
+      shippingFee: 6.00,
+      finalPrice: 6.00,
+      price: 6.00,
       paymentStatus: "Paid",
       proofPhoto: "",
       history: [
@@ -142,6 +146,7 @@
         }
       ]
     },
+
     {
       id: "PP1003",
       trackingNumber: "PP1003",
@@ -159,9 +164,9 @@
       shippingType: "Domestic",
       destinationCountry: "Malaysia",
       weight: 1,
-      shippingFee: 15,
-      finalPrice: 15,
-      price: 15,
+      shippingFee: 15.00,
+      finalPrice: 15.00,
+      price: 15.00,
       paymentStatus: "Paid",
       proofPhoto: "",
       history: [
@@ -171,20 +176,84 @@
           description: "Your parcel has been registered."
         }
       ]
+    },
+
+    // Muhammad Amir
+    {
+      id: "PP1004",
+      trackingNumber: "PP1004",
+      recipient: "Muhammad Amir",
+      customerName: "Muhammad Amir",
+      customerId: 4,
+      customerEmail: "amir.m@email.com",
+      phone: "016-555 9087",
+      address: "Cyberjaya, Selangor",
+      type: "Medium package",
+      date: "2026-11-18",
+      status: "Pending",
+      courier: "Not assigned",
+      created: "2026-11-18",
+      shippingType: "Domestic",
+      destinationCountry: "Malaysia",
+      weight: 2,
+      shippingFee: 17.50,
+      finalPrice: 17.50,
+      price: 17.50,
+      paymentStatus: "Paid",
+      proofPhoto: "",
+      history: [
+        {
+          status: "Pending",
+          date: "2026-11-18",
+          description: "Your parcel has been registered."
+        }
+      ]
+    },
+
+    // Lim Wei Jian
+    {
+      id: "PP1005",
+      trackingNumber: "PP1005",
+      recipient: "Lim Wei Jian",
+      customerName: "Lim Wei Jian",
+      customerId: 5,
+      customerEmail: "lim.weijian@email.com",
+      phone: "011-333 8765",
+      address: "Kuala Lumpur",
+      type: "Small package",
+      date: "2026-11-19",
+      status: "Pending",
+      courier: "Not assigned",
+      created: "2026-11-19",
+      shippingType: "Domestic",
+      destinationCountry: "Malaysia",
+      weight: 3,
+      shippingFee: 15.00,
+      finalPrice: 15.00,
+      price: 15.00,
+      paymentStatus: "Paid",
+      proofPhoto: "",
+      history: [
+        {
+          status: "Pending",
+          date: "2026-11-19",
+          description: "Your parcel has been registered."
+        }
+      ]
     }
   ];
 
   // =======================================================
-  // 4. ADMIN-ONLY CUSTOMER SHIPPING FEES
-  //
-  // These are separate from Customer Portal parcels.
-  // Amir and Lim are demonstration shipping records.
-  // Their fees are calculated using the existing rates.
+  // 4. ADMIN CUSTOMER SHIPPING FEES
+  // Backup fee records for Admin.
+  // Actual parcel fees take priority.
   // =======================================================
 
   const seedAdminCustomerFees = [
     {
+      customerId: 1,
       customerEmail: "aisyah.rahman@email.com",
+      trackingNumber: "PP1001",
       shippingFee: 10.00,
       packageType: "Small package",
       weight: 1,
@@ -192,7 +261,9 @@
       destinationCountry: "Malaysia"
     },
     {
+      customerId: 2,
       customerEmail: "daniel.tan@email.com",
+      trackingNumber: "PP1002",
       shippingFee: 6.00,
       packageType: "Document",
       weight: 1,
@@ -200,7 +271,9 @@
       destinationCountry: "Malaysia"
     },
     {
+      customerId: 3,
       customerEmail: "nur.izzati@email.com",
+      trackingNumber: "PP1003",
       shippingFee: 15.00,
       packageType: "Medium package",
       weight: 1,
@@ -208,7 +281,9 @@
       destinationCountry: "Malaysia"
     },
     {
+      customerId: 4,
       customerEmail: "amir.m@email.com",
+      trackingNumber: "PP1004",
       shippingFee: 17.50,
       packageType: "Medium package",
       weight: 2,
@@ -216,7 +291,9 @@
       destinationCountry: "Malaysia"
     },
     {
+      customerId: 5,
       customerEmail: "lim.weijian@email.com",
+      trackingNumber: "PP1005",
       shippingFee: 15.00,
       packageType: "Small package",
       weight: 3,
@@ -256,67 +333,12 @@
 
   function readList(key) {
     const value = read(key, []);
-
     return Array.isArray(value) ? value : [];
   }
 
   // =======================================================
-  // 6. INITIALISE STORAGE
+  // 6. GENERAL HELPERS
   // =======================================================
-
-  function initialiseStorage() {
-
-    if (localStorage.getItem(STORAGE.customers) === null) {
-      save(STORAGE.customers, seedCustomers);
-    }
-
-    if (localStorage.getItem(STORAGE.parcels) === null) {
-      save(STORAGE.parcels, seedParcels);
-    }
-
-    if (localStorage.getItem(STORAGE.users) === null) {
-      save(STORAGE.users, [{
-        id: "admin-default",
-        name: "Admin User",
-        email: "admin@parcelpro.com",
-        password: "admin123",
-        role: "admin"
-      }]);
-    }
-
-    // Initialise Admin-only shipping fee information.
-    // Does not modify Customer Portal parcel records.
-
-    if (
-      localStorage.getItem(STORAGE.adminCustomerFees) === null
-    ) {
-      save(
-        STORAGE.adminCustomerFees,
-        seedAdminCustomerFees
-      );
-    }
-  }
-
-  initialiseStorage();
-
-  // =======================================================
-  // 7. SHARED DATA
-  // =======================================================
-
-  let parcels = readList(STORAGE.parcels);
-  let customers = readList(STORAGE.customers);
-  let users = readList(STORAGE.users);
-  let currentUser = read(STORAGE.session, null);
-
-  // =======================================================
-  // 8. GENERAL HELPERS
-  // =======================================================
-
-  const $ = selector => document.querySelector(selector);
-
-  const $$ = selector => [
-    ...document.querySelectorAll(selector)
-  ];
 
   function normalizeEmail(email) {
     return String(email || "")
@@ -345,7 +367,106 @@
   }
 
   // =======================================================
-  // 9. MONEY FORMAT
+  // 7. INITIALISE STORAGE
+  // Add missing seed records without deleting existing data.
+  // =======================================================
+
+  function initialiseStorage() {
+
+    // Customers
+    const existingCustomers = readList(STORAGE.customers);
+    const mergedCustomers = [...existingCustomers];
+
+    seedCustomers.forEach(seed => {
+
+      const exists = mergedCustomers.some(customer =>
+        normalizeEmail(customer.email) ===
+        normalizeEmail(seed.email)
+      );
+
+      if (!exists) {
+        mergedCustomers.push(seed);
+      }
+    });
+
+    save(STORAGE.customers, mergedCustomers);
+
+    // Parcels
+    const existingParcels = readList(STORAGE.parcels);
+    const mergedParcels = [...existingParcels];
+
+    seedParcels.forEach(seed => {
+
+      const exists = mergedParcels.some(parcel => {
+
+        const existingTracking = String(
+          parcel.trackingNumber || parcel.id || ""
+        ).trim();
+
+        return existingTracking === seed.trackingNumber;
+      });
+
+      if (!exists) {
+        mergedParcels.push(seed);
+      }
+    });
+
+    save(STORAGE.parcels, mergedParcels);
+
+    // Admin users
+    if (localStorage.getItem(STORAGE.users) === null) {
+
+      save(STORAGE.users, [{
+        id: "admin-default",
+        name: "Admin User",
+        email: "admin@parcelpro.com",
+        password: "admin123",
+        role: "admin"
+      }]);
+    }
+
+    // Admin shipping fees
+    const existingFees = readList(STORAGE.adminCustomerFees);
+    const mergedFees = [...existingFees];
+
+    seedAdminCustomerFees.forEach(seed => {
+
+      const exists = mergedFees.some(item =>
+        normalizeEmail(item.customerEmail) ===
+        normalizeEmail(seed.customerEmail)
+      );
+
+      if (!exists) {
+        mergedFees.push(seed);
+      }
+    });
+
+    save(STORAGE.adminCustomerFees, mergedFees);
+  }
+
+  initialiseStorage();
+
+  // =======================================================
+  // 8. SHARED DATA
+  // =======================================================
+
+  let parcels = readList(STORAGE.parcels);
+  let customers = readList(STORAGE.customers);
+  let users = readList(STORAGE.users);
+  let currentUser = read(STORAGE.session, null);
+
+  // =======================================================
+  // 9. DOM HELPERS
+  // =======================================================
+
+  const $ = selector => document.querySelector(selector);
+
+  const $$ = selector => [
+    ...document.querySelectorAll(selector)
+  ];
+
+  // =======================================================
+  // 10. MONEY FORMAT
   // =======================================================
 
   function money(value) {
@@ -356,7 +477,7 @@
   }
 
   // =======================================================
-  // 10. SHIPPING FEE HELPER
+  // 11. SHIPPING FEE HELPER
   // =======================================================
 
   function getParcelFee(parcel = {}) {
@@ -387,8 +508,6 @@
       }
     }
 
-    // Fallback to original seed parcel data.
-
     const trackingId = String(
       parcel.trackingNumber || parcel.id || ""
     ).trim();
@@ -418,7 +537,7 @@
   }
 
   // =======================================================
-  // 11. DATE HELPERS
+  // 12. DATE HELPERS
   // =======================================================
 
   function dateFormat(value) {
@@ -449,7 +568,7 @@
   }
 
   // =======================================================
-  // 12. STATUS HELPERS
+  // 13. STATUS HELPERS
   // =======================================================
 
   function normalizeStatus(status) {
@@ -513,7 +632,7 @@
   }
 
   // =======================================================
-  // 13. CUSTOMER HELPERS
+  // 14. CUSTOMER HELPERS
   // =======================================================
 
   function getCustomerForParcel(parcel = {}) {
@@ -550,31 +669,41 @@
 
   function getCustomerParcels(customer = {}) {
 
-    // Refresh parcel data before matching.
     const currentParcels = readList(STORAGE.parcels);
 
-    return currentParcels.filter(parcel =>
-      String(parcel.customerId) === String(customer.id) ||
-      (
+    return currentParcels.filter(parcel => {
+
+      const sameId =
+        String(parcel.customerId) === String(customer.id);
+
+      const sameEmail =
         customer.email &&
         normalizeEmail(parcel.customerEmail) ===
-        normalizeEmail(customer.email)
+        normalizeEmail(customer.email);
+
+      return sameId || sameEmail;
+    });
+  }
+
+  // Get all tracking numbers belonging to a customer.
+  function getCustomerTrackingNumbers(customer = {}) {
+
+    return getCustomerParcels(customer)
+      .map(parcel =>
+        String(parcel.trackingNumber || parcel.id || "").trim()
       )
-    );
+      .filter(Boolean);
   }
 
   // =======================================================
-  // 14. ADMIN CUSTOMER SHIPPING FEE
-  //
+  // 15. ADMIN CUSTOMER SHIPPING FEE
   // Actual parcel fees take priority.
-  // Admin-only demo fees are used when no parcel exists.
   // =======================================================
 
   function getAdminCustomerShippingFee(customer = {}) {
 
     const customerParcels = getCustomerParcels(customer);
 
-    // If actual parcel records exist, calculate their total.
     if (customerParcels.length > 0) {
 
       return customerParcels.reduce((total, parcel) => {
@@ -582,7 +711,6 @@
       }, 0);
     }
 
-    // Otherwise, read Admin-only fee information.
     const fees = readList(STORAGE.adminCustomerFees);
 
     const customerEmail = normalizeEmail(customer.email);
@@ -602,15 +730,26 @@
     ) ? amount : null;
   }
 
+  // Get the complete fee record for one customer.
+  function getCustomerShippingDetails(customer = {}) {
+
+    const fees = readList(STORAGE.adminCustomerFees);
+
+    return fees.find(item =>
+      normalizeEmail(item.customerEmail) ===
+      normalizeEmail(customer.email)
+    ) || null;
+  }
+
   // =======================================================
-  // 15. LINK OLD PARCELS TO CUSTOMERS
+  // 16. LINK OLD PARCELS TO CUSTOMERS
   // =======================================================
 
   function linkOldParcelsToCustomers() {
 
     let changed = false;
 
-    parcels = parcels.map(parcel => {
+    parcels = readList(STORAGE.parcels).map(parcel => {
 
       let customer = getCustomerForParcel(parcel);
 
@@ -669,7 +808,7 @@
   }
 
   // =======================================================
-  // 16. DATA REFRESH + EVENT SYSTEM
+  // 17. DATA REFRESH + EVENT SYSTEM
   // =======================================================
 
   function refreshData() {
@@ -753,7 +892,7 @@
   }
 
   // =======================================================
-  // 17. TOAST + ALERT
+  // 18. TOAST + ALERT
   // =======================================================
 
   function toast(message) {
@@ -791,7 +930,7 @@
   }
 
   // =======================================================
-  // 18. USER INTERFACE
+  // 19. USER INTERFACE
   // =======================================================
 
   function updateUserUI() {
@@ -846,7 +985,7 @@
   }
 
   // =======================================================
-  // 19. NAVIGATION
+  // 20. NAVIGATION
   // =======================================================
 
   function closeSidebar() {
@@ -913,7 +1052,7 @@
   }
 
   // =======================================================
-  // 20. AUTHENTICATION
+  // 21. AUTHENTICATION
   // =======================================================
 
   function showApp(user) {
@@ -1188,7 +1327,7 @@
   }
 
   // =======================================================
-  // 21. DATE + LANGUAGE
+  // 22. DATE + LANGUAGE
   // =======================================================
 
   function initialiseDate() {
@@ -1243,7 +1382,7 @@
   }
 
   // =======================================================
-  // 22. CUSTOMER DROPDOWN
+  // 23. CUSTOMER DROPDOWN
   // =======================================================
 
   function populateParcelCustomers(selectedId = "") {
@@ -1317,7 +1456,7 @@
   }
 
   // =======================================================
-  // 23. CROSS-TAB STORAGE UPDATES
+  // 24. CROSS-TAB STORAGE UPDATES
   // =======================================================
 
   window.addEventListener("storage", event => {
@@ -1344,7 +1483,7 @@
   });
 
   // =======================================================
-  // 24. INITIALISE
+  // 25. INITIALISE
   // =======================================================
 
   function initialise() {
@@ -1362,11 +1501,10 @@
     initialiseLanguage();
 
     initialiseCustomerDropdown();
-
   }
 
   // =======================================================
-  // 25. PUBLIC API
+  // 26. PUBLIC API
   // =======================================================
 
   window.ParcelProAdmin = {
@@ -1432,6 +1570,7 @@
 
     getParcelFee,
     getAdminCustomerShippingFee,
+    getCustomerShippingDetails,
 
     dateFormat,
     getToday,
@@ -1446,6 +1585,7 @@
     getCustomerName,
     getReceiverName,
     getCustomerParcels,
+    getCustomerTrackingNumbers,
 
     linkOldParcelsToCustomers,
 
@@ -1465,11 +1605,10 @@
 
     getParcels: () => readList(STORAGE.parcels),
     getCustomers: () => readList(STORAGE.customers)
-
   };
 
   // =======================================================
-  // 26. DOCUMENT INITIALISATION
+  // 27. DOCUMENT INITIALISATION
   // =======================================================
 
   if (document.readyState === "loading") {
