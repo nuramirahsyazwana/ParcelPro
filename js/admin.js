@@ -3,6 +3,12 @@
    PARCELPRO - ADMIN DASHBOARD
    Dashboard Statistics + Chart + Recent Parcels
    Uses Shared admin_common.js
+
+   UPDATED:
+   - Get actual shipping fee from parcel record
+   - Fallback to admin customer shipping fee
+   - Support existing customer records
+   - Preserve dashboard statistics and chart
 ========================================================= */
 
 (() => {
@@ -39,23 +45,126 @@
   }
 
   // =======================================================
-  // 3. GET SHIPPING FEE
+  // 3. FIND CUSTOMER LINKED TO PARCEL
   // =======================================================
 
-  function getShippingFee(parcel = {}) {
-    const fee = Admin.getParcelFee(parcel);
-
-    const amount = Number(fee);
-
-    if (!Number.isFinite(amount) || amount < 0) {
-      return 0;
+  function getCustomerForParcel(parcel = {}) {
+    if (typeof Admin.getCustomers !== "function") {
+      return null;
     }
 
-    return amount;
+    const customers = Admin.getCustomers();
+
+    if (!Array.isArray(customers)) {
+      return null;
+    }
+
+    const parcelCustomerId = String(
+      parcel.customerId ||
+      parcel.customer_id ||
+      ""
+    );
+
+    const parcelEmail = String(
+      parcel.customerEmail ||
+      parcel.email ||
+      parcel.senderEmail ||
+      ""
+    ).trim().toLowerCase();
+
+    const parcelCustomerName = String(
+      Admin.getCustomerName(parcel) || ""
+    ).trim().toLowerCase();
+
+    return customers.find(customer => {
+      const customerId = String(
+        customer.id || customer.customerId || ""
+      );
+
+      const customerEmail = String(
+        customer.email || ""
+      ).trim().toLowerCase();
+
+      const customerName = String(
+        customer.name || customer.fullName || ""
+      ).trim().toLowerCase();
+
+      if (
+        parcelCustomerId &&
+        customerId === parcelCustomerId
+      ) {
+        return true;
+      }
+
+      if (
+        parcelEmail &&
+        customerEmail === parcelEmail
+      ) {
+        return true;
+      }
+
+      if (
+        parcelCustomerName &&
+        customerName === parcelCustomerName
+      ) {
+        return true;
+      }
+
+      return false;
+    }) || null;
   }
 
   // =======================================================
-  // 4. DASHBOARD STATISTICS
+  // 4. GET SHIPPING FEE
+  // =======================================================
+
+  function getShippingFee(parcel = {}) {
+    // First: Get fee from the parcel record.
+    let fee = 0;
+
+    if (typeof Admin.getParcelFee === "function") {
+      fee = Number(Admin.getParcelFee(parcel));
+    }
+
+    if (!Number.isFinite(fee) || fee <= 0) {
+      fee = Number(
+        parcel.shippingFee ??
+        parcel.finalPrice ??
+        parcel.price ??
+        0
+      );
+    }
+
+    // If parcel has a valid fee, use it.
+    if (Number.isFinite(fee) && fee > 0) {
+      return fee;
+    }
+
+    // Second: Find the customer linked to this parcel.
+    const customer = getCustomerForParcel(parcel);
+
+    // Third: Get the admin customer shipping fee.
+    if (
+      customer &&
+      typeof Admin.getAdminCustomerShippingFee === "function"
+    ) {
+      const customerFee = Number(
+        Admin.getAdminCustomerShippingFee(customer)
+      );
+
+      if (
+        Number.isFinite(customerFee) &&
+        customerFee > 0
+      ) {
+        return customerFee;
+      }
+    }
+
+    return 0;
+  }
+
+  // =======================================================
+  // 5. DASHBOARD STATISTICS
   // =======================================================
 
   function renderStats() {
@@ -122,7 +231,7 @@
   }
 
   // =======================================================
-  // 5. RECENT PARCELS
+  // 6. RECENT PARCELS
   // =======================================================
 
   function renderRecent() {
@@ -138,11 +247,13 @@
       .slice(-5)
       .reverse();
 
-    // Debug shipping fee values in browser console
+    // Debug shipping fee values in browser console.
     console.table(rows.map(parcel => ({
       trackingNumber: getTrackingNumber(parcel),
-      finalPrice: parcel.finalPrice,
+      customerName: Admin.getCustomerName(parcel),
+      customerId: parcel.customerId,
       shippingFee: parcel.shippingFee,
+      finalPrice: parcel.finalPrice,
       price: parcel.price,
       calculatedFee: getShippingFee(parcel)
     })));
@@ -220,7 +331,7 @@
   }
 
   // =======================================================
-  // 6. DELIVERY CHART
+  // 7. DELIVERY CHART
   // =======================================================
 
   function drawChart() {
@@ -297,7 +408,7 @@
   }
 
   // =======================================================
-  // 7. RENDER DASHBOARD
+  // 8. RENDER DASHBOARD
   // =======================================================
 
   function renderDashboard() {
@@ -315,7 +426,7 @@
   }
 
   // =======================================================
-  // 8. REFRESH WHEN DATA CHANGES
+  // 9. REFRESH WHEN DATA CHANGES
   // =======================================================
 
   document.addEventListener(
@@ -329,7 +440,7 @@
   );
 
   // =======================================================
-  // 9. INITIALISE
+  // 10. INITIALISE
   // =======================================================
 
   function initialise() {
