@@ -1,4 +1,3 @@
-
 /* =========================================================
    PARCELPRO - ADMIN_CUSTOMERS.JS
    Customer Management
@@ -6,6 +5,12 @@
    Shipping Fee Management
    Customer Portal Integration
    Storage: localStorage
+
+   UPDATED:
+   - Customer ID format PP1001, PP1002, etc.
+   - Existing five customers use their tracking IDs
+   - New customer ID starts from next PP number
+   - Existing parcel references are synchronised
 ========================================================= */
 
 (() => {
@@ -40,7 +45,6 @@
   function getElement(selectors) {
     for (const selector of selectors) {
       const element = $(selector);
-
       if (element) return element;
     }
 
@@ -54,9 +58,7 @@
 
     try {
       const data = JSON.parse(localStorage.getItem(key) || "[]");
-
       return Array.isArray(data) ? data : [];
-
     } catch (error) {
       console.error("Unable to read storage:", key, error);
       return [];
@@ -156,31 +158,48 @@
       (Number.isFinite(amount) ? amount : 0).toFixed(2);
   }
 
+  // =======================================================
+  // 3. GENERATE CUSTOMER ID
+  // Format: PP1006, PP1007, PP1008...
+  // =======================================================
+
   function generateCustomerId() {
     const customers = readData(STORAGE.customers);
 
-    let id;
+    let highestNumber = 1000;
 
-    do {
-      id = "CUS" +
-        Date.now().toString().slice(-8) +
-        Math.floor(Math.random() * 1000);
+    customers.forEach(customer => {
+      const id = String(customer.id || "").trim().toUpperCase();
+      const match = id.match(/^PP(\d+)$/);
 
-    } while (
+      if (match) {
+        const number = Number(match[1]);
+
+        if (Number.isFinite(number)) {
+          highestNumber = Math.max(highestNumber, number);
+        }
+      }
+    });
+
+    let nextNumber = highestNumber + 1;
+    let newId = `PP${nextNumber}`;
+
+    // Prevent duplicate IDs.
+    while (
       customers.some(customer =>
-        String(customer.id) === id
+        String(customer.id).toUpperCase() === newId.toUpperCase()
       )
-    );
+    ) {
+      nextNumber++;
+      newId = `PP${nextNumber}`;
+    }
 
-    return id;
+    return newId;
   }
 
   // =======================================================
-  // 3. SHIPPING FEE FUNCTIONS
+  // 4. SHIPPING FEE FUNCTIONS
   // =======================================================
-
-  // Get all parcels belonging to a customer.
-  // Match using Customer ID or Customer Email.
 
   function getCustomerParcels(customer) {
     const parcels = readData(STORAGE.parcels);
@@ -214,8 +233,6 @@
     });
   }
 
-  // Check whether parcel contains a saved shipping fee.
-
   function hasShippingFee(parcel) {
     const feeFields = [
       parcel.shippingFee,
@@ -223,22 +240,25 @@
       parcel.price
     ];
 
-    return feeFields.some(value =>
-      value !== null &&
-      value !== undefined &&
-      value !== "" &&
-      Number.isFinite(
-        Number(
-          String(value)
-            .replace(/RM\s*/i, "")
-            .replace(/,/g, "")
-            .trim()
-        )
-      )
-    );
-  }
+    return feeFields.some(value => {
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+        return false;
+      }
 
-  // Get shipping fee from shared Admin system.
+      const amount = Number(
+        String(value)
+          .replace(/RM\s*/i, "")
+          .replace(/,/g, "")
+          .trim()
+      );
+
+      return Number.isFinite(amount) && amount > 0;
+    });
+  }
 
   function getParcelShippingFee(parcel) {
     if (typeof Admin.getParcelFee === "function") {
@@ -264,7 +284,7 @@
             .trim()
         );
 
-        if (Number.isFinite(amount) && amount >= 0) {
+        if (Number.isFinite(amount) && amount > 0) {
           return amount;
         }
       }
@@ -272,8 +292,6 @@
 
     return null;
   }
-
-  // Calculate total shipping fee for one customer.
 
   function getCustomerShippingSummary(customer) {
     const parcels = getCustomerParcels(customer);
@@ -313,6 +331,7 @@
           "Unknown",
 
         fee,
+
         hasFee:
           hasFee &&
           fee !== null &&
@@ -330,12 +349,9 @@
     };
   }
 
-  // Display shipping fee in customer table.
-
   function renderShippingFee(customer) {
     const summary = getCustomerShippingSummary(customer);
 
-    // No parcel records.
     if (summary.count === 0) {
       return `
         <div class="text-muted small">
@@ -345,7 +361,6 @@
       `;
     }
 
-    // Parcel exists but no valid shipping fee is available.
     if (!summary.hasFee) {
       return `
         <div class="text-warning small">
@@ -394,7 +409,7 @@
   }
 
   // =======================================================
-  // 4. DOM ELEMENTS
+  // 5. DOM ELEMENTS
   // =======================================================
 
   const elements = {
@@ -464,7 +479,7 @@
   };
 
   // =======================================================
-  // 5. READ CUSTOMER DATA
+  // 6. READ CUSTOMER DATA
   // =======================================================
 
   function getCustomers() {
@@ -472,7 +487,7 @@
   }
 
   // =======================================================
-  // 6. RENDER CUSTOMER TABLE
+  // 7. RENDER CUSTOMER TABLE
   // =======================================================
 
   function renderCustomers() {
@@ -499,33 +514,25 @@
       return searchable.includes(keyword);
     });
 
-    // Update customer count.
-
     if (elements.count) {
       elements.count.textContent =
         `${filteredCustomers.length} customer${filteredCustomers.length !== 1 ? "s" : ""}`;
     }
 
-    // Empty state.
-
     if (filteredCustomers.length === 0) {
       elements.table.innerHTML = `
         <tr>
           <td colspan="8" class="text-center py-4">
-
             <div class="text-muted">
               <i class="bi bi-people fs-3 d-block mb-2"></i>
               No customers found.
             </div>
-
           </td>
         </tr>
       `;
 
       return;
     }
-
-    // Render customer rows.
 
     elements.table.innerHTML = filteredCustomers.map(customer => {
       const id = customer.id || "-";
@@ -537,53 +544,43 @@
       return `
         <tr>
 
-          <!-- CUSTOMER ID -->
           <td>
             <strong>${escapeHTML(id)}</strong>
           </td>
 
-          <!-- CUSTOMER NAME -->
           <td>
             <div class="fw-semibold">
               ${escapeHTML(name)}
             </div>
           </td>
 
-          <!-- EMAIL -->
           <td>
             ${escapeHTML(email)}
           </td>
 
-          <!-- PHONE -->
           <td>
             ${escapeHTML(phone)}
           </td>
 
-          <!-- ADDRESS -->
           <td>
             <span
               class="d-inline-block text-truncate"
               style="max-width:180px;"
               title="${escapeHTML(address)}">
-
               ${escapeHTML(address)}
-
             </span>
           </td>
 
-          <!-- SHIPPING FEE -->
           <td>
             ${renderShippingFee(customer)}
           </td>
 
-          <!-- STATUS -->
           <td>
             <span class="badge bg-success">
               ${escapeHTML(customer.status || "Active")}
             </span>
           </td>
 
-          <!-- ACTIONS -->
           <td>
             <div class="d-flex gap-2">
 
@@ -592,9 +589,7 @@
                 class="btn btn-sm btn-outline-primary"
                 data-edit-customer="${escapeHTML(id)}"
                 title="Edit customer">
-
                 <i class="bi bi-pencil-square"></i>
-
               </button>
 
               <button
@@ -602,9 +597,7 @@
                 class="btn btn-sm btn-outline-danger"
                 data-delete-customer="${escapeHTML(id)}"
                 title="Delete customer">
-
                 <i class="bi bi-trash"></i>
-
               </button>
 
             </div>
@@ -616,7 +609,7 @@
   }
 
   // =======================================================
-  // 7. BOOTSTRAP MODAL
+  // 8. BOOTSTRAP MODAL
   // =======================================================
 
   function showModal() {
@@ -626,7 +619,6 @@
       window.bootstrap.Modal
         .getOrCreateInstance(elements.modal)
         .show();
-
     } else {
       elements.modal.style.display = "block";
       elements.modal.classList.add("show");
@@ -640,7 +632,6 @@
       window.bootstrap.Modal
         .getOrCreateInstance(elements.modal)
         .hide();
-
     } else {
       elements.modal.style.display = "none";
       elements.modal.classList.remove("show");
@@ -648,7 +639,7 @@
   }
 
   // =======================================================
-  // 8. OPEN ADD CUSTOMER MODAL
+  // 9. OPEN ADD CUSTOMER MODAL
   // =======================================================
 
   function openAddModal() {
@@ -680,7 +671,7 @@
   }
 
   // =======================================================
-  // 9. OPEN EDIT CUSTOMER MODAL
+  // 10. OPEN EDIT CUSTOMER MODAL
   // =======================================================
 
   function editCustomer(id) {
@@ -740,7 +731,7 @@
   }
 
   // =======================================================
-  // 10. VALIDATE CUSTOMER FORM
+  // 11. VALIDATE CUSTOMER FORM
   // =======================================================
 
   function validateForm() {
@@ -750,14 +741,12 @@
     if (!name) {
       showToast("Please enter the customer's name.", "error");
       elements.name?.focus();
-
       return false;
     }
 
     if (!email) {
       showToast("Please enter the customer's email.", "error");
       elements.email?.focus();
-
       return false;
     }
 
@@ -766,7 +755,6 @@
     if (!emailPattern.test(email)) {
       showToast("Please enter a valid email address.", "error");
       elements.email?.focus();
-
       return false;
     }
 
@@ -774,7 +762,7 @@
   }
 
   // =======================================================
-  // 11. SAVE CUSTOMER
+  // 12. SAVE CUSTOMER
   // =======================================================
 
   function saveCustomer(event) {
@@ -796,12 +784,9 @@
 
     const name = elements.name.value.trim();
 
-    const email = normalizeEmail(
-      elements.email.value
-    );
+    const email = normalizeEmail(elements.email.value);
 
     // Check duplicate email.
-
     const duplicateEmail = customers.some(customer =>
       normalizeEmail(
         customer.email || customer.customerEmail
@@ -814,15 +799,15 @@
         "This email address is already registered.",
         "error"
       );
-
       return;
     }
 
     // Prepare customer data.
-
     const customerData = {
       ...(existingCustomer || {}),
 
+      // Keep existing ID when editing.
+      // Generate PP1006, PP1007, etc. for new customers.
       id: existingCustomer
         ? existingCustomer.id
         : generateCustomerId(),
@@ -852,17 +837,13 @@
       updatedAt: new Date().toISOString()
     };
 
-    // Update existing customer.
-
     if (existingCustomer) {
       const index = customers.findIndex(customer =>
         String(customer.id) === String(editId)
       );
 
       customers[index] = customerData;
-
     } else {
-      // Add new customer.
       customers.unshift(customerData);
     }
 
@@ -870,25 +851,23 @@
       return;
     }
 
-    // Keep customer references in existing parcel records.
-
+    // Update parcel references for existing customer.
     if (existingCustomer) {
       syncCustomerWithParcels(customerData);
     }
 
     renderCustomers();
-
     hideModal();
 
     showToast(
       existingCustomer
         ? "Customer updated successfully."
-        : "New customer added successfully."
+        : `New customer added successfully. Customer ID: ${customerData.id}`
     );
   }
 
   // =======================================================
-  // 12. SYNC CUSTOMER DETAILS WITH PARCELS
+  // 13. SYNC CUSTOMER DETAILS WITH PARCELS
   // =======================================================
 
   function syncCustomerWithParcels(customer) {
@@ -900,7 +879,6 @@
       const sameCustomer =
         String(parcel.customerId || "") ===
           String(customer.id) ||
-
         (
           parcel.customerEmail &&
           normalizeEmail(parcel.customerEmail) ===
@@ -913,7 +891,6 @@
 
       return {
         ...parcel,
-
         customerId: customer.id,
         customerEmail: customer.email,
         customerName: customer.name
@@ -926,7 +903,7 @@
   }
 
   // =======================================================
-  // 13. DELETE CUSTOMER
+  // 14. DELETE CUSTOMER
   // =======================================================
 
   function deleteCustomer(id) {
@@ -953,20 +930,17 @@
     }
 
     // Existing parcel records are intentionally preserved.
-
     renderCustomers();
 
     showToast("Customer deleted successfully.");
   }
 
   // =======================================================
-  // 14. EVENT LISTENERS
+  // 15. EVENT LISTENERS
   // =======================================================
 
   function bindEvents() {
-
     // Customer search.
-
     if (elements.search) {
       elements.search.addEventListener(
         "input",
@@ -975,7 +949,6 @@
     }
 
     // Customer form.
-
     if (elements.form) {
       elements.form.addEventListener(
         "submit",
@@ -984,18 +957,13 @@
     }
 
     // Add customer buttons.
-
     document.querySelectorAll(
       '[data-add-customer], #addCustomerBtn'
     ).forEach(button => {
-      button.addEventListener(
-        "click",
-        openAddModal
-      );
+      button.addEventListener("click", openAddModal);
     });
 
     // Customer table actions.
-
     if (elements.table) {
       elements.table.addEventListener("click", event => {
         const editButton = event.target.closest(
@@ -1007,26 +975,20 @@
         );
 
         if (editButton) {
-          editCustomer(
-            editButton.dataset.editCustomer
-          );
+          editCustomer(editButton.dataset.editCustomer);
         }
 
         if (deleteButton) {
-          deleteCustomer(
-            deleteButton.dataset.deleteCustomer
-          );
+          deleteCustomer(deleteButton.dataset.deleteCustomer);
         }
       });
     }
 
     // Listen for changes from other Admin pages
     // or Customer Portal.
-
     window.addEventListener(
       "parcelpro:dataUpdated",
       event => {
-
         if (
           !event.detail?.key ||
           event.detail.key === STORAGE.customers ||
@@ -1038,9 +1000,7 @@
     );
 
     // Listen for changes from other browser tabs.
-
     window.addEventListener("storage", event => {
-
       if (
         event.key === STORAGE.customers ||
         event.key === STORAGE.parcels ||
@@ -1052,12 +1012,11 @@
   }
 
   // =======================================================
-  // 15. INITIALISE
+  // 16. INITIALISE
   // =======================================================
 
   function initialise() {
     bindEvents();
-
     renderCustomers();
 
     console.log(
