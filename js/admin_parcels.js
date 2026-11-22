@@ -9,6 +9,7 @@
    UPDATED:
    - Tracking History auto-update when parcel status changes
    - Preserve existing tracking history
+   - Support legacy trackingHistory records
    - Keep Customer ID and Parcel Tracking ID separate
    - Prevent duplicate parcel ID and tracking number
    - Dispatch updates for Parcel Tracking integration
@@ -111,7 +112,9 @@
         return Array.isArray(result) ? result : [];
       }
 
-      const result = JSON.parse(localStorage.getItem(key) || "[]");
+      const result = JSON.parse(
+        localStorage.getItem(key) || "[]"
+      );
 
       return Array.isArray(result) ? result : [];
 
@@ -273,7 +276,8 @@
     } while (
       parcels.some(parcel =>
         String(parcel.id) === id ||
-        String(parcel.trackingNumber || "") === id
+        String(parcel.trackingNumber || "") === id ||
+        String(parcel.trackingNo || "") === id
       )
     );
 
@@ -285,29 +289,46 @@
   // =======================================================
 
   function getStatusDescription(status) {
-
     const descriptions = {
       "Pending": "Your parcel has been registered.",
-
       "Processing": "Your parcel is being processed.",
-
       "Picked Up": "Your parcel has been picked up by the courier.",
-
+      "Shipped": "Your parcel is on its way.",
       "In Transit": "Your parcel is currently in transit.",
-
       "Out for Delivery": "Your parcel is out for delivery.",
-
       "Delivered": "Your parcel has been successfully delivered.",
-
       "Failed": "Delivery attempt was unsuccessful.",
-
       "Cancelled": "This parcel delivery has been cancelled."
     };
 
-    return descriptions[status] || "Parcel status updated.";
+    const matchedStatus = Object.keys(descriptions).find(
+      item =>
+        item.toLowerCase() ===
+        String(status || "").trim().toLowerCase()
+    );
+
+    return descriptions[matchedStatus] ||
+      "Parcel status updated.";
   }
 
   function getExistingHistory(parcel) {
+    if (!parcel) return [];
+
+    // Prefer existing non-empty history.
+    if (
+      Array.isArray(parcel.history) &&
+      parcel.history.length > 0
+    ) {
+      return [...parcel.history];
+    }
+
+    // Support older trackingHistory records.
+    if (
+      Array.isArray(parcel.trackingHistory) &&
+      parcel.trackingHistory.length > 0
+    ) {
+      return [...parcel.trackingHistory];
+    }
 
     if (Array.isArray(parcel.history)) {
       return [...parcel.history];
@@ -321,36 +342,53 @@
   }
 
   function updateTrackingHistory(existingParcel, newStatus) {
+    const history = getExistingHistory(existingParcel);
 
-    const history = existingParcel
-      ? getExistingHistory(existingParcel)
-      : [];
+    const status = String(
+      newStatus || "Pending"
+    ).trim();
 
-    const previousStatus = existingParcel?.status || "";
+    const now = new Date().toISOString();
 
-    const statusChanged =
-      String(previousStatus).trim().toLowerCase() !==
-      String(newStatus).trim().toLowerCase();
-
-    // Add initial tracking history for a new parcel.
+    // New parcel: create initial tracking history.
     if (!existingParcel) {
-
       history.push({
-        status: newStatus,
-        date: new Date().toISOString(),
-        description: getStatusDescription(newStatus)
+        status: status,
+        date: now,
+        description: getStatusDescription(status)
       });
 
       return history;
     }
 
-    // Only add a history record when status changes.
-    if (statusChanged) {
+    const previousStatus = String(
+      existingParcel.status || ""
+    ).trim().toLowerCase();
 
+    const latestHistory = history.length
+      ? history[history.length - 1]
+      : null;
+
+    const latestHistoryStatus = String(
+      latestHistory?.status || ""
+    ).trim().toLowerCase();
+
+    const newStatusNormalized = status.toLowerCase();
+
+    // Add history if:
+    // 1. The current parcel status changed, OR
+    // 2. The latest history does not match the current status.
+    //
+    // This also repairs older records with missing history.
+
+    if (
+      previousStatus !== newStatusNormalized ||
+      latestHistoryStatus !== newStatusNormalized
+    ) {
       history.push({
-        status: newStatus,
-        date: new Date().toISOString(),
-        description: getStatusDescription(newStatus)
+        status: status,
+        date: now,
+        description: getStatusDescription(status)
       });
     }
 
@@ -408,7 +446,6 @@
   // =======================================================
 
   function updateSummaryCards(parcels) {
-
     const total = parcels.length;
 
     const pending = getStatusCount(parcels, "Pending");
@@ -444,7 +481,6 @@
   // =======================================================
 
   function updatePerformance(parcels) {
-
     const total = parcels.length;
 
     const delivered = getStatusCount(parcels, "Delivered");
@@ -519,7 +555,6 @@
   // =======================================================
 
   function renderParcelChart(parcels) {
-
     if (!elements.chart) return;
 
     if (typeof Chart === "undefined") {
@@ -577,7 +612,6 @@
         tooltip: {
           callbacks: {
             label: function(context) {
-
               const value = context.parsed;
 
               const percentage = calculatePercentage(
@@ -593,13 +627,11 @@
     };
 
     if (parcelStatusChart) {
-
       parcelStatusChart.data = chartData;
       parcelStatusChart.options = chartOptions;
       parcelStatusChart.update();
 
     } else {
-
       parcelStatusChart = new Chart(
         elements.chart,
         {
@@ -616,7 +648,6 @@
   // =======================================================
 
   function updateParcelAnalytics(parcels = getParcels()) {
-
     updateSummaryCards(parcels);
 
     updatePerformance(parcels);
@@ -629,7 +660,6 @@
   // =======================================================
 
   function populateCustomers() {
-
     if (!elements.recipient) return;
 
     const customers = getCustomers();
@@ -641,7 +671,6 @@
     `;
 
     customers.forEach(customer => {
-
       const option = document.createElement("option");
 
       option.value =
@@ -669,7 +698,6 @@
   // =======================================================
 
   function renderParcels() {
-
     const parcels = getParcels();
 
     updateParcelAnalytics(parcels);
@@ -688,7 +716,6 @@
       : "";
 
     const filtered = parcels.filter(parcel => {
-
       const searchable = [
         parcel.id,
         parcel.trackingNumber,
@@ -722,7 +749,6 @@
     }
 
     if (filtered.length === 0) {
-
       elements.table.innerHTML = `
         <tr>
           <td colspan="8" class="text-center py-5">
@@ -739,7 +765,6 @@
     }
 
     elements.table.innerHTML = filtered.map(parcel => {
-
       const id = parcel.id || "";
 
       const tracking = parcel.trackingNumber || id || "-";
@@ -813,7 +838,6 @@
   // =======================================================
 
   function showModal() {
-
     if (!elements.modal) return;
 
     if (window.bootstrap && bootstrap.Modal) {
@@ -824,7 +848,6 @@
   }
 
   function hideModal() {
-
     if (!elements.modal) return;
 
     if (window.bootstrap && bootstrap.Modal) {
@@ -839,7 +862,6 @@
   // =======================================================
 
   function openAddModal() {
-
     if (!elements.form) return;
 
     elements.form.reset();
@@ -882,7 +904,6 @@
   // =======================================================
 
   function editParcel(id) {
-
     const parcel = getParcels().find(item =>
       String(item.id) === String(id)
     );
@@ -949,7 +970,6 @@
     }
 
     if (elements.proofPreview) {
-
       elements.proofPreview.innerHTML = parcel.proofPhoto
         ? `<img src="${escapeHTML(parcel.proofPhoto)}"
              alt="Delivery proof"
@@ -965,7 +985,6 @@
   // =======================================================
 
   function updateCustomerDetails() {
-
     const customer = findCustomer(elements.recipient?.value);
 
     if (!customer) return;
@@ -991,9 +1010,7 @@
   // =======================================================
 
   function readProofPhoto() {
-
     return new Promise(resolve => {
-
       if (!elements.proof?.files?.length) {
         resolve(null);
         return;
@@ -1024,7 +1041,6 @@
   }
 
   function previewProof() {
-
     if (!elements.proof || !elements.proofPreview) return;
 
     const file = elements.proof.files[0];
@@ -1050,7 +1066,6 @@
     const reader = new FileReader();
 
     reader.onload = event => {
-
       const image = document.createElement("img");
 
       image.src = event.target.result;
@@ -1071,7 +1086,6 @@
   // =======================================================
 
   async function saveParcel(event) {
-
     event.preventDefault();
 
     const parcels = getParcels();
@@ -1109,7 +1123,7 @@
     );
 
     // -----------------------------------------------
-    // NEW: STATUS AND TRACKING HISTORY
+    // STATUS AND TRACKING HISTORY
     // -----------------------------------------------
 
     const newStatus = elements.status?.value || "Pending";
@@ -1128,9 +1142,11 @@
 
       id: parcelId,
 
-      // Keep parcel tracking ID separate from Customer ID.
+      // Keep Parcel Tracking ID separate from Customer ID.
       trackingNumber:
-        existingParcel?.trackingNumber || parcelId,
+        existingParcel?.trackingNumber ||
+        existingParcel?.trackingNo ||
+        parcelId,
 
       customerId:
         customer?.id ||
@@ -1165,12 +1181,12 @@
 
       date: elements.date?.value || "",
 
-      // Current parcel status
       status: newStatus,
 
-      // NEW: Tracking history for Parcel Tracking page
+      // Save tracking history for Parcel Tracking.
       history: history,
 
+      // Keep courier information.
       courier: elements.courier?.value.trim() || "",
 
       proofPhoto: proofPhoto || oldProof,
@@ -1186,15 +1202,18 @@
     // -----------------------------------------------
 
     if (existingParcel) {
-
       const index = parcels.findIndex(parcel =>
         String(parcel.id) === String(editId)
       );
 
+      if (index === -1) {
+        showToast("Parcel record not found.", "error");
+        return;
+      }
+
       parcels[index] = parcelData;
 
     } else {
-
       parcels.unshift(parcelData);
     }
 
@@ -1205,6 +1224,11 @@
     hideModal();
 
     elements.form.reset();
+
+    if (elements.proofPreview) {
+      elements.proofPreview.textContent =
+        "No proof photo selected.";
+    }
 
     showToast(
       existingParcel
@@ -1218,7 +1242,6 @@
   // =======================================================
 
   function deleteParcel(id) {
-
     const parcels = getParcels();
 
     const parcel = parcels.find(item =>
@@ -1249,7 +1272,6 @@
   // =======================================================
 
   function bindEvents() {
-
     elements.search?.addEventListener(
       "input",
       renderParcels
@@ -1263,7 +1285,6 @@
     document.querySelectorAll(
       '[data-open-modal="parcelModal"], [data-add-parcel], #addParcelBtn'
     ).forEach(button => {
-
       button.addEventListener(
         "click",
         openAddModal
@@ -1286,7 +1307,6 @@
     );
 
     elements.table?.addEventListener("click", event => {
-
       const editButton = event.target.closest(
         "[data-edit-parcel]"
       );
@@ -1304,11 +1324,10 @@
       }
     });
 
-    // Same-tab ParcelPro updates
+    // Same-tab ParcelPro updates.
     window.addEventListener(
       "parcelpro:dataUpdated",
       event => {
-
         if (
           !event.detail?.key ||
           event.detail.key === STORAGE.parcels ||
@@ -1320,9 +1339,8 @@
       }
     );
 
-    // Other-tab localStorage updates
+    // Other-tab localStorage updates.
     window.addEventListener("storage", event => {
-
       if (
         event.key === STORAGE.parcels ||
         event.key === STORAGE.customers ||
@@ -1339,9 +1357,7 @@
   // =======================================================
 
   function initialise() {
-
     try {
-
       bindEvents();
 
       populateCustomers();
@@ -1353,7 +1369,6 @@
       );
 
     } catch (error) {
-
       console.error(
         "Parcel Management initialization failed:",
         error
@@ -1372,14 +1387,12 @@
   }
 
   if (document.readyState === "loading") {
-
     document.addEventListener(
       "DOMContentLoaded",
       initialise
     );
 
   } else {
-
     initialise();
   }
 
