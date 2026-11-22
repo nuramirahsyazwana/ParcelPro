@@ -7,14 +7,17 @@
    Data Visualisation - Infographic Dashboard
 
    UPDATED:
+   - Connect with shared admin_common.js parcel storage
+   - Sync with ADMIN_TRACKING.JS and public.js
    - Tracking History auto-update when parcel status changes
    - Preserve existing tracking history
    - Support legacy trackingHistory records
    - Keep Customer ID and Parcel Tracking ID separate
    - Prevent duplicate parcel ID and tracking number
    - Dispatch updates for Parcel Tracking integration
+   - Support Shipped and Out for Delivery statuses
 
-   Storage: localStorage
+   Shared Storage: parcelpro_parcels
 ========================================================= */
 
 (() => {
@@ -27,7 +30,9 @@
   const Admin = window.ParcelProAdmin;
 
   if (!Admin) {
-    console.error("ParcelProAdmin not found. Check admin_common.js.");
+    console.error(
+      "ParcelProAdmin not found. Check admin_common.js."
+    );
     return;
   }
 
@@ -109,6 +114,7 @@
     try {
       if (typeof Admin.readList === "function") {
         const result = Admin.readList(key);
+
         return Array.isArray(result) ? result : [];
       }
 
@@ -119,7 +125,12 @@
       return Array.isArray(result) ? result : [];
 
     } catch (error) {
-      console.error("Unable to read storage:", key, error);
+      console.error(
+        "Unable to read storage:",
+        key,
+        error
+      );
+
       return [];
     }
   }
@@ -132,13 +143,56 @@
     return readList(STORAGE.customers);
   }
 
+  function dispatchParcelUpdate() {
+    const detail = {
+      key: STORAGE.parcels,
+      action: "save"
+    };
+
+    window.dispatchEvent(
+      new CustomEvent("parcelpro:dataUpdated", {
+        detail
+      })
+    );
+
+    document.dispatchEvent(
+      new CustomEvent("parcelpro:dataUpdated", {
+        detail
+      })
+    );
+  }
+
   function saveParcels(parcels) {
     try {
-      if (typeof Admin.saveList === "function") {
-        Admin.saveList(STORAGE.parcels, parcels);
+      if (!Array.isArray(parcels)) {
+        throw new Error(
+          "Parcel data must be an array."
+        );
+      }
 
-      } else if (typeof Admin.save === "function") {
-        Admin.save(STORAGE.parcels, parcels);
+      let sharedSetterUsed = false;
+
+      // Preferred method:
+      // Use shared Admin data manager.
+      if (typeof Admin.setParcels === "function") {
+        Admin.setParcels(parcels);
+        sharedSetterUsed = true;
+
+      } else if (
+        typeof Admin.saveList === "function"
+      ) {
+        Admin.saveList(
+          STORAGE.parcels,
+          parcels
+        );
+
+      } else if (
+        typeof Admin.save === "function"
+      ) {
+        Admin.save(
+          STORAGE.parcels,
+          parcels
+        );
 
       } else {
         localStorage.setItem(
@@ -147,16 +201,36 @@
         );
       }
 
-      window.dispatchEvent(
-        new CustomEvent("parcelpro:dataUpdated", {
-          detail: { key: STORAGE.parcels }
-        })
+      // Verify that the data was saved.
+      const savedData = JSON.parse(
+        localStorage.getItem(STORAGE.parcels) || "[]"
       );
+
+      if (!Array.isArray(savedData)) {
+        throw new Error(
+          "Saved parcel data is invalid."
+        );
+      }
+
+      if (savedData.length !== parcels.length) {
+        throw new Error(
+          "Parcel data could not be saved completely."
+        );
+      }
+
+      // Admin.setParcels already dispatches the shared event.
+      // Dispatch manually only when using a fallback method.
+      if (!sharedSetterUsed) {
+        dispatchParcelUpdate();
+      }
 
       return true;
 
     } catch (error) {
-      console.error("Unable to save parcels:", error);
+      console.error(
+        "Unable to save parcels:",
+        error
+      );
 
       showToast(
         "Unable to save. Browser storage may be full.",
@@ -176,13 +250,16 @@
       return Admin.escapeHTML(value ?? "");
     }
 
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    })[char]);
+    return String(value ?? "").replace(
+      /[&<>"']/g,
+      char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]
+    );
   }
 
   function money(value) {
@@ -260,7 +337,23 @@
   }
 
   // =======================================================
-  // 4A. GENERATE UNIQUE PARCEL ID
+  // 4A. STATUS NORMALIZATION
+  // =======================================================
+
+  function normalizeStatus(parcel) {
+    const status = String(
+      parcel?.status || "Pending"
+    ).trim().toLowerCase();
+
+    if (status === "out of delivery") {
+      return "out for delivery";
+    }
+
+    return status;
+  }
+
+  // =======================================================
+  // 4B. GENERATE UNIQUE PARCEL ID
   // =======================================================
 
   function generateParcelId() {
@@ -269,13 +362,14 @@
     let id;
 
     do {
-      id = "PCL" +
+      id =
+        "PCL" +
         Date.now().toString().slice(-8) +
         Math.floor(Math.random() * 1000);
 
     } while (
       parcels.some(parcel =>
-        String(parcel.id) === id ||
+        String(parcel.id || "") === id ||
         String(parcel.trackingNumber || "") === id ||
         String(parcel.trackingNo || "") === id
       )
@@ -285,7 +379,56 @@
   }
 
   // =======================================================
-  // 4B. TRACKING HISTORY CONFIGURATION
+  // 4C. CHECK DUPLICATE PARCEL / TRACKING ID
+  // =======================================================
+
+  function hasDuplicateParcelId(parcelId, currentId = "") {
+    return getParcels().some(parcel => {
+      if (
+        currentId &&
+        String(parcel.id) === String(currentId)
+      ) {
+        return false;
+      }
+
+      return (
+        String(parcel.id || "").toLowerCase() ===
+        String(parcelId || "").toLowerCase()
+      );
+    });
+  }
+
+  function hasDuplicateTrackingNumber(
+    trackingNumber,
+    currentId = ""
+  ) {
+    const target = String(
+      trackingNumber || ""
+    ).trim().toLowerCase();
+
+    if (!target) return false;
+
+    return getParcels().some(parcel => {
+      if (
+        currentId &&
+        String(parcel.id) === String(currentId)
+      ) {
+        return false;
+      }
+
+      const existingTracking = String(
+        parcel.trackingNumber ||
+        parcel.trackingNo ||
+        parcel.id ||
+        ""
+      ).trim().toLowerCase();
+
+      return existingTracking === target;
+    });
+  }
+
+  // =======================================================
+  // 5. TRACKING HISTORY CONFIGURATION
   // =======================================================
 
   function getStatusDescription(status) {
@@ -301,14 +444,17 @@
       "Cancelled": "This parcel delivery has been cancelled."
     };
 
-    const matchedStatus = Object.keys(descriptions).find(
-      item =>
-        item.toLowerCase() ===
-        String(status || "").trim().toLowerCase()
+    const matchedStatus = Object.keys(
+      descriptions
+    ).find(item =>
+      item.toLowerCase() ===
+      String(status || "").trim().toLowerCase()
     );
 
-    return descriptions[matchedStatus] ||
-      "Parcel status updated.";
+    return (
+      descriptions[matchedStatus] ||
+      "Parcel status updated."
+    );
   }
 
   function getExistingHistory(parcel) {
@@ -341,8 +487,13 @@
     return [];
   }
 
-  function updateTrackingHistory(existingParcel, newStatus) {
-    const history = getExistingHistory(existingParcel);
+  function updateTrackingHistory(
+    existingParcel,
+    newStatus
+  ) {
+    const history = getExistingHistory(
+      existingParcel
+    );
 
     const status = String(
       newStatus || "Pending"
@@ -353,7 +504,7 @@
     // New parcel: create initial tracking history.
     if (!existingParcel) {
       history.push({
-        status: status,
+        status,
         date: now,
         description: getStatusDescription(status)
       });
@@ -375,18 +526,14 @@
 
     const newStatusNormalized = status.toLowerCase();
 
-    // Add history if:
-    // 1. The current parcel status changed, OR
-    // 2. The latest history does not match the current status.
-    //
-    // This also repairs older records with missing history.
-
+    // Add history when status changes or when the
+    // latest history does not match the parcel status.
     if (
       previousStatus !== newStatusNormalized ||
       latestHistoryStatus !== newStatusNormalized
     ) {
       history.push({
-        status: status,
+        status,
         date: now,
         description: getStatusDescription(status)
       });
@@ -396,7 +543,7 @@
   }
 
   // =======================================================
-  // 5. INFOGRAPHIC - PARCEL STATUS CONFIGURATION
+  // 6. INFOGRAPHIC - PARCEL STATUS CONFIGURATION
   // =======================================================
 
   let parcelStatusChart = null;
@@ -405,6 +552,7 @@
     "Pending",
     "Processing",
     "Picked Up",
+    "Shipped",
     "In Transit",
     "Out for Delivery",
     "Delivered",
@@ -416,6 +564,7 @@
     "#f0ad4e",
     "#6c8ebf",
     "#8874bd",
+    "#4c91c7",
     "#36a2eb",
     "#5bc0de",
     "#45b878",
@@ -423,15 +572,11 @@
     "#9299a3"
   ];
 
-  function normalizeStatus(parcel) {
-    return String(parcel.status || "Pending")
-      .trim()
-      .toLowerCase();
-  }
-
   function getStatusCount(parcels, status) {
+    const target = String(status).toLowerCase();
+
     return parcels.filter(parcel =>
-      normalizeStatus(parcel) === status.toLowerCase()
+      normalizeStatus(parcel) === target
     ).length;
   }
 
@@ -442,22 +587,29 @@
   }
 
   // =======================================================
-  // 6. INFOGRAPHIC - UPDATE SUMMARY CARDS
+  // 7. INFOGRAPHIC - UPDATE SUMMARY CARDS
   // =======================================================
 
   function updateSummaryCards(parcels) {
     const total = parcels.length;
 
-    const pending = getStatusCount(parcels, "Pending");
+    const pending = getStatusCount(
+      parcels,
+      "Pending"
+    );
 
     const transit = parcels.filter(parcel => [
       "processing",
       "picked up",
+      "shipped",
       "in transit",
       "out for delivery"
     ].includes(normalizeStatus(parcel))).length;
 
-    const delivered = getStatusCount(parcels, "Delivered");
+    const delivered = getStatusCount(
+      parcels,
+      "Delivered"
+    );
 
     if (elements.total) {
       elements.total.textContent = total;
@@ -477,28 +629,44 @@
   }
 
   // =======================================================
-  // 7. INFOGRAPHIC - UPDATE PERFORMANCE BARS
+  // 8. INFOGRAPHIC - UPDATE PERFORMANCE BARS
   // =======================================================
 
   function updatePerformance(parcels) {
     const total = parcels.length;
 
-    const delivered = getStatusCount(parcels, "Delivered");
+    const delivered = getStatusCount(
+      parcels,
+      "Delivered"
+    );
 
-    const cancelled = getStatusCount(parcels, "Cancelled");
+    const cancelled = getStatusCount(
+      parcels,
+      "Cancelled"
+    );
 
     const active = parcels.filter(parcel => [
       "processing",
       "picked up",
+      "shipped",
       "in transit",
       "out for delivery"
     ].includes(normalizeStatus(parcel))).length;
 
-    const deliveryRate = calculatePercentage(delivered, total);
+    const deliveryRate = calculatePercentage(
+      delivered,
+      total
+    );
 
-    const activeRate = calculatePercentage(active, total);
+    const activeRate = calculatePercentage(
+      active,
+      total
+    );
 
-    const cancelledRate = calculatePercentage(cancelled, total);
+    const cancelledRate = calculatePercentage(
+      cancelled,
+      total
+    );
 
     if (elements.deliveryRateLabel) {
       elements.deliveryRateLabel.textContent =
@@ -551,7 +719,7 @@
   }
 
   // =======================================================
-  // 8. INFOGRAPHIC - DOUGHNUT CHART
+  // 9. INFOGRAPHIC - DOUGHNUT CHART
   // =======================================================
 
   function renderParcelChart(parcels) {
@@ -559,8 +727,9 @@
 
     if (typeof Chart === "undefined") {
       console.error(
-        "Chart.js not loaded. Check your internet connection or Chart.js script."
+        "Chart.js not loaded. Check your Chart.js script."
       );
+
       return;
     }
 
@@ -571,7 +740,10 @@
     const hasData = parcels.length > 0;
 
     if (elements.chartEmpty) {
-      elements.chartEmpty.classList.toggle("d-none", hasData);
+      elements.chartEmpty.classList.toggle(
+        "d-none",
+        hasData
+      );
     }
 
     const chartData = {
@@ -644,19 +816,19 @@
   }
 
   // =======================================================
-  // 9. INFOGRAPHIC - MAIN UPDATE FUNCTION
+  // 10. INFOGRAPHIC - MAIN UPDATE FUNCTION
   // =======================================================
 
-  function updateParcelAnalytics(parcels = getParcels()) {
+  function updateParcelAnalytics(
+    parcels = getParcels()
+  ) {
     updateSummaryCards(parcels);
-
     updatePerformance(parcels);
-
     renderParcelChart(parcels);
   }
 
   // =======================================================
-  // 10. POPULATE CUSTOMER DROPDOWN
+  // 11. POPULATE CUSTOMER DROPDOWN
   // =======================================================
 
   function populateCustomers() {
@@ -694,7 +866,7 @@
   }
 
   // =======================================================
-  // 11. RENDER PARCEL TABLE
+  // 12. RENDER PARCEL TABLE
   // =======================================================
 
   function renderParcels() {
@@ -712,13 +884,14 @@
       : "";
 
     const selectedStatus = elements.filter
-      ? elements.filter.value.toLowerCase()
+      ? elements.filter.value.trim().toLowerCase()
       : "";
 
     const filtered = parcels.filter(parcel => {
       const searchable = [
         parcel.id,
         parcel.trackingNumber,
+        parcel.trackingNo,
         parcel.customerId,
         parcel.recipient,
         parcel.customerName,
@@ -729,16 +902,20 @@
         parcel.address
       ].join(" ").toLowerCase();
 
-      const parcelStatus = String(
-        parcel.status || "Pending"
-      ).toLowerCase();
+      const parcelStatus = normalizeStatus(parcel);
 
-      const matchesSearch = searchable.includes(keyword);
+      const filterStatus =
+        selectedStatus === "out of delivery"
+          ? "out for delivery"
+          : selectedStatus;
+
+      const matchesSearch =
+        searchable.includes(keyword);
 
       const matchesStatus =
         !selectedStatus ||
         selectedStatus === "all" ||
-        parcelStatus === selectedStatus;
+        parcelStatus === filterStatus;
 
       return matchesSearch && matchesStatus;
     });
@@ -767,7 +944,11 @@
     elements.table.innerHTML = filtered.map(parcel => {
       const id = parcel.id || "";
 
-      const tracking = parcel.trackingNumber || id || "-";
+      const tracking =
+        parcel.trackingNumber ||
+        parcel.trackingNo ||
+        id ||
+        "-";
 
       const recipient =
         parcel.recipient ||
@@ -804,7 +985,9 @@
           </td>
 
           <td>
-            ${escapeHTML(dateFormat(parcel.date || parcel.created || ""))}
+            ${escapeHTML(
+              dateFormat(parcel.date || parcel.created || "")
+            )}
           </td>
 
           <td class="text-end">
@@ -834,7 +1017,7 @@
   }
 
   // =======================================================
-  // 12. MODAL FUNCTIONS
+  // 13. MODAL FUNCTIONS
   // =======================================================
 
   function showModal() {
@@ -858,7 +1041,7 @@
   }
 
   // =======================================================
-  // 13. ADD PARCEL
+  // 14. ADD PARCEL
   // =======================================================
 
   function openAddModal() {
@@ -900,7 +1083,7 @@
   }
 
   // =======================================================
-  // 14. EDIT PARCEL
+  // 15. EDIT PARCEL
   // =======================================================
 
   function editParcel(id) {
@@ -971,9 +1154,11 @@
 
     if (elements.proofPreview) {
       elements.proofPreview.innerHTML = parcel.proofPhoto
-        ? `<img src="${escapeHTML(parcel.proofPhoto)}"
+        ? `<img
+             src="${escapeHTML(parcel.proofPhoto)}"
              alt="Delivery proof"
-             style="max-width:120px;max-height:120px;object-fit:cover;border-radius:8px;">`
+             style="max-width:120px;max-height:120px;object-fit:cover;border-radius:8px;"
+           >`
         : "No proof photo selected.";
     }
 
@@ -981,11 +1166,13 @@
   }
 
   // =======================================================
-  // 15. CUSTOMER DETAILS
+  // 16. CUSTOMER DETAILS
   // =======================================================
 
   function updateCustomerDetails() {
-    const customer = findCustomer(elements.recipient?.value);
+    const customer = findCustomer(
+      elements.recipient?.value
+    );
 
     if (!customer) return;
 
@@ -1006,7 +1193,7 @@
   }
 
   // =======================================================
-  // 16. DELIVERY PROOF IMAGE
+  // 17. DELIVERY PROOF IMAGE
   // =======================================================
 
   function readProofPhoto() {
@@ -1019,13 +1206,21 @@
       const file = elements.proof.files[0];
 
       if (!file.type.startsWith("image/")) {
-        showToast("Please select a valid image.", "error");
+        showToast(
+          "Please select a valid image.",
+          "error"
+        );
+
         resolve(false);
         return;
       }
 
       if (file.size > 2 * 1024 * 1024) {
-        showToast("Image must not exceed 2MB.", "error");
+        showToast(
+          "Image must not exceed 2MB.",
+          "error"
+        );
+
         resolve(false);
         return;
       }
@@ -1034,31 +1229,49 @@
 
       reader.onload = () => resolve(reader.result);
 
-      reader.onerror = () => resolve(false);
+      reader.onerror = () => {
+        showToast(
+          "Unable to read the selected image.",
+          "error"
+        );
+
+        resolve(false);
+      };
 
       reader.readAsDataURL(file);
     });
   }
 
   function previewProof() {
-    if (!elements.proof || !elements.proofPreview) return;
+    if (!elements.proof || !elements.proofPreview) {
+      return;
+    }
 
     const file = elements.proof.files[0];
 
     if (!file) {
       elements.proofPreview.textContent =
         "No proof photo selected.";
+
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      showToast("Please select an image file.", "error");
+      showToast(
+        "Please select an image file.",
+        "error"
+      );
+
       elements.proof.value = "";
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      showToast("Image must not exceed 2MB.", "error");
+      showToast(
+        "Image must not exceed 2MB.",
+        "error"
+      );
+
       elements.proof.value = "";
       return;
     }
@@ -1078,11 +1291,18 @@
       elements.proofPreview.replaceChildren(image);
     };
 
+    reader.onerror = () => {
+      showToast(
+        "Unable to preview the selected image.",
+        "error"
+      );
+    };
+
     reader.readAsDataURL(file);
   }
 
   // =======================================================
-  // 17. SAVE PARCEL
+  // 18. SAVE PARCEL
   // =======================================================
 
   async function saveParcel(event) {
@@ -1090,7 +1310,8 @@
 
     const parcels = getParcels();
 
-    const editId = elements.editId?.value.trim() || "";
+    const editId =
+      elements.editId?.value.trim() || "";
 
     const existingParcel = editId
       ? parcels.find(parcel =>
@@ -1099,11 +1320,16 @@
       : null;
 
     if (editId && !existingParcel) {
-      showToast("Parcel record not found.", "error");
+      showToast(
+        "Parcel record not found.",
+        "error"
+      );
+
       return;
     }
 
-    const customerValue = elements.recipient?.value || "";
+    const customerValue =
+      elements.recipient?.value || "";
 
     const customer = findCustomer(customerValue);
 
@@ -1111,11 +1337,48 @@
 
     if (proofPhoto === false) return;
 
-    const oldProof = existingParcel?.proofPhoto || "";
+    const oldProof =
+      existingParcel?.proofPhoto || "";
 
     const parcelId = existingParcel
       ? existingParcel.id
       : generateParcelId();
+
+    // Check parcel ID uniqueness.
+    if (
+      hasDuplicateParcelId(
+        parcelId,
+        existingParcel?.id || ""
+      )
+    ) {
+      showToast(
+        "Duplicate parcel ID detected. Please try again.",
+        "error"
+      );
+
+      return;
+    }
+
+    // Keep the existing tracking number when editing.
+    const trackingNumber =
+      existingParcel?.trackingNumber ||
+      existingParcel?.trackingNo ||
+      parcelId;
+
+    // Check tracking number uniqueness.
+    if (
+      hasDuplicateTrackingNumber(
+        trackingNumber,
+        existingParcel?.id || ""
+      )
+    ) {
+      showToast(
+        "Duplicate tracking number detected.",
+        "error"
+      );
+
+      return;
+    }
 
     const shippingFee = Math.max(
       0,
@@ -1126,7 +1389,8 @@
     // STATUS AND TRACKING HISTORY
     // -----------------------------------------------
 
-    const newStatus = elements.status?.value || "Pending";
+    const newStatus =
+      elements.status?.value || "Pending";
 
     const history = updateTrackingHistory(
       existingParcel,
@@ -1142,11 +1406,8 @@
 
       id: parcelId,
 
-      // Keep Parcel Tracking ID separate from Customer ID.
-      trackingNumber:
-        existingParcel?.trackingNumber ||
-        existingParcel?.trackingNo ||
-        parcelId,
+      // Parcel Tracking ID is separate from Customer ID.
+      trackingNumber,
 
       customerId:
         customer?.id ||
@@ -1167,11 +1428,14 @@
         : elements.recipient?.selectedOptions?.[0]?.textContent?.trim() ||
           customerValue,
 
-      phone: elements.phone?.value.trim() || "",
+      phone:
+        elements.phone?.value.trim() || "",
 
-      address: elements.address?.value.trim() || "",
+      address:
+        elements.address?.value.trim() || "",
 
-      type: elements.type?.value || "",
+      type:
+        elements.type?.value || "",
 
       shippingFee,
 
@@ -1179,19 +1443,22 @@
 
       price: shippingFee,
 
-      date: elements.date?.value || "",
+      date:
+        elements.date?.value || "",
 
       status: newStatus,
 
-      // Save tracking history for Parcel Tracking.
-      history: history,
+      // Public and Admin Tracking use this history.
+      history,
 
-      // Keep courier information.
-      courier: elements.courier?.value.trim() || "",
+      courier:
+        elements.courier?.value.trim() || "",
 
-      proofPhoto: proofPhoto || oldProof,
+      proofPhoto:
+        proofPhoto || oldProof,
 
-      created: existingParcel?.created ||
+      created:
+        existingParcel?.created ||
         new Date().toISOString(),
 
       updated: new Date().toISOString()
@@ -1207,7 +1474,11 @@
       );
 
       if (index === -1) {
-        showToast("Parcel record not found.", "error");
+        showToast(
+          "Parcel record not found.",
+          "error"
+        );
+
         return;
       }
 
@@ -1223,7 +1494,7 @@
 
     hideModal();
 
-    elements.form.reset();
+    elements.form?.reset();
 
     if (elements.proofPreview) {
       elements.proofPreview.textContent =
@@ -1238,7 +1509,7 @@
   }
 
   // =======================================================
-  // 18. DELETE PARCEL
+  // 19. DELETE PARCEL
   // =======================================================
 
   function deleteParcel(id) {
@@ -1268,7 +1539,7 @@
   }
 
   // =======================================================
-  // 19. EVENT LISTENERS
+  // 20. EVENT LISTENERS
   // =======================================================
 
   function bindEvents() {
@@ -1306,23 +1577,30 @@
       previewProof
     );
 
-    elements.table?.addEventListener("click", event => {
-      const editButton = event.target.closest(
-        "[data-edit-parcel]"
-      );
+    elements.table?.addEventListener(
+      "click",
+      event => {
+        const editButton = event.target.closest(
+          "[data-edit-parcel]"
+        );
 
-      const deleteButton = event.target.closest(
-        "[data-delete-parcel]"
-      );
+        const deleteButton = event.target.closest(
+          "[data-delete-parcel]"
+        );
 
-      if (editButton) {
-        editParcel(editButton.dataset.editParcel);
+        if (editButton) {
+          editParcel(
+            editButton.dataset.editParcel
+          );
+        }
+
+        if (deleteButton) {
+          deleteParcel(
+            deleteButton.dataset.deleteParcel
+          );
+        }
       }
-
-      if (deleteButton) {
-        deleteParcel(deleteButton.dataset.deleteParcel);
-      }
-    });
+    );
 
     // Same-tab ParcelPro updates.
     window.addEventListener(
@@ -1340,20 +1618,23 @@
     );
 
     // Other-tab localStorage updates.
-    window.addEventListener("storage", event => {
-      if (
-        event.key === STORAGE.parcels ||
-        event.key === STORAGE.customers ||
-        event.key === null
-      ) {
-        populateCustomers();
-        renderParcels();
+    window.addEventListener(
+      "storage",
+      event => {
+        if (
+          event.key === STORAGE.parcels ||
+          event.key === STORAGE.customers ||
+          event.key === null
+        ) {
+          populateCustomers();
+          renderParcels();
+        }
       }
-    });
+    );
   }
 
   // =======================================================
-  // 20. INITIALISE
+  // 21. INITIALISE
   // =======================================================
 
   function initialise() {
