@@ -23,11 +23,9 @@
 
   // =======================================================
   // 2. DEFAULT DATA
-  // Seed data is added ONLY when storage is empty.
-  // Existing user data will not be overwritten.
   // =======================================================
 
-const seedCustomers = [
+  const seedCustomers = [
     {
       id: 1,
       name: "Aisyah Rahman",
@@ -162,6 +160,7 @@ const seedCustomers = [
       ]
     }
   ];
+
   // =======================================================
   // 3. STORAGE HELPERS
   // =======================================================
@@ -256,20 +255,74 @@ const seedCustomers = [
       .join("");
   }
 
+  // =======================================================
+  // MONEY FORMAT
+  // =======================================================
+
   function money(value) {
     const amount = Number(value);
-    return "RM " + (Number.isFinite(amount) ? amount : 0).toFixed(2);
+
+    return "RM " +
+      (Number.isFinite(amount) ? amount : 0).toFixed(2);
   }
 
-  function getParcelFee(parcel = {}) {
-    const value =
-      parcel.finalPrice ??
-      parcel.shippingFee ??
-      parcel.price ??
-      0;
+  // =======================================================
+  // SHIPPING FEE HELPER
+  // FIXED: Do not let finalPrice = 0 hide shippingFee.
+  // Existing seed parcel prices are used as fallback.
+  // =======================================================
 
-    const amount = Number(value);
-    return Number.isFinite(amount) ? amount : 0;
+  function getParcelFee(parcel = {}) {
+
+    // Check saved parcel prices first.
+    const savedPrices = [
+      parcel.finalPrice,
+      parcel.shippingFee,
+      parcel.price
+    ];
+
+    for (const value of savedPrices) {
+
+      if (
+        value !== null &&
+        value !== undefined &&
+        value !== ""
+      ) {
+        const amount = Number(
+          String(value).replace(/RM\s*/i, "").replace(/,/g, "")
+        );
+
+        if (Number.isFinite(amount) && amount > 0) {
+          return amount;
+        }
+      }
+    }
+
+    // If saved parcel has no valid price,
+    // find its matching default seed parcel.
+    const trackingId = String(
+      parcel.trackingNumber || parcel.id || ""
+    ).trim();
+
+    const defaultParcel = seedParcels.find(item =>
+      String(item.trackingNumber || item.id).trim() === trackingId
+    );
+
+    if (defaultParcel) {
+      const defaultPrice = Number(
+        defaultParcel.finalPrice ??
+        defaultParcel.shippingFee ??
+        defaultParcel.price ??
+        0
+      );
+
+      if (Number.isFinite(defaultPrice) && defaultPrice > 0) {
+        return defaultPrice;
+      }
+    }
+
+    // No price available.
+    return 0;
   }
 
   function dateFormat(value) {
@@ -291,13 +344,18 @@ const seedCustomers = [
 
   function getToday() {
     const now = new Date();
+
     const local = new Date(
       now.getTime() - now.getTimezoneOffset() * 60000
     );
+
     return local.toISOString().slice(0, 10);
   }
 
-  // Standard status values used across admin pages.
+  // =======================================================
+  // STATUS HELPERS
+  // =======================================================
+
   function normalizeStatus(status) {
     const value = String(status || "Pending")
       .trim()
@@ -405,7 +463,10 @@ const seedCustomers = [
 
       if (!customer) {
         const recipient = String(
-          parcel.customerName || parcel.senderName || parcel.recipient || ""
+          parcel.customerName ||
+          parcel.senderName ||
+          parcel.recipient ||
+          ""
         ).trim().toLowerCase();
 
         customer = customers.find(item =>
@@ -422,10 +483,17 @@ const seedCustomers = [
         customerName: parcel.customerName || customer.name || ""
       };
 
-      if (!updated.senderName) updated.senderName = customer.name || "";
-      if (!updated.senderPhone) updated.senderPhone = customer.phone || "";
+      if (!updated.senderName) {
+        updated.senderName = customer.name || "";
+      }
+
+      if (!updated.senderPhone) {
+        updated.senderPhone = customer.phone || "";
+      }
+
       if (!updated.senderAddress) {
-        updated.senderAddress = customer.location || customer.address || "";
+        updated.senderAddress =
+          customer.location || customer.address || "";
       }
 
       if (JSON.stringify(updated) !== JSON.stringify(parcel)) {
@@ -450,7 +518,12 @@ const seedCustomers = [
     users = readList(STORAGE.users);
     currentUser = read(STORAGE.session, null);
 
-    return { parcels, customers, users, currentUser };
+    return {
+      parcels,
+      customers,
+      users,
+      currentUser
+    };
   }
 
   function dispatchDataUpdated(key = STORAGE.parcels) {
@@ -463,7 +536,6 @@ const seedCustomers = [
 
     refreshData();
 
-    // Dashboard listens on document; other pages listen on window.
     window.dispatchEvent(
       new CustomEvent("parcelpro:dataUpdated", { detail })
     );
@@ -480,6 +552,7 @@ const seedCustomers = [
 
     parcels = value;
     dispatchDataUpdated(STORAGE.parcels);
+
     return true;
   }
 
@@ -490,6 +563,7 @@ const seedCustomers = [
 
     customers = value;
     dispatchDataUpdated(STORAGE.customers);
+
     return true;
   }
 
@@ -518,7 +592,10 @@ const seedCustomers = [
     }
 
     const messageElement = $("#toastMessage");
-    if (messageElement) messageElement.textContent = message;
+
+    if (messageElement) {
+      messageElement.textContent = message;
+    }
 
     bootstrap.Toast.getOrCreateInstance(toastElement, {
       delay: 2600
@@ -527,6 +604,7 @@ const seedCustomers = [
 
   function showAlert(selector, message) {
     const element = $(selector);
+
     if (!element) return;
 
     element.textContent = message;
@@ -552,25 +630,39 @@ const seedCustomers = [
     const headerAvatar = $("#headerAvatar");
     const profileAvatar = $("#profileAvatar");
 
-    if (headerName) headerName.textContent = name;
-    if (welcomeName) welcomeName.textContent = name.split(" ")[0];
+    if (headerName) {
+      headerName.textContent = name;
+    }
+
+    if (welcomeName) {
+      welcomeName.textContent = name.split(" ")[0];
+    }
 
     const photoHTML = photo
       ? `<img class="admin-avatar-photo" src="${escapeHTML(photo)}" alt="Admin profile">`
       : initials(name);
 
-    if (headerAvatar) headerAvatar.innerHTML = photoHTML;
-    if (profileAvatar) profileAvatar.innerHTML = photoHTML;
+    if (headerAvatar) {
+      headerAvatar.innerHTML = photoHTML;
+    }
+
+    if (profileAvatar) {
+      profileAvatar.innerHTML = photoHTML;
+    }
 
     if ($("#profileDisplayName")) {
       $("#profileDisplayName").textContent = name;
     }
 
     if ($("#profileDisplayEmail")) {
-      $("#profileDisplayEmail").textContent = currentUser.email || "";
+      $("#profileDisplayEmail").textContent =
+        currentUser.email || "";
     }
 
-    if ($("#profileName")) $("#profileName").value = name;
+    if ($("#profileName")) {
+      $("#profileName").value = name;
+    }
+
     if ($("#profileEmail")) {
       $("#profileEmail").value = currentUser.email || "";
     }
@@ -598,7 +690,10 @@ const seedCustomers = [
     const target = pageURLs[page] || pageURLs.dashboard;
     const currentFile = location.pathname.split("/").pop();
 
-    if (currentFile !== target) location.href = target;
+    if (currentFile !== target) {
+      location.href = target;
+    }
+
     closeSidebar();
   }
 
@@ -665,7 +760,8 @@ const seedCustomers = [
     if (!currentUser?.email) return false;
 
     return users.some(user =>
-      normalizeEmail(user.email) === normalizeEmail(currentUser.email) &&
+      normalizeEmail(user.email) ===
+      normalizeEmail(currentUser.email) &&
       (!user.role || user.role === "admin")
     );
   }
@@ -719,12 +815,15 @@ const seedCustomers = [
     if (authScreen && appShell) {
       if (currentUser && isLoggedIn()) {
         const matchedUser = users.find(user =>
-          normalizeEmail(user.email) === normalizeEmail(currentUser.email)
+          normalizeEmail(user.email) ===
+          normalizeEmail(currentUser.email)
         );
+
         showApp(matchedUser);
       } else {
         localStorage.removeItem(STORAGE.session);
         currentUser = null;
+
         authScreen.classList.remove("d-none");
         appShell.classList.add("d-none");
       }
@@ -786,7 +885,10 @@ const seedCustomers = [
       if (users.some(user =>
         normalizeEmail(user.email) === email
       )) {
-        showAlert("#registerAlert", "An account with this email already exists.");
+        showAlert(
+          "#registerAlert",
+          "An account with this email already exists."
+        );
         return;
       }
 
@@ -801,7 +903,10 @@ const seedCustomers = [
       users.push(newUser);
 
       if (!save(STORAGE.users, users)) {
-        showAlert("#registerAlert", "Unable to save your account.");
+        showAlert(
+          "#registerAlert",
+          "Unable to save your account."
+        );
         return;
       }
 
@@ -811,12 +916,14 @@ const seedCustomers = [
 
     $("#showRegister")?.addEventListener("click", event => {
       event.preventDefault();
+
       $("#loginPanel")?.classList.add("d-none");
       $("#registerPanel")?.classList.remove("d-none");
     });
 
     $("#showLogin")?.addEventListener("click", event => {
       event.preventDefault();
+
       $("#registerPanel")?.classList.add("d-none");
       $("#loginPanel")?.classList.remove("d-none");
     });
@@ -826,9 +933,11 @@ const seedCustomers = [
     $$("[data-toggle-password]").forEach(button => {
       button.addEventListener("click", () => {
         const input = $("#" + button.dataset.togglePassword);
+
         if (!input) return;
 
-        input.type = input.type === "password" ? "text" : "password";
+        input.type =
+          input.type === "password" ? "text" : "password";
 
         button.innerHTML = input.type === "password"
           ? '<i class="bi bi-eye"></i>'
@@ -845,24 +954,27 @@ const seedCustomers = [
     const dateElement = $("#currentDate");
 
     if (dateElement) {
-      dateElement.textContent = new Date().toLocaleDateString("en-MY", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric"
-      });
+      dateElement.textContent =
+        new Date().toLocaleDateString("en-MY", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        });
     }
   }
 
   function initialiseLanguage() {
     const select = $("#adminLanguageSelect");
-    const savedLanguage = localStorage.getItem(STORAGE.language) || "en";
+    const savedLanguage =
+      localStorage.getItem(STORAGE.language) || "en";
 
     if (select) {
       select.value = savedLanguage;
 
       select.addEventListener("change", event => {
         const language = event.target.value;
+
         localStorage.setItem(STORAGE.language, language);
         document.documentElement.lang = language;
 
@@ -885,13 +997,17 @@ const seedCustomers = [
 
   function populateParcelCustomers(selectedId = "") {
     const select = $("#parcelRecipient");
+
     if (!select) return;
 
-    select.innerHTML = '<option value="">Select customer</option>';
+    select.innerHTML =
+      '<option value="">Select customer</option>';
 
     customers.forEach(customer => {
       const option = document.createElement("option");
+
       option.value = String(customer.id);
+
       option.textContent =
         `${customer.name || customer.email} (${customer.email || ""})`;
 
@@ -905,6 +1021,7 @@ const seedCustomers = [
 
   function fillCustomerDetails() {
     const select = $("#parcelRecipient");
+
     if (!select) return;
 
     const customer = customers.find(item =>
@@ -920,9 +1037,13 @@ const seedCustomers = [
       return;
     }
 
-    if (phone) phone.value = customer.phone || "";
+    if (phone) {
+      phone.value = customer.phone || "";
+    }
+
     if (address) {
-      address.value = customer.location || customer.address || "";
+      address.value =
+        customer.location || customer.address || "";
     }
   }
 
