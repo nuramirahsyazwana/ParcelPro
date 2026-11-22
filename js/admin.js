@@ -26,11 +26,42 @@
   let chartInstance = null;
 
   // =======================================================
-  // 2. DASHBOARD STATISTICS
+  // 2. GET PARCEL TRACKING NUMBER
+  // =======================================================
+
+  function getTrackingNumber(parcel = {}) {
+    return (
+      parcel.trackingNumber ||
+      parcel.tracking_number ||
+      parcel.id ||
+      "—"
+    );
+  }
+
+  // =======================================================
+  // 3. GET SHIPPING FEE
+  // =======================================================
+
+  function getShippingFee(parcel = {}) {
+    const fee = Admin.getParcelFee(parcel);
+
+    const amount = Number(fee);
+
+    if (!Number.isFinite(amount) || amount < 0) {
+      return 0;
+    }
+
+    return amount;
+  }
+
+  // =======================================================
+  // 4. DASHBOARD STATISTICS
   // =======================================================
 
   function renderStats() {
-    const parcels = Admin.parcels;
+    const parcels = Array.isArray(Admin.parcels)
+      ? Admin.parcels
+      : [];
 
     const total = parcels.length;
 
@@ -53,10 +84,21 @@
     const statPending = $("#statPending");
     const parcelNavCount = $("#parcelNavCount");
 
-    if (statTotal) statTotal.textContent = total;
-    if (statDelivered) statDelivered.textContent = delivered;
-    if (statTransit) statTransit.textContent = transit;
-    if (statPending) statPending.textContent = pending;
+    if (statTotal) {
+      statTotal.textContent = total;
+    }
+
+    if (statDelivered) {
+      statDelivered.textContent = delivered;
+    }
+
+    if (statTransit) {
+      statTransit.textContent = transit;
+    }
+
+    if (statPending) {
+      statPending.textContent = pending;
+    }
 
     if (parcelNavCount) {
       parcelNavCount.textContent = total;
@@ -80,7 +122,7 @@
   }
 
   // =======================================================
-  // 3. RECENT PARCELS
+  // 5. RECENT PARCELS
   // =======================================================
 
   function renderRecent() {
@@ -88,67 +130,87 @@
 
     if (!tbody) return;
 
-    const rows = [...Admin.parcels]
+    const parcels = Array.isArray(Admin.parcels)
+      ? Admin.parcels
+      : [];
+
+    const rows = [...parcels]
       .slice(-5)
       .reverse();
 
-    tbody.innerHTML = rows.map(parcel => `
-      <tr>
-        <td>
-          <span class="tracking-code">
-            ${Admin.escapeHTML(parcel.id)}
-          </span>
-        </td>
+    // Debug shipping fee values in browser console
+    console.table(rows.map(parcel => ({
+      trackingNumber: getTrackingNumber(parcel),
+      finalPrice: parcel.finalPrice,
+      shippingFee: parcel.shippingFee,
+      price: parcel.price,
+      calculatedFee: getShippingFee(parcel)
+    })));
 
-        <td>
-          <span class="recipient-cell">
-            ${Admin.escapeHTML(
-              Admin.getCustomerName(parcel)
+    tbody.innerHTML = rows.map(parcel => {
+      const trackingNumber = getTrackingNumber(parcel);
+
+      const customerName =
+        Admin.getCustomerName(parcel) || "—";
+
+      const destination =
+        Admin.getDestination(parcel) || "—";
+
+      const address =
+        parcel.address ||
+        parcel.receiverAddress ||
+        "—";
+
+      const shippingFee = getShippingFee(parcel);
+
+      return `
+        <tr>
+          <td>
+            <span class="tracking-code">
+              ${Admin.escapeHTML(trackingNumber)}
+            </span>
+          </td>
+
+          <td>
+            <span class="recipient-cell">
+              ${Admin.escapeHTML(customerName)}
+            </span>
+          </td>
+
+          <td>
+            ${Admin.escapeHTML(destination)}
+
+            <div class="text-muted small">
+              ${Admin.escapeHTML(address)}
+            </div>
+          </td>
+
+          <td>
+            ${Admin.dateFormat(
+              parcel.created ||
+              parcel.createdAt ||
+              parcel.date
             )}
-          </span>
-        </td>
+          </td>
 
-        <td>
-          ${Admin.escapeHTML(
-            Admin.getDestination(parcel)
-          )}
+          <td>
+            <strong>
+              ${Admin.money(shippingFee)}
+            </strong>
+          </td>
 
-          <div class="text-muted small">
-            ${Admin.escapeHTML(
-              parcel.address ||
-              parcel.receiverAddress ||
-              "—"
-            )}
-          </div>
-        </td>
-
-        <td>
-          ${Admin.dateFormat(
-            parcel.created ||
-            parcel.createdAt ||
-            parcel.date
-          )}
-        </td>
-
-        <td>
-          <strong>
-            ${Admin.money(
-              Admin.getParcelFee(parcel)
-            )}
-          </strong>
-        </td>
-
-        <td>
-          <span class="status-badge ${
-            Admin.statusClass(parcel.status)
-          }">
-            ${Admin.escapeHTML(
-              parcel.status || "Pending"
-            )}
-          </span>
-        </td>
-      </tr>
-    `).join("") || `
+          <td>
+            <span class="status-badge ${
+              Admin.statusClass(parcel.status)
+            }">
+              ${Admin.escapeHTML(
+                parcel.status || "Pending"
+              )}
+            </span>
+          </td>
+        </tr>
+      `;
+    }).join("") || `
       <tr>
         <td colspan="6" class="empty-state">
           No parcel records yet.
@@ -158,7 +220,7 @@
   }
 
   // =======================================================
-  // 4. DELIVERY CHART
+  // 6. DELIVERY CHART
   // =======================================================
 
   function drawChart() {
@@ -173,7 +235,9 @@
       return;
     }
 
-    const parcels = Admin.parcels;
+    const parcels = Array.isArray(Admin.parcels)
+      ? Admin.parcels
+      : [];
 
     const labels = [
       "Delivered",
@@ -233,13 +297,15 @@
   }
 
   // =======================================================
-  // 5. RENDER DASHBOARD
+  // 7. RENDER DASHBOARD
   // =======================================================
 
   function renderDashboard() {
-    if (!$("#statTotal") &&
-        !$("#recentParcelsBody") &&
-        !$("#deliveryChart")) {
+    if (
+      !$("#statTotal") &&
+      !$("#recentParcelsBody") &&
+      !$("#deliveryChart")
+    ) {
       return;
     }
 
@@ -249,7 +315,7 @@
   }
 
   // =======================================================
-  // 6. REFRESH WHEN DATA CHANGES
+  // 8. REFRESH WHEN DATA CHANGES
   // =======================================================
 
   document.addEventListener(
@@ -263,7 +329,7 @@
   );
 
   // =======================================================
-  // 7. INITIALISE
+  // 9. INITIALISE
   // =======================================================
 
   function initialise() {
