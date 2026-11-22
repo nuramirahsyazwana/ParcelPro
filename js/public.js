@@ -20,7 +20,7 @@
 
    IMPORTANT:
    - Does not modify Admin status data
-   - Uses the existing localStorage key
+   - Uses existing localStorage key
 ========================================================= */
 
 (() => {
@@ -34,10 +34,6 @@
 
   const STORAGE_KEY = "parcelpro_parcels";
   const LANGUAGE_KEY = "parcelpro_language";
-
-  const trackingForm = $("#publicTrackingForm");
-  const trackingInput = $("#publicTrackingInput");
-  const trackingResult = $("#publicTrackingResult");
 
   const MAX_TRACKING = 5;
 
@@ -229,15 +225,13 @@
     const aliases = {
       "pending": "pending",
       "processing": "processing",
-
       "picked up": "picked up",
 
       // Customer display: Shipped
-      // Admin may store this as In Transit.
       "shipped": "shipped",
       "in transit": "shipped",
 
-      // Customer display: only one Out of Delivery status.
+      // Merge both Admin status variations.
       "out of delivery": "out of delivery",
       "out for delivery": "out of delivery",
 
@@ -461,7 +455,7 @@
         : "";
 
       if (currentStatus === previousStatus) {
-        // Keep the latest entry for the same consecutive status.
+        // Keep latest entry for consecutive duplicate status.
         uniqueEntries[uniqueEntries.length - 1] = entry;
 
       } else {
@@ -479,9 +473,6 @@
   function renderHistory(parcel) {
     let entries = getHistory(parcel);
 
-    // Remove consecutive duplicate statuses.
-    // Out for Delivery and Out of Delivery are treated
-    // as the same customer-facing status.
     entries = removeDuplicateHistory(entries);
 
     // If no history exists, show current parcel status.
@@ -512,7 +503,6 @@
 
           ${entries.map((entry, index) => {
             const icon = getHistoryIcon(entry.status);
-
             const isLatest = index === entries.length - 1;
 
             return `
@@ -593,7 +583,6 @@
       return "";
     }
 
-    // Only render image data or HTTP(S) image URLs.
     const isAllowedImage =
       /^data:image\/(png|jpeg|jpg|webp);base64,/i.test(proof)
       || /^https?:\/\/.+/i.test(proof);
@@ -716,7 +705,6 @@
 
   function renderStatusProgress(status) {
 
-    // Six customer-facing tracking stages.
     const stages = [
       {
         key: "pending",
@@ -757,9 +745,7 @@
     });
 
     // Failed and Cancelled are exceptional statuses.
-    if (
-      ["failed", "cancelled"].includes(currentStatus)
-    ) {
+    if (["failed", "cancelled"].includes(currentStatus)) {
       return `
         <div class="pp-status-progress-message is-exception">
 
@@ -838,13 +824,9 @@
 
   function renderParcel(parcel) {
     const trackingId = getTrackingId(parcel);
-
     const status = parcel.status || "Pending";
-
     const recipient = getRecipient(parcel);
-
     const destination = getDestination(parcel);
-
     const lastUpdated = getLastUpdated(parcel);
 
     return `
@@ -934,11 +916,14 @@
   // =======================================================
 
   function showMessage(message, type = "error") {
-    if (!trackingResult) {
+    const result = document.getElementById("publicTrackingResult");
+
+    if (!result) {
+      console.error("ParcelPro: Tracking result element not found.");
       return;
     }
 
-    trackingResult.innerHTML = `
+    result.innerHTML = `
       <div class="tracking-message ${type}">
 
         <i class="bi ${
@@ -971,7 +956,9 @@
   // =======================================================
 
   function trackParcels(trackingIds) {
-    if (!trackingResult) {
+    const result = document.getElementById("publicTrackingResult");
+
+    if (!result) {
       console.error("ParcelPro: Tracking result element not found.");
       return;
     }
@@ -1011,7 +998,7 @@
 
     lastTrackedIds = trackingIds;
 
-    trackingResult.innerHTML = `
+    result.innerHTML = `
       ${
         foundParcels.length === 1
           ? renderParcel(foundParcels[0])
@@ -1039,24 +1026,64 @@
 
   // =======================================================
   // 26. TRACKING FORM SUBMISSION
+  // FIX: EVENT DELEGATION
   // =======================================================
 
-  if (trackingForm && trackingInput) {
-    trackingForm.addEventListener("submit", (event) => {
-      event.preventDefault();
+  document.addEventListener("submit", (event) => {
 
-      const trackingIds = parseTrackingInput(
-        trackingInput.value
-      );
+    const form = event.target;
 
-      trackParcels(trackingIds);
-    });
+    if (!form || form.id !== "publicTrackingForm") {
+      return;
+    }
 
-  } else {
-    console.warn(
-      "ParcelPro: Tracking form or input element not found."
+    event.preventDefault();
+
+    const input = document.getElementById("publicTrackingInput");
+    const result = document.getElementById("publicTrackingResult");
+
+    if (!input || !result) {
+      console.error("ParcelPro: Tracking form elements not found.");
+      return;
+    }
+
+    const trackingIds = parseTrackingInput(input.value);
+
+    trackParcels(trackingIds);
+
+  });
+
+  // Support a tracking button configured as type="button".
+  document.addEventListener("click", (event) => {
+
+    const button = event.target.closest(
+      "#publicTrackingForm button"
     );
-  }
+
+    if (!button) {
+      return;
+    }
+
+    // Normal submit buttons are handled by the submit listener.
+    if (button.type !== "button") {
+      return;
+    }
+
+    event.preventDefault();
+
+    const input = document.getElementById("publicTrackingInput");
+    const result = document.getElementById("publicTrackingResult");
+
+    if (!input || !result) {
+      console.error("ParcelPro: Tracking form elements not found.");
+      return;
+    }
+
+    const trackingIds = parseTrackingInput(input.value);
+
+    trackParcels(trackingIds);
+
+  });
 
   // =======================================================
   // 27. REFRESH TRACKING RESULTS
@@ -1137,7 +1164,7 @@
       localStorage.setItem(LANGUAGE_KEY, language);
 
     } catch (error) {
-      console.warn("ParcelPro: Unable to save language.");
+      console.warn("ParcelPro: Unable to save language.", error);
     }
 
     applyLanguage();
