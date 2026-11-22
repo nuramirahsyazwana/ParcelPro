@@ -3,6 +3,7 @@
    PARCELPRO - ADMIN_CUSTOMERS.JS
    Customer Management
    Add + Edit + Delete + Search
+   Shipping Fee Management
    Customer Portal Integration
    Storage: localStorage
 ========================================================= */
@@ -39,6 +40,7 @@
   function getElement(selectors) {
     for (const selector of selectors) {
       const element = $(selector);
+
       if (element) return element;
     }
 
@@ -52,7 +54,9 @@
 
     try {
       const data = JSON.parse(localStorage.getItem(key) || "[]");
+
       return Array.isArray(data) ? data : [];
+
     } catch (error) {
       console.error("Unable to read storage:", key, error);
       return [];
@@ -60,10 +64,22 @@
   }
 
   function saveData(key, data) {
+    let saved = true;
+
     if (typeof Admin.save === "function") {
-      Admin.save(key, data);
+      saved = Admin.save(key, data);
     } else {
-      localStorage.setItem(key, JSON.stringify(data));
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+      } catch (error) {
+        console.error("Unable to save data:", error);
+        saved = false;
+      }
+    }
+
+    if (saved === false) {
+      showToast("Unable to save data.", "error");
+      return false;
     }
 
     window.dispatchEvent(
@@ -71,6 +87,8 @@
         detail: { key }
       })
     );
+
+    return true;
   }
 
   function escapeHTML(value) {
@@ -93,6 +111,10 @@
     } else {
       alert(message);
     }
+  }
+
+  function normalizeEmail(email) {
+    return String(email || "").trim().toLowerCase();
   }
 
   function getCustomerName(customer) {
@@ -119,25 +141,260 @@
   }
 
   function getCustomerAddress(customer) {
-    return customer.address || customer.fullAddress || "-";
+    return (
+      customer.address ||
+      customer.fullAddress ||
+      customer.location ||
+      "-"
+    );
+  }
+
+  function formatMoney(value) {
+    const amount = Number(value);
+
+    return "RM " +
+      (Number.isFinite(amount) ? amount : 0).toFixed(2);
   }
 
   function generateCustomerId() {
     const customers = readData(STORAGE.customers);
+
     let id;
 
     do {
-      id = "CUS" + Date.now().toString().slice(-8) +
+      id = "CUS" +
+        Date.now().toString().slice(-8) +
         Math.floor(Math.random() * 1000);
+
     } while (
-      customers.some(customer => String(customer.id) === id)
+      customers.some(customer =>
+        String(customer.id) === id
+      )
     );
 
     return id;
   }
 
   // =======================================================
-  // 3. DOM ELEMENTS
+  // 3. SHIPPING FEE FUNCTIONS
+  // =======================================================
+
+  // Get all parcels belonging to a customer.
+  // Match using Customer ID or Customer Email.
+
+  function getCustomerParcels(customer) {
+    const parcels = readData(STORAGE.parcels);
+
+    const customerId = String(customer.id || "");
+
+    const customerEmail = normalizeEmail(
+      customer.email || customer.customerEmail
+    );
+
+    return parcels.filter(parcel => {
+      const parcelCustomerId = String(
+        parcel.customerId || ""
+      );
+
+      const parcelEmail = normalizeEmail(
+        parcel.customerEmail || parcel.senderEmail
+      );
+
+      const sameId =
+        customerId !== "" &&
+        parcelCustomerId !== "" &&
+        customerId === parcelCustomerId;
+
+      const sameEmail =
+        customerEmail !== "" &&
+        parcelEmail !== "" &&
+        customerEmail === parcelEmail;
+
+      return sameId || sameEmail;
+    });
+  }
+
+  // Check whether parcel contains a saved shipping fee.
+
+  function hasShippingFee(parcel) {
+    const feeFields = [
+      parcel.shippingFee,
+      parcel.finalPrice,
+      parcel.price
+    ];
+
+    return feeFields.some(value =>
+      value !== null &&
+      value !== undefined &&
+      value !== "" &&
+      Number.isFinite(
+        Number(
+          String(value)
+            .replace(/RM\s*/i, "")
+            .replace(/,/g, "")
+            .trim()
+        )
+      )
+    );
+  }
+
+  // Get shipping fee from shared Admin system.
+
+  function getParcelShippingFee(parcel) {
+    if (typeof Admin.getParcelFee === "function") {
+      return Admin.getParcelFee(parcel);
+    }
+
+    const feeFields = [
+      parcel.shippingFee,
+      parcel.finalPrice,
+      parcel.price
+    ];
+
+    for (const value of feeFields) {
+      if (
+        value !== null &&
+        value !== undefined &&
+        value !== ""
+      ) {
+        const amount = Number(
+          String(value)
+            .replace(/RM\s*/i, "")
+            .replace(/,/g, "")
+            .trim()
+        );
+
+        if (Number.isFinite(amount) && amount >= 0) {
+          return amount;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  // Calculate total shipping fee for one customer.
+
+  function getCustomerShippingSummary(customer) {
+    const parcels = getCustomerParcels(customer);
+
+    if (parcels.length === 0) {
+      return {
+        count: 0,
+        total: 0,
+        parcels: [],
+        hasFee: false
+      };
+    }
+
+    let total = 0;
+    let validFeeCount = 0;
+
+    const parcelDetails = parcels.map(parcel => {
+      const hasFee = hasShippingFee(parcel);
+
+      const fee = hasFee
+        ? getParcelShippingFee(parcel)
+        : null;
+
+      if (
+        hasFee &&
+        fee !== null &&
+        Number.isFinite(Number(fee))
+      ) {
+        total += Number(fee);
+        validFeeCount++;
+      }
+
+      return {
+        trackingNumber:
+          parcel.trackingNumber ||
+          parcel.id ||
+          "Unknown",
+
+        fee,
+        hasFee:
+          hasFee &&
+          fee !== null &&
+          Number.isFinite(Number(fee)),
+
+        status: parcel.status || "Pending"
+      };
+    });
+
+    return {
+      count: parcels.length,
+      total,
+      parcels: parcelDetails,
+      hasFee: validFeeCount > 0
+    };
+  }
+
+  // Display shipping fee in customer table.
+
+  function renderShippingFee(customer) {
+    const summary = getCustomerShippingSummary(customer);
+
+    // No parcel records.
+    if (summary.count === 0) {
+      return `
+        <div class="text-muted small">
+          <i class="bi bi-box-seam me-1"></i>
+          No Shipment
+        </div>
+      `;
+    }
+
+    // Parcel exists but no valid shipping fee is available.
+    if (!summary.hasFee) {
+      return `
+        <div class="text-warning small">
+          <i class="bi bi-exclamation-circle me-1"></i>
+          Fee unavailable
+        </div>
+      `;
+    }
+
+    const parcelDetails = summary.parcels.map(parcel => {
+      if (!parcel.hasFee) {
+        return `
+          <div class="small text-muted">
+            ${escapeHTML(parcel.trackingNumber)}:
+            Fee unavailable
+          </div>
+        `;
+      }
+
+      return `
+        <div class="small text-muted">
+          ${escapeHTML(parcel.trackingNumber)}:
+          ${formatMoney(parcel.fee)}
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <div class="customer-shipping-fee">
+
+        <div class="fw-bold text-success">
+          ${formatMoney(summary.total)}
+        </div>
+
+        <div class="small text-muted">
+          ${summary.count}
+          shipment${summary.count !== 1 ? "s" : ""}
+        </div>
+
+        <div class="mt-1">
+          ${parcelDetails}
+        </div>
+
+      </div>
+    `;
+  }
+
+  // =======================================================
+  // 4. DOM ELEMENTS
   // =======================================================
 
   const elements = {
@@ -207,7 +464,7 @@
   };
 
   // =======================================================
-  // 4. READ CUSTOMER DATA
+  // 5. READ CUSTOMER DATA
   // =======================================================
 
   function getCustomers() {
@@ -215,7 +472,7 @@
   }
 
   // =======================================================
-  // 5. RENDER CUSTOMER TABLE
+  // 6. RENDER CUSTOMER TABLE
   // =======================================================
 
   function renderCustomers() {
@@ -242,25 +499,33 @@
       return searchable.includes(keyword);
     });
 
+    // Update customer count.
+
     if (elements.count) {
       elements.count.textContent =
         `${filteredCustomers.length} customer${filteredCustomers.length !== 1 ? "s" : ""}`;
     }
 
+    // Empty state.
+
     if (filteredCustomers.length === 0) {
       elements.table.innerHTML = `
         <tr>
-          <td colspan="7" class="text-center py-4">
+          <td colspan="8" class="text-center py-4">
+
             <div class="text-muted">
               <i class="bi bi-people fs-3 d-block mb-2"></i>
               No customers found.
             </div>
+
           </td>
         </tr>
       `;
 
       return;
     }
+
+    // Render customer rows.
 
     elements.table.innerHTML = filteredCustomers.map(customer => {
       const id = customer.id || "-";
@@ -271,42 +536,65 @@
 
       return `
         <tr>
+
+          <!-- CUSTOMER ID -->
           <td>
             <strong>${escapeHTML(id)}</strong>
           </td>
 
+          <!-- CUSTOMER NAME -->
           <td>
             <div class="fw-semibold">
               ${escapeHTML(name)}
             </div>
           </td>
 
-          <td>${escapeHTML(email)}</td>
-
-          <td>${escapeHTML(phone)}</td>
-
+          <!-- EMAIL -->
           <td>
-            <span class="d-inline-block text-truncate"
-                  style="max-width:180px;"
-                  title="${escapeHTML(address)}">
+            ${escapeHTML(email)}
+          </td>
+
+          <!-- PHONE -->
+          <td>
+            ${escapeHTML(phone)}
+          </td>
+
+          <!-- ADDRESS -->
+          <td>
+            <span
+              class="d-inline-block text-truncate"
+              style="max-width:180px;"
+              title="${escapeHTML(address)}">
+
               ${escapeHTML(address)}
+
             </span>
           </td>
 
+          <!-- SHIPPING FEE -->
+          <td>
+            ${renderShippingFee(customer)}
+          </td>
+
+          <!-- STATUS -->
           <td>
             <span class="badge bg-success">
               ${escapeHTML(customer.status || "Active")}
             </span>
           </td>
 
+          <!-- ACTIONS -->
           <td>
             <div class="d-flex gap-2">
+
               <button
                 type="button"
                 class="btn btn-sm btn-outline-primary"
                 data-edit-customer="${escapeHTML(id)}"
                 title="Edit customer">
+
                 <i class="bi bi-pencil-square"></i>
+
               </button>
 
               <button
@@ -314,17 +602,21 @@
                 class="btn btn-sm btn-outline-danger"
                 data-delete-customer="${escapeHTML(id)}"
                 title="Delete customer">
+
                 <i class="bi bi-trash"></i>
+
               </button>
+
             </div>
           </td>
+
         </tr>
       `;
     }).join("");
   }
 
   // =======================================================
-  // 6. BOOTSTRAP MODAL
+  // 7. BOOTSTRAP MODAL
   // =======================================================
 
   function showModal() {
@@ -334,6 +626,7 @@
       window.bootstrap.Modal
         .getOrCreateInstance(elements.modal)
         .show();
+
     } else {
       elements.modal.style.display = "block";
       elements.modal.classList.add("show");
@@ -347,6 +640,7 @@
       window.bootstrap.Modal
         .getOrCreateInstance(elements.modal)
         .hide();
+
     } else {
       elements.modal.style.display = "none";
       elements.modal.classList.remove("show");
@@ -354,7 +648,7 @@
   }
 
   // =======================================================
-  // 7. OPEN ADD CUSTOMER MODAL
+  // 8. OPEN ADD CUSTOMER MODAL
   // =======================================================
 
   function openAddModal() {
@@ -386,7 +680,7 @@
   }
 
   // =======================================================
-  // 8. OPEN EDIT CUSTOMER MODAL
+  // 9. OPEN EDIT CUSTOMER MODAL
   // =======================================================
 
   function editCustomer(id) {
@@ -407,7 +701,10 @@
     }
 
     if (elements.email) {
-      elements.email.value = customer.email || customer.customerEmail || "";
+      elements.email.value =
+        customer.email ||
+        customer.customerEmail ||
+        "";
     }
 
     if (elements.phone) {
@@ -422,6 +719,7 @@
       elements.address.value =
         customer.address ||
         customer.fullAddress ||
+        customer.location ||
         "";
     }
 
@@ -442,7 +740,7 @@
   }
 
   // =======================================================
-  // 9. VALIDATE CUSTOMER FORM
+  // 10. VALIDATE CUSTOMER FORM
   // =======================================================
 
   function validateForm() {
@@ -452,12 +750,14 @@
     if (!name) {
       showToast("Please enter the customer's name.", "error");
       elements.name?.focus();
+
       return false;
     }
 
     if (!email) {
       showToast("Please enter the customer's email.", "error");
       elements.email?.focus();
+
       return false;
     }
 
@@ -466,6 +766,7 @@
     if (!emailPattern.test(email)) {
       showToast("Please enter a valid email address.", "error");
       elements.email?.focus();
+
       return false;
     }
 
@@ -473,7 +774,7 @@
   }
 
   // =======================================================
-  // 10. SAVE CUSTOMER
+  // 11. SAVE CUSTOMER
   // =======================================================
 
   function saveCustomer(event) {
@@ -494,17 +795,30 @@
       : null;
 
     const name = elements.name.value.trim();
-    const email = elements.email.value.trim().toLowerCase();
+
+    const email = normalizeEmail(
+      elements.email.value
+    );
+
+    // Check duplicate email.
 
     const duplicateEmail = customers.some(customer =>
-      String(customer.email || customer.customerEmail || "").toLowerCase() === email &&
+      normalizeEmail(
+        customer.email || customer.customerEmail
+      ) === email &&
       String(customer.id) !== String(editId)
     );
 
     if (duplicateEmail) {
-      showToast("This email address is already registered.", "error");
+      showToast(
+        "This email address is already registered.",
+        "error"
+      );
+
       return;
     }
+
+    // Prepare customer data.
 
     const customerData = {
       ...(existingCustomer || {}),
@@ -514,7 +828,9 @@
         : generateCustomerId(),
 
       name,
+
       fullName: existingCustomer?.fullName || name,
+
       email,
 
       phone: elements.phone
@@ -536,24 +852,32 @@
       updatedAt: new Date().toISOString()
     };
 
+    // Update existing customer.
+
     if (existingCustomer) {
       const index = customers.findIndex(customer =>
         String(customer.id) === String(editId)
       );
 
       customers[index] = customerData;
+
     } else {
+      // Add new customer.
       customers.unshift(customerData);
     }
 
-    saveData(STORAGE.customers, customers);
+    if (!saveData(STORAGE.customers, customers)) {
+      return;
+    }
 
     // Keep customer references in existing parcel records.
+
     if (existingCustomer) {
       syncCustomerWithParcels(customerData);
     }
 
     renderCustomers();
+
     hideModal();
 
     showToast(
@@ -564,20 +888,23 @@
   }
 
   // =======================================================
-  // 11. SYNC CUSTOMER DETAILS WITH PARCELS
+  // 12. SYNC CUSTOMER DETAILS WITH PARCELS
   // =======================================================
 
   function syncCustomerWithParcels(customer) {
     const parcels = readData(STORAGE.parcels);
+
     let changed = false;
 
     const updatedParcels = parcels.map(parcel => {
       const sameCustomer =
-        String(parcel.customerId || "") === String(customer.id) ||
+        String(parcel.customerId || "") ===
+          String(customer.id) ||
+
         (
           parcel.customerEmail &&
-          String(parcel.customerEmail).toLowerCase() ===
-            String(customer.email).toLowerCase()
+          normalizeEmail(parcel.customerEmail) ===
+            normalizeEmail(customer.email)
         );
 
       if (!sameCustomer) return parcel;
@@ -586,6 +913,7 @@
 
       return {
         ...parcel,
+
         customerId: customer.id,
         customerEmail: customer.email,
         customerName: customer.name
@@ -598,7 +926,7 @@
   }
 
   // =======================================================
-  // 12. DELETE CUSTOMER
+  // 13. DELETE CUSTOMER
   // =======================================================
 
   function deleteCustomer(id) {
@@ -620,67 +948,102 @@
       String(item.id) !== String(id)
     );
 
-    saveData(STORAGE.customers, updatedCustomers);
+    if (!saveData(STORAGE.customers, updatedCustomers)) {
+      return;
+    }
 
     // Existing parcel records are intentionally preserved.
+
     renderCustomers();
 
     showToast("Customer deleted successfully.");
   }
 
   // =======================================================
-  // 13. EVENT LISTENERS
+  // 14. EVENT LISTENERS
   // =======================================================
 
   function bindEvents() {
 
-    // Customer search
+    // Customer search.
+
     if (elements.search) {
-      elements.search.addEventListener("input", renderCustomers);
+      elements.search.addEventListener(
+        "input",
+        renderCustomers
+      );
     }
 
-    // Customer form
+    // Customer form.
+
     if (elements.form) {
-      elements.form.addEventListener("submit", saveCustomer);
+      elements.form.addEventListener(
+        "submit",
+        saveCustomer
+      );
     }
 
-    // Add customer buttons
+    // Add customer buttons.
+
     document.querySelectorAll(
       '[data-add-customer], #addCustomerBtn'
     ).forEach(button => {
-      button.addEventListener("click", openAddModal);
+      button.addEventListener(
+        "click",
+        openAddModal
+      );
     });
 
-    // Customer table actions
+    // Customer table actions.
+
     if (elements.table) {
       elements.table.addEventListener("click", event => {
-        const editButton = event.target.closest("[data-edit-customer]");
-        const deleteButton = event.target.closest("[data-delete-customer]");
+        const editButton = event.target.closest(
+          "[data-edit-customer]"
+        );
+
+        const deleteButton = event.target.closest(
+          "[data-delete-customer]"
+        );
 
         if (editButton) {
-          editCustomer(editButton.dataset.editCustomer);
+          editCustomer(
+            editButton.dataset.editCustomer
+          );
         }
 
         if (deleteButton) {
-          deleteCustomer(deleteButton.dataset.deleteCustomer);
+          deleteCustomer(
+            deleteButton.dataset.deleteCustomer
+          );
         }
       });
     }
 
-    // Listen for changes from other admin pages or Customer Portal
-    window.addEventListener("parcelpro:dataUpdated", event => {
-      if (
-        !event.detail?.key ||
-        event.detail.key === STORAGE.customers
-      ) {
-        renderCustomers();
-      }
-    });
+    // Listen for changes from other Admin pages
+    // or Customer Portal.
 
-    // Listen for changes from other browser tabs
+    window.addEventListener(
+      "parcelpro:dataUpdated",
+      event => {
+
+        if (
+          !event.detail?.key ||
+          event.detail.key === STORAGE.customers ||
+          event.detail.key === STORAGE.parcels
+        ) {
+          renderCustomers();
+        }
+      }
+    );
+
+    // Listen for changes from other browser tabs.
+
     window.addEventListener("storage", event => {
+
       if (
         event.key === STORAGE.customers ||
+        event.key === STORAGE.parcels ||
         event.key === null
       ) {
         renderCustomers();
@@ -689,18 +1052,24 @@
   }
 
   // =======================================================
-  // 14. INITIALISE
+  // 15. INITIALISE
   // =======================================================
 
   function initialise() {
     bindEvents();
+
     renderCustomers();
 
-    console.log("ParcelPro Customer Management loaded.");
+    console.log(
+      "ParcelPro Customer Management loaded successfully."
+    );
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initialise);
+    document.addEventListener(
+      "DOMContentLoaded",
+      initialise
+    );
   } else {
     initialise();
   }
