@@ -8,6 +8,7 @@
    - Search by Tracking Number / Tracking ID
    - Support tracking up to 5 parcels
    - Display current parcel status
+   - Display six-stage customer status progress
    - Display tracking history
    - Merge duplicate Out for Delivery / Out of Delivery
    - Map In Transit to Shipped for customer display
@@ -58,6 +59,9 @@
       failed: "Failed",
       cancelled: "Cancelled",
 
+      deliveryProgress: "Delivery Progress",
+      statusUnavailable: "Status information is unavailable.",
+
       trackingNotFound: "Tracking number not found.",
       enterTracking: "Please enter a tracking number.",
       maxTracking: "You can track up to 5 parcels at a time.",
@@ -86,6 +90,9 @@
       failed: "Penghantaran gagal",
       cancelled: "Dibatalkan",
 
+      deliveryProgress: "Kemajuan Penghantaran",
+      statusUnavailable: "Maklumat status tidak tersedia.",
+
       trackingNotFound: "Nombor penjejakan tidak dijumpai.",
       enterTracking: "Sila masukkan nombor penjejakan.",
       maxTracking: "Anda hanya boleh menjejak maksimum 5 bungkusan.",
@@ -113,6 +120,9 @@
       delivered: "已送达",
       failed: "配送失败",
       cancelled: "已取消",
+
+      deliveryProgress: "配送进度",
+      statusUnavailable: "暂无状态信息。",
 
       trackingNotFound: "找不到追踪号码。",
       enterTracking: "请输入追踪号码。",
@@ -206,11 +216,15 @@
   // =======================================================
 
   function normalizeStatus(status) {
-    const value = String(status || "Pending")
+    const value = String(status ?? "")
       .trim()
       .toLowerCase()
       .replace(/[_-]+/g, " ")
       .replace(/\s+/g, " ");
+
+    if (!value) {
+      return "pending";
+    }
 
     const aliases = {
       "pending": "pending",
@@ -233,6 +247,7 @@
       "canceled": "cancelled"
     };
 
+    // Preserve unknown statuses.
     return aliases[value] || value;
   }
 
@@ -264,8 +279,6 @@
   function statusLabel(status) {
     const key = getStatusKey(status);
 
-    // Preserve unknown Admin status instead of changing it
-    // incorrectly to Pending.
     return key
       ? t(key)
       : escapeHTML(status || t("pending"));
@@ -698,7 +711,129 @@
   }
 
   // =======================================================
-  // 20. RENDER ONE PARCEL
+  // 20. CUSTOMER STATUS PROGRESS
+  // =======================================================
+
+  function renderStatusProgress(status) {
+
+    // Six customer-facing tracking stages.
+    const stages = [
+      {
+        key: "pending",
+        status: "pending",
+        icon: "bi-receipt"
+      },
+      {
+        key: "processing",
+        status: "processing",
+        icon: "bi-box-seam"
+      },
+      {
+        key: "pickedUp",
+        status: "picked up",
+        icon: "bi-box-arrow-up"
+      },
+      {
+        key: "shipped",
+        status: "shipped",
+        icon: "bi-truck"
+      },
+      {
+        key: "outOfDelivery",
+        status: "out of delivery",
+        icon: "bi-bicycle"
+      },
+      {
+        key: "delivered",
+        status: "delivered",
+        icon: "bi-check-circle-fill"
+      }
+    ];
+
+    const currentStatus = normalizeStatus(status);
+
+    const currentIndex = stages.findIndex((stage) => {
+      return stage.status === currentStatus;
+    });
+
+    // Failed and Cancelled are exceptional statuses.
+    if (
+      ["failed", "cancelled"].includes(currentStatus)
+    ) {
+      return `
+        <div class="pp-status-progress-message is-exception">
+
+          <i class="bi bi-exclamation-circle-fill"></i>
+
+          <span>
+            ${t("currentStatus")}: ${statusLabel(status)}
+          </span>
+
+        </div>
+      `;
+    }
+
+    // Do not incorrectly highlight Pending for unknown statuses.
+    if (currentIndex === -1) {
+      return `
+        <div class="pp-status-progress-message">
+
+          <i class="bi bi-info-circle"></i>
+
+          <span>
+            ${t("statusUnavailable")}
+            ${statusLabel(status)}
+          </span>
+
+        </div>
+      `;
+    }
+
+    return `
+      <div class="pp-status-progress">
+
+        <h5 class="pp-status-progress-title">
+          <i class="bi bi-signpost-split"></i>
+          ${t("deliveryProgress")}
+        </h5>
+
+        <div class="pp-status-steps">
+
+          ${stages.map((stage, index) => {
+
+            let stepClass = "is-upcoming";
+
+            if (index < currentIndex) {
+              stepClass = "is-complete";
+
+            } else if (index === currentIndex) {
+              stepClass = "is-current";
+            }
+
+            return `
+              <div class="pp-status-step ${stepClass}">
+
+                <div class="pp-status-step-icon">
+                  <i class="bi ${stage.icon}"></i>
+                </div>
+
+                <span class="pp-status-step-label">
+                  ${t(stage.key)}
+                </span>
+
+              </div>
+            `;
+
+          }).join("")}
+
+        </div>
+
+      </div>
+    `;
+  }
+
+  // =======================================================
+  // 21. RENDER ONE PARCEL
   // =======================================================
 
   function renderParcel(parcel) {
@@ -732,6 +867,8 @@
           </span>
 
         </div>
+
+        ${renderStatusProgress(status)}
 
         <div class="public-tracking-details">
 
@@ -774,7 +911,7 @@
   }
 
   // =======================================================
-  // 21. RENDER MULTIPLE PARCELS
+  // 22. RENDER MULTIPLE PARCELS
   // =======================================================
 
   function renderMultipleParcels(parcels) {
@@ -793,7 +930,7 @@
   }
 
   // =======================================================
-  // 22. DISPLAY MESSAGE
+  // 23. DISPLAY MESSAGE
   // =======================================================
 
   function showMessage(message, type = "error") {
@@ -803,6 +940,7 @@
 
     trackingResult.innerHTML = `
       <div class="tracking-message ${type}">
+
         <i class="bi ${
           type === "success"
             ? "bi-check-circle"
@@ -810,12 +948,13 @@
         }"></i>
 
         <span>${escapeHTML(message)}</span>
+
       </div>
     `;
   }
 
   // =======================================================
-  // 23. TRACKING INPUT VALIDATION
+  // 24. TRACKING INPUT VALIDATION
   // =======================================================
 
   function parseTrackingInput(value) {
@@ -828,7 +967,7 @@
   }
 
   // =======================================================
-  // 24. TRACK PARCELS
+  // 25. TRACK PARCELS
   // =======================================================
 
   function trackParcels(trackingIds) {
@@ -865,6 +1004,7 @@
     });
 
     if (foundParcels.length === 0) {
+      lastTrackedIds = [];
       showMessage(t("trackingNotFound"));
       return;
     }
@@ -882,12 +1022,14 @@
         missingIds.length > 0
           ? `
             <div class="tracking-message error">
+
               <i class="bi bi-exclamation-circle"></i>
 
               <span>
                 ${escapeHTML(missingIds.join(", "))}
                 - ${t("trackingNotFound")}
               </span>
+
             </div>
           `
           : ""
@@ -896,7 +1038,7 @@
   }
 
   // =======================================================
-  // 25. TRACKING FORM SUBMISSION
+  // 26. TRACKING FORM SUBMISSION
   // =======================================================
 
   if (trackingForm && trackingInput) {
@@ -909,6 +1051,7 @@
 
       trackParcels(trackingIds);
     });
+
   } else {
     console.warn(
       "ParcelPro: Tracking form or input element not found."
@@ -916,7 +1059,7 @@
   }
 
   // =======================================================
-  // 26. REFRESH TRACKING RESULTS
+  // 27. REFRESH TRACKING RESULTS
   // =======================================================
 
   function refreshTrackingResults() {
@@ -928,34 +1071,38 @@
   }
 
   // =======================================================
-  // 27. LISTEN FOR LOCAL STORAGE UPDATES
+  // 28. LISTEN FOR LOCAL STORAGE UPDATES
   // =======================================================
 
   window.addEventListener("storage", (event) => {
+
     if (event.key === STORAGE_KEY) {
       refreshTrackingResults();
     }
 
     if (event.key === LANGUAGE_KEY) {
       loadLanguage();
-      refreshTrackingResults();
+      applyLanguage();
     }
+
   });
 
   // =======================================================
-  // 28. LISTEN FOR ADMIN CUSTOM UPDATE EVENT
+  // 29. LISTEN FOR ADMIN CUSTOM UPDATE EVENT
   // =======================================================
 
   window.addEventListener("parcelpro:dataUpdated", (event) => {
+
     const updatedKey = event.detail?.key;
 
     if (!updatedKey || updatedKey === STORAGE_KEY) {
       refreshTrackingResults();
     }
+
   });
 
   // =======================================================
-  // 29. LANGUAGE SELECTOR
+  // 30. LANGUAGE SELECTOR
   // =======================================================
 
   function applyLanguage() {
@@ -988,6 +1135,7 @@
 
     try {
       localStorage.setItem(LANGUAGE_KEY, language);
+
     } catch (error) {
       console.warn("ParcelPro: Unable to save language.");
     }
@@ -1002,6 +1150,7 @@
     "#language",
     "[data-language-selector]"
   ].forEach((selector) => {
+
     const element = $(selector);
 
     if (element) {
@@ -1009,20 +1158,24 @@
         changeLanguage(element.value);
       });
     }
+
   });
 
   // Support language buttons using data-language.
   document.querySelectorAll("[data-language]").forEach((button) => {
+
     button.addEventListener("click", () => {
       changeLanguage(button.dataset.language);
     });
+
   });
 
   // =======================================================
-  // 30. MOBILE NAVIGATION
+  // 31. MOBILE NAVIGATION
   // =======================================================
 
   function initialiseMobileNavigation() {
+
     const menuToggle =
       $("#menuToggle")
       || $("#mobileMenuToggle")
@@ -1038,6 +1191,7 @@
     }
 
     menuToggle.addEventListener("click", () => {
+
       const isOpen = navLinks.classList.toggle("active");
 
       menuToggle.setAttribute(
@@ -1046,23 +1200,30 @@
       );
 
       menuToggle.classList.toggle("active", isOpen);
+
     });
 
     navLinks.querySelectorAll("a").forEach((link) => {
+
       link.addEventListener("click", () => {
+
         navLinks.classList.remove("active");
         menuToggle.classList.remove("active");
 
         menuToggle.setAttribute("aria-expanded", "false");
+
       });
+
     });
+
   }
 
   // =======================================================
-  // 31. INITIALISE PUBLIC TRACKING
+  // 32. INITIALISE PUBLIC TRACKING
   // =======================================================
 
   function initialisePublicTracking() {
+
     loadLanguage();
 
     applyLanguage();
@@ -1070,19 +1231,24 @@
     initialiseMobileNavigation();
 
     console.log("ParcelPro Public Tracking initialized.");
+
   }
 
   // =======================================================
-  // 32. START
+  // 33. START
   // =======================================================
 
   if (document.readyState === "loading") {
+
     document.addEventListener(
       "DOMContentLoaded",
       initialisePublicTracking
     );
+
   } else {
+
     initialisePublicTracking();
+
   }
 
 })();
