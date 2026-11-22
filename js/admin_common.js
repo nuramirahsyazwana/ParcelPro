@@ -1,19 +1,14 @@
-
 /* =========================================================
    PARCELPRO - ADMIN COMMON
    Shared Data + Authentication + Helpers
    Storage: localStorage
 
    UPDATED:
-   - 5 complete default customers
-   - Every customer has a Customer ID
-   - Every customer has a Tracking Number
-   - Every customer has shipping fee information
-   - Added parcel PP1004 for Muhammad Amir
-   - Added parcel PP1005 for Lim Wei Jian
-   - Existing localStorage data is preserved
-   - Actual parcel fees take priority
-   - Backup fee used when parcel fee is RM0.00
+   - Customer ID menggunakan Tracking Number (PP1001 - PP1005)
+   - Migrasi ID lama 1-5 kepada PP1001-PP1005
+   - Parcel dan shipping fee dikemas kini mengikut Customer ID
+   - Data localStorage sedia ada dikekalkan
+   - Shipping fee sebenar dikekalkan
 ========================================================= */
 
 (() => {
@@ -35,39 +30,40 @@
 
   // =======================================================
   // 2. DEFAULT CUSTOMER DATA
+  // Customer ID sama dengan Tracking Number
   // =======================================================
 
   const seedCustomers = [
     {
-      id: 1,
+      id: "PP1001",
       name: "Aisyah Rahman",
       email: "aisyah.rahman@email.com",
       phone: "012-345 6789",
       location: "Shah Alam, Selangor"
     },
     {
-      id: 2,
+      id: "PP1002",
       name: "Daniel Tan",
       email: "daniel.tan@email.com",
       phone: "013-222 4567",
       location: "Petaling Jaya, Selangor"
     },
     {
-      id: 3,
+      id: "PP1003",
       name: "Nur Izzati",
       email: "nur.izzati@email.com",
       phone: "017-888 1234",
       location: "Bangi, Selangor"
     },
     {
-      id: 4,
+      id: "PP1004",
       name: "Muhammad Amir",
       email: "amir.m@email.com",
       phone: "016-555 9087",
       location: "Cyberjaya, Selangor"
     },
     {
-      id: 5,
+      id: "PP1005",
       name: "Lim Wei Jian",
       email: "lim.weijian@email.com",
       phone: "011-333 8765",
@@ -77,7 +73,6 @@
 
   // =======================================================
   // 3. DEFAULT PARCEL DATA
-  // Each customer has one tracking number.
   // =======================================================
 
   const seedParcels = [
@@ -86,7 +81,7 @@
       trackingNumber: "PP1001",
       recipient: "Aisyah Rahman",
       customerName: "Aisyah Rahman",
-      customerId: 1,
+      customerId: "PP1001",
       customerEmail: "aisyah.rahman@email.com",
       phone: "012-345 6789",
       address: "Shah Alam, Selangor",
@@ -116,13 +111,12 @@
         }
       ]
     },
-
     {
       id: "PP1002",
       trackingNumber: "PP1002",
       recipient: "Daniel Tan",
       customerName: "Daniel Tan",
-      customerId: 2,
+      customerId: "PP1002",
       customerEmail: "daniel.tan@email.com",
       phone: "013-222 4567",
       address: "Petaling Jaya, Selangor",
@@ -147,13 +141,12 @@
         }
       ]
     },
-
     {
       id: "PP1003",
       trackingNumber: "PP1003",
       recipient: "Nur Izzati",
       customerName: "Nur Izzati",
-      customerId: 3,
+      customerId: "PP1003",
       customerEmail: "nur.izzati@email.com",
       phone: "017-888 1234",
       address: "Bangi, Selangor",
@@ -178,14 +171,12 @@
         }
       ]
     },
-
-    // Muhammad Amir
     {
       id: "PP1004",
       trackingNumber: "PP1004",
       recipient: "Muhammad Amir",
       customerName: "Muhammad Amir",
-      customerId: 4,
+      customerId: "PP1004",
       customerEmail: "amir.m@email.com",
       phone: "016-555 9087",
       address: "Cyberjaya, Selangor",
@@ -210,14 +201,12 @@
         }
       ]
     },
-
-    // Lim Wei Jian
     {
       id: "PP1005",
       trackingNumber: "PP1005",
       recipient: "Lim Wei Jian",
       customerName: "Lim Wei Jian",
-      customerId: 5,
+      customerId: "PP1005",
       customerEmail: "lim.weijian@email.com",
       phone: "011-333 8765",
       address: "Kuala Lumpur",
@@ -246,13 +235,11 @@
 
   // =======================================================
   // 4. ADMIN CUSTOMER SHIPPING FEES
-  // Backup fee records for Admin.
-  // Actual parcel fees take priority.
   // =======================================================
 
   const seedAdminCustomerFees = [
     {
-      customerId: 1,
+      customerId: "PP1001",
       customerEmail: "aisyah.rahman@email.com",
       trackingNumber: "PP1001",
       shippingFee: 10.00,
@@ -262,7 +249,7 @@
       destinationCountry: "Malaysia"
     },
     {
-      customerId: 2,
+      customerId: "PP1002",
       customerEmail: "daniel.tan@email.com",
       trackingNumber: "PP1002",
       shippingFee: 6.00,
@@ -272,7 +259,7 @@
       destinationCountry: "Malaysia"
     },
     {
-      customerId: 3,
+      customerId: "PP1003",
       customerEmail: "nur.izzati@email.com",
       trackingNumber: "PP1003",
       shippingFee: 15.00,
@@ -282,7 +269,7 @@
       destinationCountry: "Malaysia"
     },
     {
-      customerId: 4,
+      customerId: "PP1004",
       customerEmail: "amir.m@email.com",
       trackingNumber: "PP1004",
       shippingFee: 17.50,
@@ -292,7 +279,7 @@
       destinationCountry: "Malaysia"
     },
     {
-      customerId: 5,
+      customerId: "PP1005",
       customerEmail: "lim.weijian@email.com",
       trackingNumber: "PP1005",
       shippingFee: 15.00,
@@ -310,11 +297,7 @@
   function read(key, fallback = null) {
     try {
       const value = localStorage.getItem(key);
-
-      return value === null
-        ? fallback
-        : JSON.parse(value);
-
+      return value === null ? fallback : JSON.parse(value);
     } catch (error) {
       console.error("ParcelPro storage read error:", error);
       return fallback;
@@ -325,7 +308,6 @@
     try {
       localStorage.setItem(key, JSON.stringify(value));
       return true;
-
     } catch (error) {
       console.error("ParcelPro storage save error:", error);
       return false;
@@ -342,9 +324,7 @@
   // =======================================================
 
   function normalizeEmail(email) {
-    return String(email || "")
-      .trim()
-      .toLowerCase();
+    return String(email || "").trim().toLowerCase();
   }
 
   function escapeHTML(value) {
@@ -368,55 +348,119 @@
   }
 
   // =======================================================
-  // 7. INITIALISE STORAGE
-  // Add missing seed records without deleting existing data.
+  // 7. MIGRATE OLD CUSTOMER IDs
+  // Tukar ID 1-5 kepada PP1001-PP1005
   // =======================================================
 
   function initialiseStorage() {
+    const seedByEmail = new Map(
+      seedCustomers.map(customer => [
+        normalizeEmail(customer.email),
+        customer
+      ])
+    );
 
-    // Customers
+    // -----------------------------------------------------
+    // CUSTOMERS
+    // -----------------------------------------------------
+
     const existingCustomers = readList(STORAGE.customers);
     const mergedCustomers = [...existingCustomers];
 
     seedCustomers.forEach(seed => {
-
-      const exists = mergedCustomers.some(customer =>
-        normalizeEmail(customer.email) ===
+      const index = mergedCustomers.findIndex(customer =>
+        normalizeEmail(customer.email || customer.customerEmail) ===
         normalizeEmail(seed.email)
       );
 
-      if (!exists) {
-        mergedCustomers.push(seed);
+      if (index >= 0) {
+        // Kekalkan maklumat pelanggan, tetapi betulkan ID.
+        mergedCustomers[index] = {
+          ...mergedCustomers[index],
+          id: seed.id
+        };
+      } else {
+        mergedCustomers.push({ ...seed });
       }
     });
 
     save(STORAGE.customers, mergedCustomers);
 
-    // Parcels
+    // -----------------------------------------------------
+    // PARCELS
+    // -----------------------------------------------------
+
     const existingParcels = readList(STORAGE.parcels);
     const mergedParcels = [...existingParcels];
 
     seedParcels.forEach(seed => {
-
-      const exists = mergedParcels.some(parcel => {
-
-        const existingTracking = String(
+      const index = mergedParcels.findIndex(parcel => {
+        const tracking = String(
           parcel.trackingNumber || parcel.id || ""
-        ).trim();
+        ).trim().toUpperCase();
 
-        return existingTracking === seed.trackingNumber;
+        const email = normalizeEmail(
+          parcel.customerEmail || parcel.senderEmail
+        );
+
+        return (
+          tracking === seed.trackingNumber ||
+          email === normalizeEmail(seed.customerEmail)
+        );
       });
 
-      if (!exists) {
-        mergedParcels.push(seed);
+      if (index >= 0) {
+        const oldParcel = mergedParcels[index];
+
+        // Kekalkan rekod parcel dan shipping fee yang sedia ada.
+        const updatedParcel = {
+          ...oldParcel,
+          customerId: seed.customerId,
+          customerEmail: seed.customerEmail,
+          customerName: oldParcel.customerName || seed.customerName,
+          trackingNumber:
+            oldParcel.trackingNumber || seed.trackingNumber
+        };
+
+        // Jika parcel lama tiada fee atau RM0, guna fee seed.
+        const oldFee = getValidFeeFromRecord(oldParcel);
+
+        if (oldFee <= 0) {
+          updatedParcel.shippingFee = seed.shippingFee;
+          updatedParcel.finalPrice = seed.finalPrice;
+          updatedParcel.price = seed.price;
+        }
+
+        mergedParcels[index] = updatedParcel;
+      } else {
+        mergedParcels.push({ ...seed });
+      }
+    });
+
+    // Migrasi rekod lama berdasarkan email pelanggan.
+    mergedParcels.forEach((parcel, index) => {
+      const email = normalizeEmail(
+        parcel.customerEmail || parcel.senderEmail
+      );
+
+      const seed = seedByEmail.get(email);
+
+      if (seed) {
+        mergedParcels[index] = {
+          ...parcel,
+          customerId: seed.id,
+          customerEmail: seed.email
+        };
       }
     });
 
     save(STORAGE.parcels, mergedParcels);
 
-    // Admin users
-    if (localStorage.getItem(STORAGE.users) === null) {
+    // -----------------------------------------------------
+    // ADMIN USERS
+    // -----------------------------------------------------
 
+    if (localStorage.getItem(STORAGE.users) === null) {
       save(STORAGE.users, [{
         id: "admin-default",
         name: "Admin User",
@@ -426,23 +470,69 @@
       }]);
     }
 
-    // Admin shipping fees
+    // -----------------------------------------------------
+    // ADMIN SHIPPING FEES
+    // -----------------------------------------------------
+
     const existingFees = readList(STORAGE.adminCustomerFees);
     const mergedFees = [...existingFees];
 
     seedAdminCustomerFees.forEach(seed => {
-
-      const exists = mergedFees.some(item =>
+      const index = mergedFees.findIndex(item =>
         normalizeEmail(item.customerEmail) ===
         normalizeEmail(seed.customerEmail)
       );
 
-      if (!exists) {
-        mergedFees.push(seed);
+      if (index >= 0) {
+        mergedFees[index] = {
+          ...mergedFees[index],
+          customerId: seed.customerId,
+          trackingNumber: seed.trackingNumber
+        };
+
+        const oldFee = Number(
+          String(mergedFees[index].shippingFee ?? 0)
+            .replace(/RM\s*/i, "")
+            .replace(/,/g, "")
+            .trim()
+        );
+
+        if (!Number.isFinite(oldFee) || oldFee <= 0) {
+          mergedFees[index].shippingFee = seed.shippingFee;
+        }
+      } else {
+        mergedFees.push({ ...seed });
       }
     });
 
     save(STORAGE.adminCustomerFees, mergedFees);
+  }
+
+  function getValidFeeFromRecord(parcel = {}) {
+    const fields = [
+      parcel.shippingFee,
+      parcel.finalPrice,
+      parcel.price
+    ];
+
+    for (const value of fields) {
+      if (value === null || value === undefined || value === "") {
+        continue;
+      }
+
+      const amount = Number(
+        String(value)
+          .replace(/RM\s*/i, "")
+          .replace(/,/g, "")
+          .trim()
+      );
+
+      if (Number.isFinite(amount) && amount > 0) {
+        return amount;
+      }
+    }
+
+    return 0;
   }
 
   initialiseStorage();
@@ -461,10 +551,7 @@
   // =======================================================
 
   const $ = selector => document.querySelector(selector);
-
-  const $$ = selector => [
-    ...document.querySelectorAll(selector)
-  ];
+  const $$ = selector => [...document.querySelectorAll(selector)];
 
   // =======================================================
   // 10. MONEY FORMAT
@@ -482,57 +569,23 @@
   // =======================================================
 
   function getParcelFee(parcel = {}) {
+    const actualFee = getValidFeeFromRecord(parcel);
 
-    const savedPrices = [
-      parcel.shippingFee,
-      parcel.finalPrice,
-      parcel.price
-    ];
-
-    for (const value of savedPrices) {
-
-      if (
-        value !== null &&
-        value !== undefined &&
-        value !== ""
-      ) {
-        const amount = Number(
-          String(value)
-            .replace(/RM\s*/i, "")
-            .replace(/,/g, "")
-            .trim()
-        );
-
-        if (Number.isFinite(amount) && amount > 0) {
-          return amount;
-        }
-      }
+    if (actualFee > 0) {
+      return actualFee;
     }
 
-    // Fallback to the default seed parcel fee.
     const trackingId = String(
       parcel.trackingNumber || parcel.id || ""
-    ).trim();
+    ).trim().toUpperCase();
 
     const defaultParcel = seedParcels.find(item =>
-      String(item.trackingNumber || item.id).trim() === trackingId
+      String(item.trackingNumber || item.id).trim().toUpperCase() ===
+      trackingId
     );
 
     if (defaultParcel) {
-
-      const defaultPrice = Number(
-        defaultParcel.shippingFee ??
-        defaultParcel.finalPrice ??
-        defaultParcel.price ??
-        0
-      );
-
-      if (
-        Number.isFinite(defaultPrice) &&
-        defaultPrice > 0
-      ) {
-        return defaultPrice;
-      }
+      return Number(defaultParcel.shippingFee) || 0;
     }
 
     return 0;
@@ -599,9 +652,7 @@
   function statusClass(status) {
     const value = normalizeStatus(status);
 
-    if (value === "Delivered") {
-      return "status-delivered";
-    }
+    if (value === "Delivered") return "status-delivered";
 
     if (
       value === "In Transit" ||
@@ -626,11 +677,9 @@
   }
 
   function getDestination(parcel = {}) {
-    return (
-      parcel.destinationCountry ||
+    return parcel.destinationCountry ||
       parcel.destination ||
-      "Malaysia"
-    );
+      "Malaysia";
   }
 
   // =======================================================
@@ -638,14 +687,11 @@
   // =======================================================
 
   function getCustomerForParcel(parcel = {}) {
-
     return customers.find(customer =>
       String(customer.id) === String(parcel.customerId)
     ) || customers.find(customer =>
       normalizeEmail(customer.email) ===
-      normalizeEmail(
-        parcel.customerEmail || parcel.senderEmail
-      )
+      normalizeEmail(parcel.customerEmail || parcel.senderEmail)
     ) || null;
   }
 
@@ -662,34 +708,26 @@
   }
 
   function getReceiverName(parcel = {}) {
-    return (
-      parcel.receiverName ||
-      parcel.recipient ||
-      "—"
-    );
+    return parcel.receiverName || parcel.recipient || "—";
   }
 
   function getCustomerParcels(customer = {}) {
-
     const currentParcels = readList(STORAGE.parcels);
 
     return currentParcels.filter(parcel => {
-
       const sameId =
         String(parcel.customerId) === String(customer.id);
 
       const sameEmail =
         customer.email &&
-        normalizeEmail(parcel.customerEmail) ===
+        normalizeEmail(parcel.customerEmail || parcel.senderEmail) ===
         normalizeEmail(customer.email);
 
       return sameId || sameEmail;
     });
   }
 
-  // Get all tracking numbers belonging to a customer.
   function getCustomerTrackingNumbers(customer = {}) {
-
     return getCustomerParcels(customer)
       .map(parcel =>
         String(parcel.trackingNumber || parcel.id || "").trim()
@@ -699,33 +737,21 @@
 
   // =======================================================
   // 15. ADMIN CUSTOMER SHIPPING FEE
-  // Actual parcel fees take priority.
-  // Backup fee is used when actual fee is missing or zero.
   // =======================================================
 
   function getAdminCustomerShippingFee(customer = {}) {
-
     const customerParcels = getCustomerParcels(customer);
 
-    // Step 1: Calculate actual parcel fees.
     const actualTotal = customerParcels.reduce(
-      (total, parcel) => {
-        return total + getParcelFee(parcel);
-      },
+      (total, parcel) => total + getParcelFee(parcel),
       0
     );
 
-    // Step 2: Use actual fee if greater than zero.
-    if (
-      Number.isFinite(actualTotal) &&
-      actualTotal > 0
-    ) {
+    if (Number.isFinite(actualTotal) && actualTotal > 0) {
       return actualTotal;
     }
 
-    // Step 3: Find backup fee record using email.
     const fees = readList(STORAGE.adminCustomerFees);
-
     const customerEmail = normalizeEmail(customer.email);
 
     const record = fees.find(item =>
@@ -733,7 +759,6 @@
     );
 
     if (record) {
-
       const amount = Number(
         String(record.shippingFee ?? 0)
           .replace(/RM\s*/i, "")
@@ -741,39 +766,21 @@
           .trim()
       );
 
-      if (
-        Number.isFinite(amount) &&
-        amount > 0
-      ) {
+      if (Number.isFinite(amount) && amount > 0) {
         return amount;
       }
     }
 
-    // Step 4: Last fallback to default seed fee.
     const defaultRecord = seedAdminCustomerFees.find(item =>
       normalizeEmail(item.customerEmail) === customerEmail
     );
 
-    if (defaultRecord) {
-
-      const defaultAmount = Number(
-        defaultRecord.shippingFee
-      );
-
-      if (
-        Number.isFinite(defaultAmount) &&
-        defaultAmount > 0
-      ) {
-        return defaultAmount;
-      }
-    }
-
-    return null;
+    return defaultRecord
+      ? Number(defaultRecord.shippingFee)
+      : null;
   }
 
-  // Get the complete fee record for one customer.
   function getCustomerShippingDetails(customer = {}) {
-
     const fees = readList(STORAGE.adminCustomerFees);
 
     return fees.find(item =>
@@ -790,15 +797,12 @@
   // =======================================================
 
   function linkOldParcelsToCustomers() {
-
     let changed = false;
 
     parcels = readList(STORAGE.parcels).map(parcel => {
-
       let customer = getCustomerForParcel(parcel);
 
       if (!customer) {
-
         const recipient = String(
           parcel.customerName ||
           parcel.senderName ||
@@ -815,12 +819,9 @@
 
       const updated = {
         ...parcel,
-
-        customerId: parcel.customerId || customer.id,
-        customerEmail:
-          parcel.customerEmail || customer.email || "",
-        customerName:
-          parcel.customerName || customer.name || ""
+        customerId: customer.id,
+        customerEmail: parcel.customerEmail || customer.email || "",
+        customerName: parcel.customerName || customer.name || ""
       };
 
       if (!updated.senderName) {
@@ -836,10 +837,7 @@
           customer.location || customer.address || "";
       }
 
-      if (
-        JSON.stringify(updated) !==
-        JSON.stringify(parcel)
-      ) {
+      if (JSON.stringify(updated) !== JSON.stringify(parcel)) {
         changed = true;
       }
 
@@ -856,22 +854,15 @@
   // =======================================================
 
   function refreshData() {
-
     parcels = readList(STORAGE.parcels);
     customers = readList(STORAGE.customers);
     users = readList(STORAGE.users);
     currentUser = read(STORAGE.session, null);
 
-    return {
-      parcels,
-      customers,
-      users,
-      currentUser
-    };
+    return { parcels, customers, users, currentUser };
   }
 
   function dispatchDataUpdated(key = STORAGE.parcels) {
-
     const detail = {
       key,
       parcels: readList(STORAGE.parcels),
@@ -882,53 +873,38 @@
     refreshData();
 
     window.dispatchEvent(
-      new CustomEvent("parcelpro:dataUpdated", {
-        detail
-      })
+      new CustomEvent("parcelpro:dataUpdated", { detail })
     );
 
     document.dispatchEvent(
-      new CustomEvent("parcelpro:dataUpdated", {
-        detail
-      })
+      new CustomEvent("parcelpro:dataUpdated", { detail })
     );
   }
 
   function setParcels(value) {
-
     if (!Array.isArray(value)) return false;
-
     if (!save(STORAGE.parcels, value)) return false;
 
     parcels = value;
-
     dispatchDataUpdated(STORAGE.parcels);
-
     return true;
   }
 
   function setCustomers(value) {
-
     if (!Array.isArray(value)) return false;
-
     if (!save(STORAGE.customers, value)) return false;
 
     customers = value;
-
     dispatchDataUpdated(STORAGE.customers);
-
     return true;
   }
 
   function persist() {
-
     const parcelsSaved = save(STORAGE.parcels, parcels);
     const customersSaved = save(STORAGE.customers, customers);
 
     if (parcelsSaved && customersSaved) {
-
       dispatchDataUpdated(STORAGE.parcels);
-
       return true;
     }
 
@@ -940,7 +916,6 @@
   // =======================================================
 
   function toast(message) {
-
     const toastElement = $("#appToast");
 
     if (!toastElement || !window.bootstrap) {
@@ -960,9 +935,7 @@
   }
 
   function showAlert(selector, message) {
-
     const element = $(selector);
-
     if (!element) return;
 
     element.textContent = message;
@@ -978,7 +951,6 @@
   // =======================================================
 
   function updateUserUI() {
-
     if (!currentUser) return;
 
     const name = currentUser.name || "Admin User";
@@ -989,9 +961,7 @@
     const headerAvatar = $("#headerAvatar");
     const profileAvatar = $("#profileAvatar");
 
-    if (headerName) {
-      headerName.textContent = name;
-    }
+    if (headerName) headerName.textContent = name;
 
     if (welcomeName) {
       welcomeName.textContent = name.split(" ")[0];
@@ -1001,30 +971,21 @@
       ? `<img class="admin-avatar-photo" src="${escapeHTML(photo)}" alt="Admin profile">`
       : initials(name);
 
-    if (headerAvatar) {
-      headerAvatar.innerHTML = photoHTML;
-    }
-
-    if (profileAvatar) {
-      profileAvatar.innerHTML = photoHTML;
-    }
+    if (headerAvatar) headerAvatar.innerHTML = photoHTML;
+    if (profileAvatar) profileAvatar.innerHTML = photoHTML;
 
     if ($("#profileDisplayName")) {
       $("#profileDisplayName").textContent = name;
     }
 
     if ($("#profileDisplayEmail")) {
-      $("#profileDisplayEmail").textContent =
-        currentUser.email || "";
+      $("#profileDisplayEmail").textContent = currentUser.email || "";
     }
 
-    if ($("#profileName")) {
-      $("#profileName").value = name;
-    }
+    if ($("#profileName")) $("#profileName").value = name;
 
     if ($("#profileEmail")) {
-      $("#profileEmail").value =
-        currentUser.email || "";
+      $("#profileEmail").value = currentUser.email || "";
     }
   }
 
@@ -1033,13 +994,11 @@
   // =======================================================
 
   function closeSidebar() {
-
     $("#sidebar")?.classList.remove("open");
     $("#sidebarBackdrop")?.classList.remove("show");
   }
 
   function navigate(page) {
-
     const pageURLs = {
       dashboard: "admin.html",
       parcels: "admin_parcels.html",
@@ -1060,39 +1019,26 @@
   }
 
   function initialiseNavigation() {
-
     $$("[data-page]").forEach(link => {
-
       link.addEventListener("click", event => {
-
         event.preventDefault();
-
         navigate(link.dataset.page);
       });
     });
 
     $$("[data-page-link]").forEach(button => {
-
       button.addEventListener("click", () => {
         navigate(button.dataset.pageLink);
       });
     });
 
     $("#openSidebar")?.addEventListener("click", () => {
-
       $("#sidebar")?.classList.add("open");
       $("#sidebarBackdrop")?.classList.add("show");
     });
 
-    $("#closeSidebar")?.addEventListener(
-      "click",
-      closeSidebar
-    );
-
-    $("#sidebarBackdrop")?.addEventListener(
-      "click",
-      closeSidebar
-    );
+    $("#closeSidebar")?.addEventListener("click", closeSidebar);
+    $("#sidebarBackdrop")?.addEventListener("click", closeSidebar);
   }
 
   // =======================================================
@@ -1100,7 +1046,6 @@
   // =======================================================
 
   function showApp(user) {
-
     if (!user) return;
 
     currentUser = {
@@ -1131,7 +1076,6 @@
   }
 
   function isLoggedIn() {
-
     refreshData();
 
     if (!currentUser?.email) return false;
@@ -1144,14 +1088,12 @@
   }
 
   function requireAdmin() {
-
     if (!isLoggedIn()) {
       location.replace("admin.html");
       return false;
     }
 
     $("#appShell")?.classList.remove("d-none");
-
     updateUserUI();
 
     return true;
@@ -1163,9 +1105,7 @@
   }
 
   function logout() {
-
     localStorage.removeItem(STORAGE.session);
-
     currentUser = null;
 
     const appShell = $("#appShell");
@@ -1174,11 +1114,8 @@
     appShell?.classList.add("d-none");
 
     if (authScreen) {
-
       authScreen.classList.remove("d-none");
-
     } else {
-
       location.href = "admin.html";
       return;
     }
@@ -1193,50 +1130,35 @@
   }
 
   function initialiseAuthentication() {
-
     const authScreen = $("#authScreen");
     const appShell = $("#appShell");
 
     if (authScreen && appShell) {
-
       if (currentUser && isLoggedIn()) {
-
         const matchedUser = users.find(user =>
           normalizeEmail(user.email) ===
           normalizeEmail(currentUser.email)
         );
 
         showApp(matchedUser);
-
       } else {
-
         localStorage.removeItem(STORAGE.session);
-
         currentUser = null;
 
         authScreen.classList.remove("d-none");
         appShell.classList.add("d-none");
       }
-
     } else {
-
       if (!requireAdmin()) return;
     }
 
     $("#loginForm")?.addEventListener("submit", event => {
-
       event.preventDefault();
-
       hideAlert("#loginAlert");
-
       refreshData();
 
-      const email = normalizeEmail(
-        $("#loginEmail")?.value
-      );
-
-      const password =
-        $("#loginPassword")?.value || "";
+      const email = normalizeEmail($("#loginEmail")?.value);
+      const password = $("#loginPassword")?.value || "";
 
       const user = users.find(item =>
         normalizeEmail(item.email) === email &&
@@ -1244,22 +1166,18 @@
       );
 
       if (!user) {
-
         showAlert(
           "#loginAlert",
           "Invalid email address or password. Please try again."
         );
-
         return;
       }
 
       if (user.role && user.role !== "admin") {
-
         showAlert(
           "#loginAlert",
           "Please use the Customer Portal to access your account."
         );
-
         return;
       }
 
@@ -1267,42 +1185,29 @@
     });
 
     $("#registerForm")?.addEventListener("submit", event => {
-
       event.preventDefault();
-
       hideAlert("#registerAlert");
-
       refreshData();
 
-      const name =
-        $("#registerName")?.value.trim() || "";
-
-      const email = normalizeEmail(
-        $("#registerEmail")?.value
-      );
-
-      const password =
-        $("#registerPassword")?.value || "";
+      const name = $("#registerName")?.value.trim() || "";
+      const email = normalizeEmail($("#registerEmail")?.value);
+      const password = $("#registerPassword")?.value || "";
 
       if (!name || !email || password.length < 6) {
-
         showAlert(
           "#registerAlert",
           "Please complete all fields. Password must contain at least 6 characters."
         );
-
         return;
       }
 
       if (users.some(user =>
         normalizeEmail(user.email) === email
       )) {
-
         showAlert(
           "#registerAlert",
           "An account with this email already exists."
         );
-
         return;
       }
 
@@ -1317,32 +1222,22 @@
       users.push(newUser);
 
       if (!save(STORAGE.users, users)) {
-
-        showAlert(
-          "#registerAlert",
-          "Unable to save your account."
-        );
-
+        showAlert("#registerAlert", "Unable to save your account.");
         return;
       }
 
       showApp(newUser);
-
       toast("Your account has been created.");
     });
 
     $("#showRegister")?.addEventListener("click", event => {
-
       event.preventDefault();
-
       $("#loginPanel")?.classList.add("d-none");
       $("#registerPanel")?.classList.remove("d-none");
     });
 
     $("#showLogin")?.addEventListener("click", event => {
-
       event.preventDefault();
-
       $("#registerPanel")?.classList.add("d-none");
       $("#loginPanel")?.classList.remove("d-none");
     });
@@ -1350,22 +1245,15 @@
     $("#logoutButton")?.addEventListener("click", logout);
 
     $$("[data-toggle-password]").forEach(button => {
-
       button.addEventListener("click", () => {
-
         const input = $("#" + button.dataset.togglePassword);
-
         if (!input) return;
 
-        input.type =
-          input.type === "password"
-            ? "text"
-            : "password";
+        input.type = input.type === "password" ? "text" : "password";
 
-        button.innerHTML =
-          input.type === "password"
-            ? '<i class="bi bi-eye"></i>'
-            : '<i class="bi bi-eye-slash"></i>';
+        button.innerHTML = input.type === "password"
+          ? '<i class="bi bi-eye"></i>'
+          : '<i class="bi bi-eye-slash"></i>';
       });
     });
   }
@@ -1375,11 +1263,9 @@
   // =======================================================
 
   function initialiseDate() {
-
     const dateElement = $("#currentDate");
 
     if (dateElement) {
-
       dateElement.textContent =
         new Date().toLocaleDateString("en-MY", {
           weekday: "long",
@@ -1391,25 +1277,18 @@
   }
 
   function initialiseLanguage() {
-
     const select = $("#adminLanguageSelect");
 
     const savedLanguage =
       localStorage.getItem(STORAGE.language) || "en";
 
     if (select) {
-
       select.value = savedLanguage;
 
       select.addEventListener("change", event => {
-
         const language = event.target.value;
 
-        localStorage.setItem(
-          STORAGE.language,
-          language
-        );
-
+        localStorage.setItem(STORAGE.language, language);
         document.documentElement.lang = language;
 
         toast(
@@ -1430,26 +1309,20 @@
   // =======================================================
 
   function populateParcelCustomers(selectedId = "") {
-
     const select = $("#parcelRecipient");
-
     if (!select) return;
 
     select.innerHTML =
       '<option value="">Select customer</option>';
 
     customers.forEach(customer => {
-
       const option = document.createElement("option");
 
       option.value = String(customer.id);
-
       option.textContent =
         `${customer.name || customer.email} (${customer.email || ""})`;
 
-      if (
-        String(customer.id) === String(selectedId)
-      ) {
+      if (String(customer.id) === String(selectedId)) {
         option.selected = true;
       }
 
@@ -1458,9 +1331,7 @@
   }
 
   function fillCustomerDetails() {
-
     const select = $("#parcelRecipient");
-
     if (!select) return;
 
     const customer = customers.find(item =>
@@ -1471,26 +1342,19 @@
     const address = $("#parcelAddress");
 
     if (!customer) {
-
       if (phone) phone.value = "";
       if (address) address.value = "";
-
       return;
     }
 
-    if (phone) {
-      phone.value = customer.phone || "";
-    }
+    if (phone) phone.value = customer.phone || "";
 
     if (address) {
-
-      address.value =
-        customer.location || customer.address || "";
+      address.value = customer.location || customer.address || "";
     }
   }
 
   function initialiseCustomerDropdown() {
-
     populateParcelCustomers();
 
     $("#parcelRecipient")?.addEventListener(
@@ -1504,7 +1368,6 @@
   // =======================================================
 
   window.addEventListener("storage", event => {
-
     if (
       event.key === STORAGE.customers ||
       event.key === STORAGE.parcels ||
@@ -1513,15 +1376,10 @@
       event.key === STORAGE.adminCustomerFees ||
       event.key === null
     ) {
-
       refreshData();
 
-      const changedKey = event.key || STORAGE.parcels;
-
-      dispatchDataUpdated(changedKey);
-
+      dispatchDataUpdated(event.key || STORAGE.parcels);
       updateUserUI();
-
       populateParcelCustomers();
     }
   });
@@ -1531,19 +1389,13 @@
   // =======================================================
 
   function initialise() {
-
     refreshData();
-
     linkOldParcelsToCustomers();
 
     initialiseNavigation();
-
     initialiseAuthentication();
-
     initialiseDate();
-
     initialiseLanguage();
-
     initialiseCustomerDropdown();
   }
 
@@ -1552,7 +1404,6 @@
   // =======================================================
 
   window.ParcelProAdmin = {
-
     STORAGE,
 
     $,
@@ -1656,14 +1507,8 @@
   // =======================================================
 
   if (document.readyState === "loading") {
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      initialise
-    );
-
+    document.addEventListener("DOMContentLoaded", initialise);
   } else {
-
     initialise();
   }
 
