@@ -1,1241 +1,441 @@
-
-/* =========================================================
-   PARCELPRO - PUBLIC.JS
-   Customer Tracking + Language Selector
-
-   FEATURES:
-   - Read shared parcelpro_parcels storage
-   - Search by Tracking Number / Tracking ID
-   - Support tracking up to 5 parcels
-   - Display current parcel status
-   - Display six-stage customer status progress
-   - Display tracking history
-   - Merge duplicate Out for Delivery / Out of Delivery
-   - Map In Transit to Shipped for customer display
-   - Support English, Malay and Chinese
-   - Auto-refresh when Admin updates parcel data
-   - Support legacy trackingHistory
-   - Display delivery proof when available
-   - Preserve language selector and mobile navigation
-
-   IMPORTANT:
-   - Does not modify Admin status data
-   - Uses existing localStorage key
-========================================================= */
-
+ini coding yang saya boleh tracker aritu ... /* ParcelPro public homepage: customer tracking + language selector */
 (() => {
   "use strict";
 
-  // =======================================================
-  // 1. CONFIGURATION
-  // =======================================================
-
   const $ = (selector) => document.querySelector(selector);
 
-  const STORAGE_KEY = "parcelpro_parcels";
-  const LANGUAGE_KEY = "parcelpro_language";
+  // Initialise sample tracking records on first visit, even before the admin page is opened.
+  // The admin dashboard uses the same localStorage key and can update these records.
+  if (!localStorage.getItem("parcelpro_parcels")) {
+    const sampleParcels = [
+      {id:"PP1001",recipient:"Aisyah Rahman",phone:"012-345 6789",address:"Shah Alam, Selangor",type:"Small package",date:"2026-11-15",status:"In Transit",courier:"Daniel Lee",created:"2026-11-10"},
+      {id:"PP1002",recipient:"Daniel Tan",phone:"013-222 4567",address:"Petaling Jaya, Selangor",type:"Document",date:"2026-11-13",status:"Delivered",courier:"Farid Ahmad",created:"2026-11-09"},
+      {id:"PP1003",recipient:"Nur Izzati",phone:"017-888 1234",address:"Bangi, Selangor",type:"Medium package",date:"2026-11-16",status:"Pending",courier:"Not assigned",created:"2026-11-12"},
+      {id:"PP1004",recipient:"Muhammad Amir",phone:"016-555 9087",address:"Cyberjaya, Selangor",type:"Large package",date:"2026-11-14",status:"In Transit",courier:"Siti Zulaikha",created:"2026-11-10"},
+      {id:"PP1005",recipient:"Lim Wei Jian",phone:"011-333 8765",address:"Kuala Lumpur",type:"Small package",date:"2026-11-12",status:"Delivered",courier:"Daniel Lee",created:"2026-11-08"},
+      {id:"PP1006",recipient:"Siti Hajar",phone:"019-777 2345",address:"Putrajaya",type:"Document",date:"2026-11-17",status:"Pending",courier:"Not assigned",created:"2026-11-12"},
+      {id:"PP1007",recipient:"Adam Hakim",phone:"014-999 4561",address:"Klang, Selangor",type:"Medium package",date:"2026-11-13",status:"Delivered",courier:"Farid Ahmad",created:"2026-11-07"},
+      {id:"PP1008",recipient:"Chong Mei Ling",phone:"012-777 6543",address:"Subang Jaya, Selangor",type:"Small package",date:"2026-11-18",status:"In Transit",courier:"Siti Zulaikha",created:"2026-11-11"}
+    ];
 
-  const MAX_TRACKING = 5;
-
-  let lastTrackedIds = [];
-  let language = "en";
-
-  // =======================================================
-  // 2. LANGUAGE TRANSLATIONS
-  // =======================================================
+    localStorage.setItem("parcelpro_parcels", JSON.stringify(sampleParcels));
+  }
 
   const translations = {
     en: {
-      pending: "Pending",
-      processing: "Processing",
-      pickedUp: "Picked Up",
-      shipped: "Shipped",
-      outOfDelivery: "Out of Delivery",
-      delivered: "Delivered",
-      failed: "Failed",
-      cancelled: "Cancelled",
-
-      deliveryProgress: "Delivery Progress",
-      statusUnavailable: "Status information is unavailable.",
-
-      trackingNotFound: "Tracking number not found.",
-      enterTracking: "Please enter a tracking number.",
-      maxTracking: "You can track up to 5 parcels at a time.",
-      trackingResults: "Tracking Results",
-      trackingNumber: "Tracking Number",
-      recipient: "Recipient",
-      destination: "Destination",
-      currentStatus: "Current Status",
-      trackingHistory: "Tracking History",
-      noHistory: "No tracking history available yet.",
-      noResults: "No parcel information available.",
-      lastUpdated: "Last Updated",
-      deliveryProof: "Delivery Proof",
-      viewProof: "View delivery proof",
-      unknown: "Unknown",
-      parcelNotFound: "Parcel information could not be found."
+      navHome:"HOME",navTrack:"TRACK PARCEL",navServices:"SERVICES",navAbout:"ABOUT US",adminLogin:"ADMIN LOGIN",
+      heroEyebrow:"SMARTER DELIVERY, SIMPLER LIFE",heroTitleOne:"Your parcel.",heroTitleTwo:"Our priority.",
+      heroSubtitle:"A smoother delivery experience starts here. Track your shipment anytime, anywhere.",
+      heroCta:"TRACK YOUR PARCEL",secureTracking:"Easy & secure tracking",realTime:"Status updates",fastReliable:"Fast. Reliable. Convenient.",
+      trackHeading:"Where is your parcel?",trackDescription:"Enter your ParcelPro tracking number below.",
+      trackingPlaceholder:"ENTER YOUR PARCELPRO TRACKING ID",trackButton:"TRACK",
+      trackingNote:"No customer login is required. Just enter your Tracking ID.",
+      whyEyebrow:"WHY PARCELPRO",featuresTitle:"Delivery made simple",
+      featuresSubtitle:"Everything you need for a more convenient parcel experience.",
+      featureOneTitle:"Track with ease",featureOneText:"Check your parcel progress anytime using your unique Tracking ID.",
+      featureTwoTitle:"Stay updated",featureTwoText:"See the latest delivery status and expected arrival information.",
+      featureThreeTitle:"Reliable handling",featureThreeText:"Your shipment details are organised throughout its delivery journey.",
+      bannerEyebrow:"PARCEL DELIVERY MANAGEMENT",bannerTitle:"Delivering Smarter, Tracking Easier.",
+      bannerText:"ParcelPro keeps your delivery journey simple and clear.",rights:"All rights reserved.",
+      footerTagline:"Delivering Smarter, Tracking Easier.",backHome:"Back to homepage",
+      notFoundTitle:"Tracking ID not found",notFoundText:"Please check your Tracking ID and try again.",
+      resultTitle:"Shipment tracking details",currentStatus:"CURRENT STATUS",expected:"EXPECTED DELIVERY",
+      destination:"DESTINATION",progress:"DELIVERY PROGRESS",pending:"Pending",transit:"In Transit",delivered:"Delivered",
+      received:"Parcel received",processing:"Processing",outForDelivery:"Out of Delivery",unknownDate:"Status updated by ParcelPro",
+      invalid:"Please enter a Tracking ID.",
+      adminDashboard:"Dashboard",adminParcelManagement:"Parcel Management",adminParcelTracking:"Parcel Tracking",adminCustomers:"Customers",adminDeliveryManagement:"Delivery Management",adminProfile:"My Profile",adminLogout:"Log out",adminWorkspace:"WORKSPACE",adminPreferences:"PREFERENCES"
     },
 
     ms: {
-      pending: "Menunggu",
-      processing: "Sedang diproses",
-      pickedUp: "Telah diambil",
-      shipped: "Telah dihantar",
-      outOfDelivery: "Dalam proses penghantaran",
-      delivered: "Telah dihantar",
-      failed: "Penghantaran gagal",
-      cancelled: "Dibatalkan",
-
-      deliveryProgress: "Kemajuan Penghantaran",
-      statusUnavailable: "Maklumat status tidak tersedia.",
-
-      trackingNotFound: "Nombor penjejakan tidak dijumpai.",
-      enterTracking: "Sila masukkan nombor penjejakan.",
-      maxTracking: "Anda hanya boleh menjejak maksimum 5 bungkusan.",
-      trackingResults: "Keputusan Penjejakan",
-      trackingNumber: "Nombor Penjejakan",
-      recipient: "Penerima",
-      destination: "Destinasi",
-      currentStatus: "Status Semasa",
-      trackingHistory: "Sejarah Penjejakan",
-      noHistory: "Tiada sejarah penjejakan buat masa ini.",
-      noResults: "Maklumat bungkusan tidak tersedia.",
-      lastUpdated: "Kemaskini Terakhir",
-      deliveryProof: "Bukti Penghantaran",
-      viewProof: "Lihat bukti penghantaran",
-      unknown: "Tidak diketahui",
-      parcelNotFound: "Maklumat bungkusan tidak dapat dijumpai."
+      navHome:"LAMAN UTAMA",navTrack:"JEJAK PARCEL",navServices:"PERKHIDMATAN",navAbout:"TENTANG KAMI",adminLogin:"LOG MASUK ADMIN",
+      heroEyebrow:"PENGHANTARAN LEBIH BIJAK, HIDUP LEBIH MUDAH",heroTitleOne:"Parcel anda.",heroTitleTwo:"Keutamaan kami.",
+      heroSubtitle:"Nikmati pengalaman penghantaran yang lebih mudah. Jejak kiriman anda bila-bila masa dan di mana sahaja.",
+      heroCta:"JEJAK PARCEL ANDA",secureTracking:"Penjejakan mudah dan selamat",realTime:"Kemaskini status",fastReliable:"Pantas. Dipercayai. Mudah.",
+      trackHeading:"Di manakah parcel anda?",trackDescription:"Masukkan nombor penjejakan ParcelPro anda di bawah.",
+      trackingPlaceholder:"MASUKKAN ID PENJEJAKAN PARCELPRO",trackButton:"JEJAK",
+      trackingNote:"Pelanggan tidak perlu log masuk. Hanya masukkan ID Penjejakan anda.",
+      whyEyebrow:"MENGAPA PARCELPRO",featuresTitle:"Penghantaran lebih mudah",
+      featuresSubtitle:"Semua yang anda perlukan untuk pengalaman penghantaran yang lebih mudah.",
+      featureOneTitle:"Jejak dengan mudah",featureOneText:"Semak perkembangan parcel anda pada bila-bila masa menggunakan ID Penjejakan.",
+      featureTwoTitle:"Sentiasa dikemaskini",featureTwoText:"Lihat status penghantaran terkini dan maklumat jangkaan ketibaan.",
+      featureThreeTitle:"Pengendalian dipercayai",featureThreeText:"Maklumat kiriman anda disusun sepanjang proses penghantaran.",
+      bannerEyebrow:"SISTEM PENGURUSAN PENGHANTARAN PARCEL",bannerTitle:"Penghantaran Lebih Bijak, Penjejakan Lebih Mudah.",
+      bannerText:"ParcelPro menjadikan perjalanan penghantaran anda lebih mudah dan jelas.",rights:"Hak cipta terpelihara.",
+      footerTagline:"Penghantaran Lebih Bijak, Penjejakan Lebih Mudah.",backHome:"Kembali ke laman utama",
+      notFoundTitle:"ID Penjejakan tidak ditemui",notFoundText:"Sila semak ID Penjejakan anda dan cuba sekali lagi.",
+      resultTitle:"Maklumat penjejakan kiriman",currentStatus:"STATUS TERKINI",expected:"JANGKAAN PENGHANTARAN",
+      destination:"DESTINASI",progress:"PROSES PENGHANTARAN",pending:"Menunggu",transit:"Dalam penghantaran",delivered:"Telah dihantar",
+      received:"Parcel diterima",processing:"Sedang diproses",outForDelivery:"Dalam proses penghantaran",unknownDate:"Status dikemaskini oleh ParcelPro",
+      invalid:"Sila masukkan ID Penjejakan.",
+      adminDashboard:"Papan Pemuka",adminParcelManagement:"Pengurusan Parcel",adminParcelTracking:"Penjejakan Parcel",adminCustomers:"Pelanggan",adminDeliveryManagement:"Pengurusan Penghantaran",adminProfile:"Profil Saya",adminLogout:"Log Keluar",adminWorkspace:"RUANG KERJA",adminPreferences:"PREFERENSI"
     },
 
     zh: {
-      pending: "等待处理",
-      processing: "处理中",
-      pickedUp: "已取件",
-      shipped: "已发货",
-      outOfDelivery: "派送中",
-      delivered: "已送达",
-      failed: "配送失败",
-      cancelled: "已取消",
-
-      deliveryProgress: "配送进度",
-      statusUnavailable: "暂无状态信息。",
-
-      trackingNotFound: "找不到追踪号码。",
-      enterTracking: "请输入追踪号码。",
-      maxTracking: "一次最多只能追踪 5 个包裹。",
-      trackingResults: "追踪结果",
-      trackingNumber: "追踪号码",
-      recipient: "收件人",
-      destination: "目的地",
-      currentStatus: "当前状态",
-      trackingHistory: "追踪记录",
-      noHistory: "暂无追踪记录。",
-      noResults: "暂无包裹信息。",
-      lastUpdated: "最后更新",
-      deliveryProof: "送货证明",
-      viewProof: "查看送货证明",
-      unknown: "未知",
-      parcelNotFound: "找不到包裹信息。"
+      navHome:"首页",navTrack:"查询包裹",navServices:"服务",navAbout:"关于我们",adminLogin:"管理员登录",
+      heroEyebrow:"更智能的配送，更轻松的生活",heroTitleOne:"您的包裹。",heroTitleTwo:"我们的优先事项。",
+      heroSubtitle:"从这里开始享受更轻松的配送体验。随时随地查询您的包裹。",
+      heroCta:"查询您的包裹",secureTracking:"简单安全的查询",realTime:"状态更新",fastReliable:"快速。可靠。便捷。",
+      trackHeading:"您的包裹在哪里？",trackDescription:"请在下方输入您的 ParcelPro 查询号码。",
+      trackingPlaceholder:"输入 PARCELPRO 查询号码",trackButton:"查询",
+      trackingNote:"客户无需登录，只需输入您的查询号码。",
+      whyEyebrow:"为什么选择 PARCELPRO",featuresTitle:"让配送更简单",
+      featuresSubtitle:"为您提供更方便的包裹配送体验。",
+      featureOneTitle:"轻松查询",featureOneText:"使用专属查询号码，随时查看包裹进度。",
+      featureTwoTitle:"及时更新",featureTwoText:"查看最新配送状态和预计送达信息。",
+      featureThreeTitle:"可靠处理",featureThreeText:"在整个配送过程中妥善整理您的包裹信息。",
+      bannerEyebrow:"包裹配送管理系统",bannerTitle:"智能配送，轻松查询。",
+      bannerText:"ParcelPro 让您的配送过程简单明了。",rights:"版权所有。",
+      footerTagline:"智能配送，轻松查询。",backHome:"返回首页",
+      notFoundTitle:"找不到查询号码",notFoundText:"请检查您的查询号码并重试。",
+      resultTitle:"包裹查询详情",currentStatus:"当前状态",expected:"预计送达",
+      destination:"目的地",progress:"配送进度",pending:"等待处理",transit:"运输中",delivered:"已送达",
+      received:"已收到包裹",processing:"处理中",outForDelivery:"派送中",unknownDate:"ParcelPro 已更新状态",
+      invalid:"请输入查询号码。",
+      adminDashboard:"控制面板",adminParcelManagement:"包裹管理",adminParcelTracking:"包裹查询",adminCustomers:"客户",adminDeliveryManagement:"配送管理",adminProfile:"我的资料",adminLogout:"退出登录",adminWorkspace:"工作区",adminPreferences:"偏好设置"
     }
   };
 
-  // =======================================================
-  // 3. LANGUAGE HELPER
-  // =======================================================
+  let language = localStorage.getItem("parcelpro_language") || "en";
 
-  function t(key) {
-    return translations[language]?.[key]
-      || translations.en[key]
-      || key;
-  }
+  const t = (key) =>
+    translations[language]?.[key] ||
+    translations.en[key] ||
+    key;
 
-  function loadLanguage() {
-    try {
-      const savedLanguage = localStorage.getItem(LANGUAGE_KEY);
+  const escapeHTML = (value) =>
+    String(value ?? "").replace(/[&<>"']/g, c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[c]));
 
-      language = ["en", "ms", "zh"].includes(savedLanguage)
-        ? savedLanguage
-        : "en";
-
-    } catch (error) {
-      language = "en";
-    }
-  }
-
-  // =======================================================
-  // 4. HTML ESCAPE
-  // =======================================================
-
-  function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (character) => {
-      const entities = {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      };
-
-      return entities[character];
-    });
-  }
-
-  // =======================================================
-  // 5. READ SHARED PARCEL DATA
-  // =======================================================
-
+  // Read parcel data safely so malformed browser storage does not stop tracking.
   function readParcels() {
     try {
-      const storedData = localStorage.getItem(STORAGE_KEY);
-
-      if (!storedData) {
-        return [];
-      }
-
-      const parcels = JSON.parse(storedData);
-
-      if (!Array.isArray(parcels)) {
-        console.warn("ParcelPro: Invalid parcel storage format.");
-        return [];
-      }
-
-      return parcels;
-
+      const value = JSON.parse(localStorage.getItem("parcelpro_parcels") || "[]");
+      return Array.isArray(value) ? value : [];
     } catch (error) {
-      console.error("ParcelPro: Unable to read parcel data.", error);
+      console.error("ParcelPro: parcel data could not be read from localStorage.", error);
       return [];
     }
   }
-
-  // =======================================================
-  // 6. NORMALIZE STATUS
-  // =======================================================
-
-  function normalizeStatus(status) {
-    const value = String(status ?? "")
-      .trim()
-      .toLowerCase()
-      .replace(/[_-]+/g, " ")
-      .replace(/\s+/g, " ");
-
-    if (!value) {
-      return "pending";
-    }
-
-    const aliases = {
-      "pending": "pending",
-      "processing": "processing",
-      "picked up": "picked up",
-
-      "shipped": "shipped",
-      "in transit": "shipped",
-
-      "out of delivery": "out of delivery",
-      "out for delivery": "out of delivery",
-
-      "delivered": "delivered",
-      "failed": "failed",
-      "cancelled": "cancelled",
-      "canceled": "cancelled"
-    };
-
-    return aliases[value] || value;
-  }
-
-  // =======================================================
-  // 7. GET STATUS TRANSLATION KEY
-  // =======================================================
-
-  function getStatusKey(status) {
-    const normalized = normalizeStatus(status);
-
-    const keys = {
-      "pending": "pending",
-      "processing": "processing",
-      "picked up": "pickedUp",
-      "shipped": "shipped",
-      "out of delivery": "outOfDelivery",
-      "delivered": "delivered",
-      "failed": "failed",
-      "cancelled": "cancelled"
-    };
-
-    return keys[normalized] || null;
-  }
-
-  // =======================================================
-  // 8. STATUS LABEL
-  // =======================================================
-
-  function statusLabel(status) {
-    const key = getStatusKey(status);
-
-    return key
-      ? t(key)
-      : escapeHTML(status || t("pending"));
-  }
-
-  // =======================================================
-  // 9. STATUS CSS CLASS
-  // =======================================================
-
-  function statusClass(status) {
-    const normalized = normalizeStatus(status);
-
-    if (normalized === "delivered") {
-      return "is-delivered";
-    }
-
-    if (
-      [
-        "processing",
-        "picked up",
-        "shipped",
-        "out of delivery"
-      ].includes(normalized)
-    ) {
-      return "is-transit";
-    }
-
-    if (
-      [
-        "failed",
-        "cancelled"
-      ].includes(normalized)
-    ) {
-      return "is-failed";
-    }
-
-    return "is-pending";
-  }
-
-  // =======================================================
-  // 10. TRACKING NUMBER HELPER
-  // =======================================================
-
-  function getTrackingId(parcel) {
-    return String(
-      parcel?.trackingNumber
-      || parcel?.trackingNo
-      || parcel?.trackingId
-      || parcel?.id
-      || ""
-    ).trim().toUpperCase();
-  }
-
-  // =======================================================
-  // 11. FIND PARCEL BY TRACKING NUMBER
-  // =======================================================
-
-  function findParcelByTrackingId(trackingId) {
-    const parcels = readParcels();
-
-    const searchId = String(trackingId || "")
-      .trim()
-      .toUpperCase();
-
-    return parcels.find((parcel) => {
-      return getTrackingId(parcel) === searchId;
-    }) || null;
-  }
-
-  // =======================================================
-  // 12. GET PARCEL HISTORY
-  // =======================================================
-
-  function getHistory(parcel) {
-    if (!parcel) {
-      return [];
-    }
-
-    let history = [];
-
-    if (
-      Array.isArray(parcel.history)
-      && parcel.history.length > 0
-    ) {
-      history = parcel.history;
-
-    } else if (
-      Array.isArray(parcel.trackingHistory)
-      && parcel.trackingHistory.length > 0
-    ) {
-      history = parcel.trackingHistory;
-    }
-
-    return history
-      .filter((entry) => entry && typeof entry === "object")
-      .map((entry) => ({
-        ...entry,
-        status: entry.status || entry.title || "Pending",
-        date:
-          entry.date
-          || entry.timestamp
-          || entry.updatedAt
-          || entry.createdAt
-          || "",
-        location: entry.location || entry.address || "",
-        description:
-          entry.description
-          || entry.message
-          || entry.remarks
-          || ""
-      }));
-  }
-
-  // =======================================================
-  // 13. FORMAT DATE
-  // =======================================================
-
-  function formatDate(dateValue) {
-    if (!dateValue) {
-      return t("unknown");
-    }
-
-    const date = new Date(dateValue);
-
-    if (Number.isNaN(date.getTime())) {
-      return escapeHTML(dateValue);
-    }
-
-    return date.toLocaleString(
-      language === "ms"
-        ? "ms-MY"
-        : language === "zh"
-          ? "zh-CN"
-          : "en-MY",
-      {
-        dateStyle: "medium",
-        timeStyle: "short"
-      }
-    );
-  }
-
-  // =======================================================
-  // 14. HISTORY ICON
-  // =======================================================
-
-  function getHistoryIcon(status) {
-    const normalized = normalizeStatus(status);
-
-    const icons = {
-      "pending": "bi-clock-history",
-      "processing": "bi-box-seam",
-      "picked up": "bi-box-arrow-up",
-      "shipped": "bi-truck",
-      "out of delivery": "bi-bicycle",
-      "delivered": "bi-check-circle-fill",
-      "failed": "bi-exclamation-circle-fill",
-      "cancelled": "bi-x-circle-fill"
-    };
-
-    return icons[normalized] || "bi-circle";
-  }
-
-  // =======================================================
-  // 15. REMOVE CONSECUTIVE DUPLICATE HISTORY STATUS
-  // =======================================================
-
-  function removeDuplicateHistory(entries) {
-    const uniqueEntries = [];
-
-    entries.forEach((entry) => {
-      const currentStatus = normalizeStatus(
-        entry.status || "Pending"
-      );
-
-      const previousEntry =
-        uniqueEntries[uniqueEntries.length - 1];
-
-      const previousStatus = previousEntry
-        ? normalizeStatus(previousEntry.status || "Pending")
-        : "";
-
-      if (currentStatus === previousStatus) {
-        uniqueEntries[uniqueEntries.length - 1] = entry;
-
-      } else {
-        uniqueEntries.push(entry);
-      }
-    });
-
-    return uniqueEntries;
-  }
-
-  // =======================================================
-  // 16. RENDER TRACKING HISTORY
-  // =======================================================
-
-  function renderHistory(parcel) {
-    let entries = getHistory(parcel);
-
-    entries = removeDuplicateHistory(entries);
-
-    if (entries.length === 0) {
-      entries = [
-        {
-          status: parcel.status || "Pending",
-          date:
-            parcel.updatedAt
-            || parcel.lastUpdated
-            || parcel.createdAt
-            || "",
-          location: parcel.location || "",
-          description: ""
-        }
-      ];
-    }
-
-    return `
-      <div class="public-tracking-history">
-
-        <h5 class="tracking-history-title">
-          <i class="bi bi-clock-history"></i>
-          ${t("trackingHistory")}
-        </h5>
-
-        <div class="tracking-timeline">
-
-          ${entries.map((entry, index) => {
-            const icon = getHistoryIcon(entry.status);
-            const isLatest = index === entries.length - 1;
-
-            return `
-              <div class="tracking-timeline-item
-                ${isLatest ? "is-latest" : ""}">
-
-                <div class="timeline-icon">
-                  <i class="bi ${icon}"></i>
-                </div>
-
-                <div class="timeline-content">
-
-                  <div class="timeline-status">
-                    ${statusLabel(entry.status)}
-                  </div>
-
-                  ${
-                    entry.date
-                      ? `
-                        <div class="timeline-date">
-                          ${formatDate(entry.date)}
-                        </div>
-                      `
-                      : ""
-                  }
-
-                  ${
-                    entry.location
-                      ? `
-                        <div class="timeline-location">
-                          <i class="bi bi-geo-alt"></i>
-                          ${escapeHTML(entry.location)}
-                        </div>
-                      `
-                      : ""
-                  }
-
-                  ${
-                    entry.description
-                      ? `
-                        <div class="timeline-description">
-                          ${escapeHTML(entry.description)}
-                        </div>
-                      `
-                      : ""
-                  }
-
-                </div>
-
-              </div>
-            `;
-          }).join("")}
-
-        </div>
-      </div>
-    `;
-  }
-
-  // =======================================================
-  // 17. DELIVERY PROOF
-  // =======================================================
-
-  function getDeliveryProof(parcel) {
-    return (
-      parcel.deliveryProof
-      || parcel.proofImage
-      || parcel.proofOfDelivery
-      || parcel.deliveryPhoto
-      || parcel.proof
-      || ""
-    );
-  }
-
-  function renderDeliveryProof(parcel) {
-    const proof = getDeliveryProof(parcel);
-
-    if (!proof || typeof proof !== "string") {
-      return "";
-    }
-
-    const isAllowedImage =
-      /^data:image\/(png|jpeg|jpg|webp);base64,/i.test(proof)
-      || /^https?:\/\/.+/i.test(proof);
-
-    if (!isAllowedImage) {
-      return "";
-    }
-
-    return `
-      <div class="delivery-proof-section">
-
-        <h5>
-          <i class="bi bi-camera"></i>
-          ${t("deliveryProof")}
-        </h5>
-
-        <a
-          href="${escapeHTML(proof)}"
-          target="_blank"
-          rel="noopener noreferrer">
-
-          <img
-            src="${escapeHTML(proof)}"
-            alt="${t("deliveryProof")}"
-            class="delivery-proof-image"
-            loading="lazy">
-
-          <span>
-            ${t("viewProof")}
-          </span>
-
-        </a>
-
-      </div>
-    `;
-  }
-
-  // =======================================================
-  // 18. PARCEL MAP / LOCATION
-  // =======================================================
-
-  function getParcelLocation(parcel) {
-    return (
-      parcel.currentLocation
-      || parcel.location
-      || parcel.destination
-      || parcel.address
-      || ""
-    );
-  }
-
-  function renderParcelMap(parcel) {
-    const location = getParcelLocation(parcel);
-
-    if (!location || typeof location !== "string") {
-      return "";
-    }
-
-    const mapURL =
-      "https://www.google.com/maps/search/?api=1&query="
-      + encodeURIComponent(location);
-
-    return `
-      <div class="tracking-map-link">
-
-        <a
-          href="${mapURL}"
-          target="_blank"
-          rel="noopener noreferrer">
-
-          <i class="bi bi-geo-alt-fill"></i>
-          ${escapeHTML(location)}
-
-          <span>
-            <i class="bi bi-box-arrow-up-right"></i>
-          </span>
-
-        </a>
-
-      </div>
-    `;
-  }
-
-  // =======================================================
-  // 19. PARCEL INFORMATION
-  // =======================================================
-
-  function getRecipient(parcel) {
-    return (
-      parcel.recipient
-      || parcel.recipientName
-      || parcel.customerName
-      || parcel.name
-      || t("unknown")
-    );
-  }
-
-  function getDestination(parcel) {
-    return (
-      parcel.destination
-      || parcel.deliveryAddress
-      || parcel.address
-      || t("unknown")
-    );
-  }
-
-  function getLastUpdated(parcel) {
-    return (
-      parcel.updatedAt
-      || parcel.lastUpdated
-      || parcel.modifiedAt
-      || parcel.createdAt
-      || ""
-    );
-  }
-
-  // =======================================================
-  // 20. CUSTOMER STATUS PROGRESS
-  // =======================================================
-
-  function renderStatusProgress(status) {
-
-    const stages = [
-      {
-        key: "pending",
-        status: "pending",
-        icon: "bi-receipt"
-      },
-      {
-        key: "processing",
-        status: "processing",
-        icon: "bi-box-seam"
-      },
-      {
-        key: "pickedUp",
-        status: "picked up",
-        icon: "bi-box-arrow-up"
-      },
-      {
-        key: "shipped",
-        status: "shipped",
-        icon: "bi-truck"
-      },
-      {
-        key: "outOfDelivery",
-        status: "out of delivery",
-        icon: "bi-bicycle"
-      },
-      {
-        key: "delivered",
-        status: "delivered",
-        icon: "bi-check-circle-fill"
-      }
-    ];
-
-    const currentStatus = normalizeStatus(status);
-
-    const currentIndex = stages.findIndex((stage) => {
-      return stage.status === currentStatus;
-    });
-
-    if (["failed", "cancelled"].includes(currentStatus)) {
-      return `
-        <div class="pp-status-progress-message is-exception">
-
-          <i class="bi bi-exclamation-circle-fill"></i>
-
-          <span>
-            ${t("currentStatus")}: ${statusLabel(status)}
-          </span>
-
-        </div>
-      `;
-    }
-
-    if (currentIndex === -1) {
-      return `
-        <div class="pp-status-progress-message">
-
-          <i class="bi bi-info-circle"></i>
-
-          <span>
-            ${t("statusUnavailable")}
-            ${statusLabel(status)}
-          </span>
-
-        </div>
-      `;
-    }
-
-    return `
-      <div class="pp-status-progress">
-
-        <h5 class="pp-status-progress-title">
-          <i class="bi bi-signpost-split"></i>
-          ${t("deliveryProgress")}
-        </h5>
-
-        <div class="pp-status-steps">
-
-          ${stages.map((stage, index) => {
-
-            let stepClass = "is-upcoming";
-
-            if (index < currentIndex) {
-              stepClass = "is-complete";
-
-            } else if (index === currentIndex) {
-              stepClass = "is-current";
-            }
-
-            return `
-              <div class="pp-status-step ${stepClass}">
-
-                <div class="pp-status-step-icon">
-                  <i class="bi ${stage.icon}"></i>
-                </div>
-
-                <span class="pp-status-step-label">
-                  ${t(stage.key)}
-                </span>
-
-              </div>
-            `;
-
-          }).join("")}
-
-        </div>
-
-      </div>
-    `;
-  }
-
-  // =======================================================
-  // 21. RENDER ONE PARCEL
-  // =======================================================
-
-  function renderParcel(parcel) {
-    const trackingId = getTrackingId(parcel);
-    const status = parcel.status || "Pending";
-    const recipient = getRecipient(parcel);
-    const destination = getDestination(parcel);
-    const lastUpdated = getLastUpdated(parcel);
-
-    return `
-      <div class="public-tracking-card">
-
-        <div class="public-tracking-card-header">
-
-          <div>
-            <span class="tracking-label">
-              ${t("trackingNumber")}
-            </span>
-
-            <h4 class="tracking-number">
-              ${escapeHTML(trackingId)}
-            </h4>
-          </div>
-
-          <span class="tracking-status-badge ${statusClass(status)}">
-            ${statusLabel(status)}
-          </span>
-
-        </div>
-
-        ${renderStatusProgress(status)}
-
-        <div class="public-tracking-details">
-
-          <div class="tracking-detail-item">
-            <span>${t("recipient")}</span>
-            <strong>${escapeHTML(recipient)}</strong>
-          </div>
-
-          <div class="tracking-detail-item">
-            <span>${t("destination")}</span>
-            <strong>${escapeHTML(destination)}</strong>
-          </div>
-
-          <div class="tracking-detail-item">
-            <span>${t("currentStatus")}</span>
-            <strong>${statusLabel(status)}</strong>
-          </div>
-
-          ${
-            lastUpdated
-              ? `
-                <div class="tracking-detail-item">
-                  <span>${t("lastUpdated")}</span>
-                  <strong>${formatDate(lastUpdated)}</strong>
-                </div>
-              `
-              : ""
-          }
-
-        </div>
-
-        ${renderParcelMap(parcel)}
-
-        ${renderHistory(parcel)}
-
-        ${renderDeliveryProof(parcel)}
-
-      </div>
-    `;
-  }
-
-  // =======================================================
-  // 22. RENDER MULTIPLE PARCELS
-  // =======================================================
-
-  function renderMultipleParcels(parcels) {
-    return `
-      <div class="public-tracking-multiple">
-
-        <h4 class="tracking-results-heading">
-          ${t("trackingResults")}
-          <span>(${parcels.length})</span>
-        </h4>
-
-        ${parcels.map((parcel) => renderParcel(parcel)).join("")}
-
-      </div>
-    `;
-  }
-
-  // =======================================================
-  // 23. DISPLAY MESSAGE
-  // =======================================================
-
-  function showMessage(message, type = "error") {
-    const result = document.getElementById("publicTrackingResult");
-
-    if (!result) {
-      console.error("ParcelPro: Tracking result element not found.");
-      return;
-    }
-
-    result.innerHTML = `
-      <div class="tracking-message ${type}">
-
-        <i class="bi ${
-          type === "success"
-            ? "bi-check-circle"
-            : "bi-exclamation-circle"
-        }"></i>
-
-        <span>${escapeHTML(message)}</span>
-
-      </div>
-    `;
-  }
-
-  // =======================================================
-  // 24. TRACKING INPUT VALIDATION
-  // =======================================================
-
-  function parseTrackingInput(value) {
-    return [...new Set(
-      String(value || "")
-        .split(/[\s,;]+/)
-        .map((id) => id.trim().toUpperCase())
-        .filter(Boolean)
-    )];
-  }
-
-  // =======================================================
-  // 25. TRACK PARCELS
-  // =======================================================
-
-  function trackParcels(trackingIds) {
-    const result = document.getElementById("publicTrackingResult");
-
-    if (!result) {
-      console.error("ParcelPro: Tracking result element not found.");
-      return;
-    }
-
-    if (!trackingIds || trackingIds.length === 0) {
-      showMessage(t("enterTracking"));
-      return;
-    }
-
-    if (trackingIds.length > MAX_TRACKING) {
-      showMessage(t("maxTracking"));
-      return;
-    }
-
-    const parcels = readParcels();
-
-    const foundParcels = [];
-    const missingIds = [];
-
-    trackingIds.forEach((trackingId) => {
-      const parcel = parcels.find((item) => {
-        return getTrackingId(item) === trackingId;
-      });
-
-      if (parcel) {
-        foundParcels.push(parcel);
-      } else {
-        missingIds.push(trackingId);
-      }
-    });
-
-    if (foundParcels.length === 0) {
-      lastTrackedIds = [];
-      showMessage(t("trackingNotFound"));
-      return;
-    }
-
-    lastTrackedIds = trackingIds;
-
-    result.innerHTML = `
-      ${
-        foundParcels.length === 1
-          ? renderParcel(foundParcels[0])
-          : renderMultipleParcels(foundParcels)
-      }
-
-      ${
-        missingIds.length > 0
-          ? `
-            <div class="tracking-message error">
-
-              <i class="bi bi-exclamation-circle"></i>
-
-              <span>
-                ${escapeHTML(missingIds.join(", "))}
-                - ${t("trackingNotFound")}
-              </span>
-
-            </div>
-          `
-          : ""
-      }
-    `;
-  }
-
-  // =======================================================
-  // 26. TRACKING FORM SUBMISSION
-  // Direct form event listener
-  // =======================================================
-
-  function initialiseTrackingForm() {
-
-    const trackingForm = document.getElementById("publicTrackingForm");
-    const trackingInput = document.getElementById("publicTrackingInput");
-    const trackingResult = document.getElementById("publicTrackingResult");
-
-    if (!trackingForm || !trackingInput || !trackingResult) {
-      console.error("ParcelPro: Tracking form elements not found.");
-      return;
-    }
-
-    trackingForm.addEventListener("submit", function (event) {
-
-      event.preventDefault();
-
-      const trackingIds = parseTrackingInput(trackingInput.value);
-
-      trackParcels(trackingIds);
-
-    });
-
-  }
-
-  // =======================================================
-  // 27. REFRESH TRACKING RESULTS
-  // =======================================================
-
-  function refreshTrackingResults() {
-    if (lastTrackedIds.length === 0) {
-      return;
-    }
-
-    trackParcels(lastTrackedIds);
-  }
-
-  // =======================================================
-  // 28. LISTEN FOR LOCAL STORAGE UPDATES
-  // =======================================================
-
-  window.addEventListener("storage", (event) => {
-
-    if (event.key === STORAGE_KEY) {
-      refreshTrackingResults();
-    }
-
-    if (event.key === LANGUAGE_KEY) {
-      loadLanguage();
-      applyLanguage();
-    }
-
-  });
-
-  // =======================================================
-  // 29. LISTEN FOR ADMIN CUSTOM UPDATE EVENT
-  // =======================================================
-
-  window.addEventListener("parcelpro:dataUpdated", (event) => {
-
-    const updatedKey = event.detail?.key;
-
-    if (!updatedKey || updatedKey === STORAGE_KEY) {
-      refreshTrackingResults();
-    }
-
-  });
-
-  // =======================================================
-  // 30. LANGUAGE SELECTOR
-  // =======================================================
 
   function applyLanguage() {
-    document.documentElement.lang = language;
+    document.documentElement.lang =
+      language === "ms" ? "ms" :
+      language === "zh" ? "zh-CN" : "en";
 
-    const languageSelectors = [
-      "#languageSelect",
-      "#languageSelector",
-      "#language",
-      "[data-language-selector]"
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.dataset.i18n;
+      if (t(key)) el.textContent = t(key);
+    });
+
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+      el.placeholder = t(el.dataset.i18nPlaceholder);
+    });
+
+    const select = $("#languageSelect");
+    if (select) select.value = language;
+
+    const adminSelect = $("#adminLanguageSelect");
+    if (adminSelect) adminSelect.value = language;
+
+    const result = $("#publicTrackingResult");
+    if (result?.dataset.parcelId) renderParcel(result.dataset.parcelId);
+  }
+
+  function statusLabel(status) {
+    if (status === "Delivered") return t("delivered");
+    if (status === "In Transit") return t("transit");
+    if (status === "Out of Delivery") return t("outForDelivery");
+    return t("pending");
+  }
+
+  function renderParcel(id) {
+    const result = $("#publicTrackingResult");
+    const parcels = readParcels();
+    const parcel = parcels.find(item =>
+      String(item.id).toUpperCase() === id.toUpperCase()
+    );
+
+    result.classList.add("visible");
+
+    if (!parcel) {
+      result.dataset.parcelId = "";
+      result.innerHTML = `
+        <div class="public-track-error">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          <div>
+            <strong>${t("notFoundTitle")}</strong>
+            <p>${t("notFoundText")}</p>
+          </div>
+        </div>`;
+      return;
+    }
+
+    result.dataset.parcelId = parcel.id;
+
+    const stages = ["Pending", "In Transit", "Out of Delivery", "Delivered"];
+    const current = stages.indexOf(parcel.status);
+    const stageNames = [
+      t("pending"),
+      t("transit"),
+      t("outForDelivery"),
+      t("delivered")
     ];
 
-    languageSelectors.forEach((selector) => {
-      const element = $(selector);
+    const timeline = stages.map((stage, index) => {
+      const done = index <= current;
 
-      if (element && element.value !== language) {
-        element.value = language;
+      return `
+        <div class="public-timeline-step ${done ? "done" : ""} ${index === current ? "current" : ""}">
+          <span class="public-timeline-icon">
+            <i class="bi ${index === 0 ? "bi-box-seam" : index === 1 ? "bi-truck" : index === 2 ? "bi-geo-alt" : "bi-check-lg"}"></i>
+          </span>
+          <strong>${stageNames[index]}</strong>
+          <small>${done ? t("unknownDate") : "—"}</small>
+        </div>`;
+    }).join("");
+
+    result.innerHTML = `
+      <article class="public-result-card">
+        <div class="public-result-head">
+          <div>
+            <span class="public-result-kicker">${t("resultTitle")}</span>
+            <h3>${escapeHTML(parcel.id)}</h3>
+          </div>
+          <span class="public-status-pill ${parcel.status === "Delivered" ? "is-delivered" : (parcel.status === "In Transit" || parcel.status === "Out of Delivery") ? "is-transit" : "is-pending"}">
+            ${statusLabel(parcel.status)}
+          </span>
+        </div>
+
+        <div class="public-result-meta">
+          <div>
+            <small>${t("currentStatus")}</small>
+            <strong>${statusLabel(parcel.status)}</strong>
+          </div>
+          <div>
+            <small>${t("expected")}</small>
+            <strong>${escapeHTML(parcel.date || "—")}</strong>
+          </div>
+          <div>
+            <small>${t("destination")}</small>
+            <strong>${escapeHTML(parcel.address || "—")}</strong>
+          </div>
+        </div>
+
+        <div class="public-progress-title">${t("progress")}</div>
+        <div class="public-timeline">${timeline}</div>
+
+        ${parcel.proofPhoto ? `
+          <div class="mt-3">
+            <strong>Delivery proof photo</strong><br>
+            <img class="proof-photo" src="${parcel.proofPhoto}" alt="Delivery proof photo">
+          </div>` : ""}
+
+        <iframe
+          class="public-map"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps?q=${encodeURIComponent(parcel.address || "Malaysia")}&output=embed"
+          title="Parcel destination map">
+        </iframe>
+
+        <a
+          class="small d-inline-block mt-2"
+          target="_blank"
+          rel="noopener"
+          href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parcel.address || "Malaysia")}">
+          Open location in Google Maps
+        </a>
+      </article>`;
+  }
+
+  const trackingForm = $("#publicTrackingForm");
+
+  if (!trackingForm) {
+    console.error("ParcelPro tracking: #publicTrackingForm was not found. Check index.html.");
+  } else {
+    trackingForm.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const field = $("#publicTrackingInput");
+      const result = $("#publicTrackingResult");
+
+      if (!field || !result) {
+        console.error("ParcelPro tracking input/result element is missing.");
+        return;
+      }
+
+      const ids = field.value
+        .split(/[\s,;]+/)
+        .map(value => value.trim())
+        .filter(Boolean);
+
+      if (!ids.length) {
+        field.setCustomValidity(t("invalid"));
+        field.reportValidity();
+        return;
+      }
+
+      field.setCustomValidity("");
+
+      if (ids.length > 5) {
+        result.classList.add("visible");
+        result.innerHTML = `
+          <div class="public-track-error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <div>
+              <strong>Please enter no more than 5 tracking numbers.</strong>
+              <p>Separate each tracking number with a comma or a space.</p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      if (ids.length === 1) {
+        renderParcel(ids[0].toUpperCase());
+        return;
+      }
+
+      result.classList.add("visible");
+      result.dataset.parcelId = "";
+
+      const parcels = readParcels();
+
+      result.innerHTML = ids.map(id => {
+        const safeId = escapeHTML(id.toUpperCase());
+
+        const parcel = parcels.find(item =>
+          String(item.id).toUpperCase() === id.toUpperCase()
+        );
+
+        if (!parcel) {
+          return `
+            <div class="public-track-error mb-2">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              <div>
+                <strong>${safeId}: ${t("notFoundTitle")}</strong>
+                <p>${t("notFoundText")}</p>
+              </div>
+            </div>`;
+        }
+
+        const status = escapeHTML(statusLabel(parcel.status));
+
+        return `
+          <article class="public-result-card mb-2">
+            <div class="public-result-head">
+              <div>
+                <span class="public-result-kicker">TRACKING NUMBER</span>
+                <h3>${safeId}</h3>
+              </div>
+              <span class="public-status-pill ${parcel.status === "Delivered" ? "is-delivered" : (parcel.status === "In Transit" || parcel.status === "Out of Delivery") ? "is-transit" : "is-pending"}">
+                ${status}
+              </span>
+            </div>
+
+            <div class="public-result-meta">
+              <div>
+                <small>EXPECTED DELIVERY</small>
+                <strong>${escapeHTML(parcel.date || "—")}</strong>
+              </div>
+              <div>
+                <small>DESTINATION</small>
+                <strong>${escapeHTML(parcel.address || "—")}</strong>
+              </div>
+              <div>
+                <small>RECIPIENT</small>
+                <strong>${escapeHTML(parcel.recipient || "—")}</strong>
+              </div>
+            </div>
+          </article>`;
+      }).join("");
+    });
+  }
+
+  console.info("ParcelPro public.js loaded. Tracking form:", Boolean(trackingForm));
+
+  // Admin login is a separate page (admin.html); the homepage link navigates there.
+  $("#backToPublicHome")?.addEventListener("click", () => {
+    window.location.href = "index.html";
+  });
+
+  // =====================================================
+  // MOBILE RESPONSIVE NAVIGATION - FIXED
+  // Uses the actual IDs from index.html:
+  // Button: #menuToggle
+  // Navigation: #navLinks
+  // =====================================================
+
+  const menuToggle = $("#menuToggle");
+  const navLinks = $("#navLinks");
+
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener("click", () => {
+      const isOpen = navLinks.classList.toggle("open");
+
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+      menuToggle.setAttribute(
+        "aria-label",
+        isOpen ? "Close menu" : "Open menu"
+      );
+
+      const icon = menuToggle.querySelector("i");
+
+      if (icon) {
+        icon.classList.toggle("bi-list", !isOpen);
+        icon.classList.toggle("bi-x-lg", isOpen);
       }
     });
 
-    refreshTrackingResults();
-  }
-
-  function changeLanguage(newLanguage) {
-    if (!["en", "ms", "zh"].includes(newLanguage)) {
-      return;
-    }
-
-    language = newLanguage;
-
-    try {
-      localStorage.setItem(LANGUAGE_KEY, language);
-
-    } catch (error) {
-      console.warn("ParcelPro: Unable to save language.", error);
-    }
-
-    applyLanguage();
-  }
-
-  [
-    "#languageSelect",
-    "#languageSelector",
-    "#language",
-    "[data-language-selector]"
-  ].forEach((selector) => {
-
-    const element = $(selector);
-
-    if (element) {
-      element.addEventListener("change", () => {
-        changeLanguage(element.value);
-      });
-    }
-
-  });
-
-  document.querySelectorAll("[data-language]").forEach((button) => {
-
-    button.addEventListener("click", () => {
-      changeLanguage(button.dataset.language);
-    });
-
-  });
-
-  // =======================================================
-  // 31. MOBILE NAVIGATION
-  // =======================================================
-
-  function initialiseMobileNavigation() {
-
-    const menuToggle =
-      $("#menuToggle")
-      || $("#mobileMenuToggle")
-      || $(".menu-toggle");
-
-    const navLinks =
-      $("#navLinks")
-      || $("#navbarNav")
-      || $(".nav-links");
-
-    if (!menuToggle || !navLinks) {
-      return;
-    }
-
-    menuToggle.addEventListener("click", () => {
-
-      const isOpen = navLinks.classList.toggle("active");
-
-      menuToggle.setAttribute(
-        "aria-expanded",
-        String(isOpen)
-      );
-
-      menuToggle.classList.toggle("active", isOpen);
-
-    });
-
-    navLinks.querySelectorAll("a").forEach((link) => {
-
+    // Close the mobile menu after clicking a navigation link.
+    navLinks.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
-
-        navLinks.classList.remove("active");
-        menuToggle.classList.remove("active");
+        navLinks.classList.remove("open");
 
         menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Open menu");
 
+        const icon = menuToggle.querySelector("i");
+
+        if (icon) {
+          icon.classList.remove("bi-x-lg");
+          icon.classList.add("bi-list");
+        }
       });
-
     });
 
-  }
+    // Close the mobile menu when the Escape key is pressed.
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && navLinks.classList.contains("open")) {
+        navLinks.classList.remove("open");
 
-  // =======================================================
-  // 32. INITIALISE PUBLIC TRACKING
-  // =======================================================
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Open menu");
 
-  function initialisePublicTracking() {
+        const icon = menuToggle.querySelector("i");
 
-    loadLanguage();
-
-    applyLanguage();
-
-    initialiseMobileNavigation();
-
-    initialiseTrackingForm();
-
-    console.log("ParcelPro Public Tracking initialized.");
-
-  }
-
-  // =======================================================
-  // 33. START
-  // =======================================================
-
-  if (document.readyState === "loading") {
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      initialisePublicTracking
-    );
-
+        if (icon) {
+          icon.classList.remove("bi-x-lg");
+          icon.classList.add("bi-list");
+        }
+      }
+    });
   } else {
-
-    initialisePublicTracking();
-
+    console.warn("ParcelPro mobile menu: #menuToggle or #navLinks was not found.");
   }
 
+  function changeLanguage(event) {
+    language = event.target.value;
+    localStorage.setItem("parcelpro_language", language);
+    applyLanguage();
+  }
+
+  $("#languageSelect")?.addEventListener("change", changeLanguage);
+  $("#adminLanguageSelect")?.addEventListener("change", changeLanguage);
+
+  applyLanguage();
 })();
