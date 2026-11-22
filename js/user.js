@@ -12,6 +12,9 @@
    - Customer Dashboard
    - Customer and Admin Data Synchronisation
 
+   Tracking Number:
+   PP1001 until PP2000
+
    Storage: localStorage
 ========================================================= */
 
@@ -1261,25 +1264,58 @@
 
   // =======================================================
   // 22. GENERATE TRACKING NUMBER
+  // Format: PP1001 until PP2000
+  // Shared with Admin Portal through localStorage
   // =======================================================
 
   function generateTrackingId() {
     const parcels = readList(KEYS.parcels);
 
-    let trackingId;
+    let highestNumber = 1000;
 
-    do {
-      trackingId =
-        "PP" +
-        String(Date.now()).slice(-8) +
-        String(Math.floor(Math.random() * 90 + 10));
+    parcels.forEach(parcel => {
+      const trackingNumbers = [
+        parcel.trackingNumber,
+        parcel.id
+      ];
 
-    } while (
-      parcels.some(parcel =>
-        parcel.id === trackingId ||
-        parcel.trackingNumber === trackingId
-      )
+      trackingNumbers.forEach(value => {
+        const match = String(value || "")
+          .trim()
+          .match(/^PP(\d{4})$/);
+
+        if (match) {
+          const number = Number(match[1]);
+
+          if (number >= 1001 && number <= 2000) {
+            highestNumber = Math.max(
+              highestNumber,
+              number
+            );
+          }
+        }
+      });
+    });
+
+    const nextNumber = highestNumber + 1;
+
+    // Stop when the tracking number limit is reached.
+    if (nextNumber > 2000) {
+      return null;
+    }
+
+    const trackingId =
+      "PP" + String(nextNumber).padStart(4, "0");
+
+    // Double-check that the tracking number is not already used.
+    const exists = parcels.some(parcel =>
+      String(parcel.id || "").trim() === trackingId ||
+      String(parcel.trackingNumber || "").trim() === trackingId
     );
+
+    if (exists) {
+      return null;
+    }
 
     return trackingId;
   }
@@ -1344,11 +1380,22 @@
       }
 
       // -----------------------------------------------
-      // GENERATE IDS AND PAYMENT DATE
+      // GENERATE TRACKING NUMBER
       // -----------------------------------------------
 
-      const trackingId =
-        generateTrackingId();
+      const trackingId = generateTrackingId();
+
+      if (!trackingId) {
+        alert(
+          "Tracking number limit reached. ParcelPro supports tracking numbers from PP1001 until PP2000."
+        );
+
+        return;
+      }
+
+      // -----------------------------------------------
+      // GENERATE RECEIPT NUMBER
+      // -----------------------------------------------
 
       const receiptNo =
         generateReceiptNo();
