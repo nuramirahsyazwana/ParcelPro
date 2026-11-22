@@ -27,409 +27,141 @@
   // Existing user data will not be overwritten.
   // =======================================================
 
- 
 const seedCustomers = [
-  {
-    id: 1,
-    name: "Aisyah Rahman",
-    email: "aisyah.rahman@email.com",
-    phone: "012-345 6789",
-    location: "Shah Alam, Selangor"
-  },
-  {
-    id: 2,
-    name: "Daniel Tan",
-    email: "daniel.tan@email.com",
-    phone: "013-222 4567",
-    location: "Petaling Jaya, Selangor"
-  },
-  {
-    id: 3,
-    name: "Nur Izzati",
-    email: "nur.izzati@email.com",
-    phone: "017-888 1234",
-    location: "Bangi, Selangor"
-  },
-  {
-    id: 4,
-    name: "Muhammad Amir",
-    email: "amir.m@email.com",
-    phone: "016-555 9087",
-    location: "Cyberjaya, Selangor"
-  },
-  {
-    id: 5,
-    name: "Lim Wei Jian",
-    email: "lim.weijian@email.com",
-    phone: "011-333 8765",
-    location: "Kuala Lumpur"
-  },
-  {
-    id: 6,
-    name: "Siti Nur Aina",
-    email: "aina.siti@email.com",
-    phone: "013-456 7890",
-    location: "Kota Bharu, Kelantan"
-  },
-  {
-    id: 7,
-    name: "Adam Hakim",
-    email: "adam.hakim@email.com",
-    phone: "014-567 8901",
-    location: "Kuantan, Pahang"
-  },
-  {
-    id: 8,
-    name: "Nurul Huda",
-    email: "nurul.huda@email.com",
-    phone: "016-234 5678",
-    location: "Johor Bahru, Johor"
-  },
-  {
-    id: 9,
-    name: "Jason Lee",
-    email: "jason.lee@email.com",
-    phone: "017-345 6789",
-    location: "George Town, Penang"
-  },
-  {
-    id: 10,
-    name: "Farah Nadia",
-    email: "farah.nadia@email.com",
-    phone: "018-456 7890",
-    location: "Ipoh, Perak"
-  }
-];
+    {
+      id: 1,
+      name: "Aisyah Rahman",
+      email: "aisyah.rahman@email.com",
+      phone: "012-345 6789",
+      location: "Shah Alam, Selangor"
+    },
+    {
+      id: 2,
+      name: "Daniel Tan",
+      email: "daniel.tan@email.com",
+      phone: "013-222 4567",
+      location: "Petaling Jaya, Selangor"
+    },
+    {
+      id: 3,
+      name: "Nur Izzati",
+      email: "nur.izzati@email.com",
+      phone: "017-888 1234",
+      location: "Bangi, Selangor"
+    },
+    {
+      id: 4,
+      name: "Muhammad Amir",
+      email: "amir.m@email.com",
+      phone: "016-555 9087",
+      location: "Cyberjaya, Selangor"
+    },
+    {
+      id: 5,
+      name: "Lim Wei Jian",
+      email: "lim.weijian@email.com",
+      phone: "011-333 8765",
+      location: "Kuala Lumpur"
+    }
+  ];
 
-const seedParcels = [
-  {
-    id: "PP2026007998",
-    trackingNumber: "PP2026007998",
-    recipient: "Aisyah Rahman",
-    customerName: "Aisyah Rahman",
-    customerId: 1,
-    customerEmail: "aisyah.rahman@email.com",
-    phone: "012-345 6789",
-    address: "Shah Alam, Selangor",
-    type: "Small package",
-    date: "2026-11-15",
-    status: "In Transit",
-    courier: "Daniel Lee",
-    created: "2026-11-10",
-    shippingType: "Domestic",
-    destinationCountry: "Malaysia",
-    weight: 1,
-    shippingFee: 10,
-    finalPrice: 10,
-    price: 10,
-    paymentStatus: "Paid",
-    proofPhoto: "",
-    history: [
-      {
-        status: "Pending",
-        date: "2026-11-10",
-        description: "Your parcel has been registered."
-      },
-      {
-        status: "In Transit",
-        date: "2026-11-15",
-        description: "Your parcel is currently in transit."
-      }
-    ]
-  },
-  {
-    id: "PP2026007999",
-    trackingNumber: "PP2026007999",
-    recipient: "Daniel Tan",
-    customerName: "Daniel Tan",
-    customerId: 2,
-    customerEmail: "daniel.tan@email.com",
-    phone: "013-222 4567",
-    address: "Petaling Jaya, Selangor",
-    type: "Document",
-    date: "2026-11-13",
-    status: "Delivered",
-    courier: "Farid Ahmad",
-    created: "2026-11-09",
-    shippingType: "Domestic",
-    destinationCountry: "Malaysia",
-    weight: 1,
-    shippingFee: 6,
-    finalPrice: 6,
-    price: 6,
-    paymentStatus: "Paid",
-    proofPhoto: "",
-    history: [
-      {
-        status: "Delivered",
-        date: "2026-11-13",
-        description: "Your parcel has been successfully delivered."
-      }
-    ]
-  },
-  {
-    id: "PP2026008000",
-    trackingNumber: "PP2026008000",
-    recipient: "Nur Izzati",
-    customerName: "Nur Izzati",
-    customerId: 3,
-    customerEmail: "nur.izzati@email.com",
-    phone: "017-888 1234",
-    address: "Bangi, Selangor",
-    type: "Medium package",
-    date: "2026-11-16",
-    status: "Pending",
-    courier: "Not assigned",
-    created: "2026-11-12",
-    shippingType: "Domestic",
-    destinationCountry: "Malaysia",
-    weight: 1,
-    shippingFee: 15,
-    finalPrice: 15,
-    price: 15,
-    paymentStatus: "Paid",
-    proofPhoto: "",
-    history: [
-      {
-        status: "Pending",
-        date: "2026-11-12",
-        description: "Your parcel has been registered."
-      }
-    ]
-  },
-  {
-    id: "PP2026008001",
-    trackingNumber: "PP2026008001",
-    recipient: "Muhammad Amir",
-    customerName: "Muhammad Amir",
-    customerId: 4,
-    customerEmail: "amir.m@email.com",
-    phone: "016-555 9087",
-    address: "Cyberjaya, Selangor",
-    type: "Large package",
-    date: "2026-11-18",
-    status: "In Transit",
-    courier: "Ahmad Firdaus",
-    created: "2026-11-14",
-    shippingType: "Domestic",
-    destinationCountry: "Malaysia",
-    weight: 3,
-    shippingFee: 25,
-    finalPrice: 25,
-    price: 25,
-    paymentStatus: "Paid",
-    proofPhoto: "",
-    history: [
-      {
-        status: "Pending",
-        date: "2026-11-14",
-        description: "Your parcel has been registered."
-      },
-      {
-        status: "In Transit",
-        date: "2026-11-18",
-        description: "Your parcel is currently in transit."
-      }
-    ]
-  },
-  {
-    id: "PP2026008002",
-    trackingNumber: "PP2026008002",
-    recipient: "Lim Wei Jian",
-    customerName: "Lim Wei Jian",
-    customerId: 5,
-    customerEmail: "lim.weijian@email.com",
-    phone: "011-333 8765",
-    address: "Kuala Lumpur",
-    type: "Document",
-    date: "2026-11-19",
-    status: "Delivered",
-    courier: "Sarah Lim",
-    created: "2026-11-16",
-    shippingType: "Domestic",
-    destinationCountry: "Malaysia",
-    weight: 1,
-    shippingFee: 6,
-    finalPrice: 6,
-    price: 6,
-    paymentStatus: "Paid",
-    proofPhoto: "",
-    history: [
-      {
-        status: "Pending",
-        date: "2026-11-16",
-        description: "Your parcel has been registered."
-      },
-      {
-        status: "Delivered",
-        date: "2026-11-19",
-        description: "Your parcel has been successfully delivered."
-      }
-    ]
-  },
-  {
-    id: "PP2026008003",
-    trackingNumber: "PP2026008003",
-    recipient: "Siti Nur Aina",
-    customerName: "Siti Nur Aina",
-    customerId: 6,
-    customerEmail: "aina.siti@email.com",
-    phone: "013-456 7890",
-    address: "Kota Bharu, Kelantan",
-    type: "Small package",
-    date: "2026-11-20",
-    status: "Pending",
-    courier: "Not assigned",
-    created: "2026-11-20",
-    shippingType: "Domestic",
-    destinationCountry: "Malaysia",
-    weight: 1,
-    shippingFee: 10,
-    finalPrice: 10,
-    price: 10,
-    paymentStatus: "Paid",
-    proofPhoto: "",
-    history: [
-      {
-        status: "Pending",
-        date: "2026-11-20",
-        description: "Your parcel has been registered."
-      }
-    ]
-  },
-  {
-    id: "PP2026008004",
-    trackingNumber: "PP2026008004",
-    recipient: "Adam Hakim",
-    customerName: "Adam Hakim",
-    customerId: 7,
-    customerEmail: "adam.hakim@email.com",
-    phone: "014-567 8901",
-    address: "Kuantan, Pahang",
-    type: "Medium package",
-    date: "2026-11-21",
-    status: "In Transit",
-    courier: "Mohd Rizal",
-    created: "2026-11-17",
-    shippingType: "Domestic",
-    destinationCountry: "Malaysia",
-    weight: 2,
-    shippingFee: 15,
-    finalPrice: 15,
-    price: 15,
-    paymentStatus: "Paid",
-    proofPhoto: "",
-    history: [
-      {
-        status: "Pending",
-        date: "2026-11-17",
-        description: "Your parcel has been registered."
-      },
-      {
-        status: "In Transit",
-        date: "2026-11-21",
-        description: "Your parcel is currently in transit."
-      }
-    ]
-  },
-  {
-    id: "PP2026008005",
-    trackingNumber: "PP2026008005",
-    recipient: "Nurul Huda",
-    customerName: "Nurul Huda",
-    customerId: 8,
-    customerEmail: "nurul.huda@email.com",
-    phone: "016-234 5678",
-    address: "Johor Bahru, Johor",
-    type: "Large package",
-    date: "2026-11-21",
-    status: "Pending",
-    courier: "Not assigned",
-    created: "2026-11-21",
-    shippingType: "Domestic",
-    destinationCountry: "Malaysia",
-    weight: 3,
-    shippingFee: 25,
-    finalPrice: 25,
-    price: 25,
-    paymentStatus: "Paid",
-    proofPhoto: "",
-    history: [
-      {
-        status: "Pending",
-        date: "2026-11-21",
-        description: "Your parcel has been registered."
-      }
-    ]
-  },
-  {
-    id: "PP2026008006",
-    trackingNumber: "PP2026008006",
-    recipient: "Jason Lee",
-    customerName: "Jason Lee",
-    customerId: 9,
-    customerEmail: "jason.lee@email.com",
-    phone: "017-345 6789",
-    address: "George Town, Penang",
-    type: "Small package",
-    date: "2026-11-22",
-    status: "In Transit",
-    courier: "Kumar Raj",
-    created: "2026-11-19",
-    shippingType: "Domestic",
-    destinationCountry: "Malaysia",
-    weight: 1,
-    shippingFee: 10,
-    finalPrice: 10,
-    price: 10,
-    paymentStatus: "Paid",
-    proofPhoto: "",
-    history: [
-      {
-        status: "Pending",
-        date: "2026-11-19",
-        description: "Your parcel has been registered."
-      },
-      {
-        status: "In Transit",
-        date: "2026-11-22",
-        description: "Your parcel is currently in transit."
-      }
-    ]
-  },
-  {
-    id: "PP2026008007",
-    trackingNumber: "PP2026008007",
-    recipient: "Farah Nadia",
-    customerName: "Farah Nadia",
-    customerId: 10,
-    customerEmail: "farah.nadia@email.com",
-    phone: "018-456 7890",
-    address: "Ipoh, Perak",
-    type: "Document",
-    date: "2026-11-22",
-    status: "Pending",
-    courier: "Not assigned",
-    created: "2026-11-22",
-    shippingType: "Domestic",
-    destinationCountry: "Malaysia",
-    weight: 1,
-    shippingFee: 6,
-    finalPrice: 6,
-    price: 6,
-    paymentStatus: "Paid",
-    proofPhoto: "",
-    history: [
-      {
-        status: "Pending",
-        date: "2026-11-22",
-        description: "Your parcel has been registered."
-      }
-    ]
-  }
-];
-
-
+  const seedParcels = [
+    {
+      id: "PP1001",
+      trackingNumber: "PP1001",
+      recipient: "Aisyah Rahman",
+      customerName: "Aisyah Rahman",
+      customerId: 1,
+      customerEmail: "aisyah.rahman@email.com",
+      phone: "012-345 6789",
+      address: "Shah Alam, Selangor",
+      type: "Small package",
+      date: "2026-11-15",
+      status: "In Transit",
+      courier: "Daniel Lee",
+      created: "2026-11-10",
+      shippingType: "Domestic",
+      destinationCountry: "Malaysia",
+      weight: 1,
+      shippingFee: 10,
+      finalPrice: 10,
+      price: 10,
+      paymentStatus: "Paid",
+      proofPhoto: "",
+      history: [
+        {
+          status: "Pending",
+          date: "2026-11-10",
+          description: "Your parcel has been registered."
+        },
+        {
+          status: "In Transit",
+          date: "2026-11-15",
+          description: "Your parcel is currently in transit."
+        }
+      ]
+    },
+    {
+      id: "PP1002",
+      trackingNumber: "PP1002",
+      recipient: "Daniel Tan",
+      customerName: "Daniel Tan",
+      customerId: 2,
+      customerEmail: "daniel.tan@email.com",
+      phone: "013-222 4567",
+      address: "Petaling Jaya, Selangor",
+      type: "Document",
+      date: "2026-11-13",
+      status: "Delivered",
+      courier: "Farid Ahmad",
+      created: "2026-11-09",
+      shippingType: "Domestic",
+      destinationCountry: "Malaysia",
+      weight: 1,
+      shippingFee: 6,
+      finalPrice: 6,
+      price: 6,
+      paymentStatus: "Paid",
+      proofPhoto: "",
+      history: [
+        {
+          status: "Delivered",
+          date: "2026-11-13",
+          description: "Your parcel has been successfully delivered."
+        }
+      ]
+    },
+    {
+      id: "PP1003",
+      trackingNumber: "PP1003",
+      recipient: "Nur Izzati",
+      customerName: "Nur Izzati",
+      customerId: 3,
+      customerEmail: "nur.izzati@email.com",
+      phone: "017-888 1234",
+      address: "Bangi, Selangor",
+      type: "Medium package",
+      date: "2026-11-16",
+      status: "Pending",
+      courier: "Not assigned",
+      created: "2026-11-12",
+      shippingType: "Domestic",
+      destinationCountry: "Malaysia",
+      weight: 1,
+      shippingFee: 15,
+      finalPrice: 15,
+      price: 15,
+      paymentStatus: "Paid",
+      proofPhoto: "",
+      history: [
+        {
+          status: "Pending",
+          date: "2026-11-12",
+          description: "Your parcel has been registered."
+        }
+      ]
+    }
+  ];
   // =======================================================
   // 3. STORAGE HELPERS
   // =======================================================
